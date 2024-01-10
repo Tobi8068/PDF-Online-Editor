@@ -1,6 +1,6 @@
 import React from "react";
 import PDFReader from './components/PDFReader';
-import { FilePondComponent } from "./components/filepond";
+import { FilePondComponent } from "./components/Filepond";
 import { Route, Routes } from 'react-router-dom';
 import {
   Box,
@@ -21,7 +21,6 @@ const UploadComponent = () =>(
 )
 
 function App() {
-  const [value, setValue] = React.useState("react-filepond");
   return (
     <Routes>
       <Route path="/" element={<UploadComponent />} />

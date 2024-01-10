@@ -1,41 +1,43 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const multer  = require('multer');
+const { PDFDocument } = require('pdf-lib');
+const fs = require('fs');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const upload = multer({ dest: 'uploads/' }); // Set the destination for uploaded files
 
-var app = express();
+const bodyParser = require('body-parser')
+// const upload = multer({ dest: 'uploads/' }); // Set the destination for uploaded files
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
+const cors = require('cors');
+app.use(cors());
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// Handle POST requests to /upload
+app.post('/upload', upload.array("files"), (req, res) => {
+  console.log(req.files[0].originalname, req.files[0].filename);
+  let oldPath = "uploads/" + req.files[0].filename;
+  let newPath = "uploads/" + req.files[0].filename +".pdf";
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+  fs.rename(oldPath, newPath, (err) => {
+    if (err) {
+      console.error('Error renaming file:', err);
+      res.status(500).send('Error renaming file');
+    } 
+    else {
+      console.log('File renamed successfully');
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+      const pdfFilePath = 'uploads/' + req.files[0].filename + ".pdf";
+      const pdfFileData = fs.readFileSync(pdfFilePath);
+      const base64Data = pdfFileData.toString('base64');
+      const dataUri = `data:application/pdf; base64, ${base64Data}`;
+      res.json({ dataUri });
+    }
+  });
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+// Start the server
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });
-
-module.exports = app;

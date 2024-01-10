@@ -1,7 +1,7 @@
 import React from 'react';
 
 const ControlPanel = (props) => {
-  const { file, pageNumber, numPages, setPageNumber, scale, setScale } = props;
+  const { pageNumber, numPages, setPageNumber, scale, setScale } = props;
 
   const isFirstPage = pageNumber === 1;
   const isLastPage = pageNumber === numPages;

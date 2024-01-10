@@ -1,13 +1,10 @@
-// https://github.com/pqina/react-filepond
-// https://pqina.nl/filepond/docs/getting-started/installation/react/#react-component-implementation
-// https://pqina.nl/filepond/docs/api/instance/methods/
-// https://github.com/pqina/filepond/issues/24 manual upload file
-
 // npm install react-filepond filepond --save
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useDispatch } from 'react-redux';
+import { setServerId } from '../redux/store';
 
 // Import React FilePond
-import { FilePond, File, registerPlugin } from "react-filepond";
+import { FilePond, registerPlugin } from "react-filepond";
 
 // Import FilePond styles
 import "../../node_modules/filepond/dist/filepond.min.css";
@@ -39,45 +36,22 @@ registerPlugin(
   FilePondPluginImageTransform
 );
 
+
+
 // Our app
 export function FilePondComponent() {
+
+  const dispatch = useDispatch();
+
+  let serverId = null;
+  
   const [files, setFiles] = useState([]);
-  // console.log("files", files);
   let pond = null;
 
   const onSubmit = () => {
-    const formData = new FormData();
-    // files
-    //   .map((item) => item.file)
-    //   .forEach((file) => formData.append("my-file", file));
-    // console.log(formData);
     console.log("pond", pond);
 
     if (pond) {
-      // pond.setOptions({
-      //   server: {
-      //     url: "https://httpbin.org/post",
-      //     timeout: 7000
-      //     // process: {
-      //     //   url: "./process",
-      //     //   method: "POST",
-      //     //   headers: {
-      //     //     "x-customheader": "Hello World"
-      //     //   },
-      //     //   withCredentials: false,
-      //     //   onload: (response) => response.key,
-      //     //   onerror: (response) => response.data,
-      //     //   ondata: (formData) => {
-      //     //     formData.append("Hello", "World");
-      //     //     return formData;
-      //     //   }
-      //     // },
-      //     // revert: "./revert",
-      //     // restore: "./restore/",
-      //     // load: "./load/",
-      //     // fetch: "./fetch/"
-      //   }
-      // });
       const files = pond.getFiles();
       files.forEach((file) => {
         console.log("each file", file, file.getFileEncodeBase64String());
@@ -86,7 +60,9 @@ export function FilePondComponent() {
         .processFiles(files)
         .then(
           (res) => {
-            console.log(res)
+            serverId = res[0].serverId;
+            dispatch(setServerId(serverId));
+            console.log(serverId, "dispatch");
             window.location.assign("/editor")
           })
         .catch((error) => console.log("err", error));
@@ -141,7 +117,7 @@ export function FilePondComponent() {
         instantUpload={false}
         allowMultiple={false}
         maxFiles={1}
-        server="https://httpbin.org/post"
+        server="http://localhost:3000/upload"
         name="files"
         labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
       />
