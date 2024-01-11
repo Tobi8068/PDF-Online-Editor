@@ -31,8 +31,9 @@ app.post('/upload', upload.array("files"), (req, res) => {
       const pdfFilePath = 'uploads/' + req.files[0].filename + ".pdf";
       const pdfFileData = fs.readFileSync(pdfFilePath);
       const base64Data = pdfFileData.toString('base64');
-      const dataUri = `data:application/pdf; base64, ${base64Data}`;
-      res.json({ dataUri });
+      const str = String(base64Data)
+      const dataUri = `data:application/pdf; base64, ${str}`;
+      res.send(dataUri);
     }
   });
 });

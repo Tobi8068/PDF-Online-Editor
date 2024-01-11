@@ -1,4 +1,5 @@
 var PDFAnnotate = function (container_id, url, options = {}) {
+	console.log(url)
 	this.number_of_pages = 0;
 	this.pages_rendered = 0;
 	this.active_tool = 1; // 1 - Free hand, 2 - Text, 3 - Arrow, 4 - Rectangle
@@ -16,7 +17,10 @@ var PDFAnnotate = function (container_id, url, options = {}) {
 		: "NONE";
 	var inst = this;
 
-	var loadingTask = pdfjsLib.getDocument(this.url);
+	var pdfData = atob(`${url}`)
+
+	var loadingTask = pdfjsLib.getDocument({data: pdfData});
+
 	loadingTask.promise.then(function (pdf) {
 		var scale = options.scale ? options.scale : 1.3;
 		inst.number_of_pages = pdf.numPages;

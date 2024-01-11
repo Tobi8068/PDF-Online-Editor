@@ -1,7 +1,5 @@
 // npm install react-filepond filepond --save
 import React, { useState } from "react";
-import { useDispatch } from 'react-redux';
-import { setServerId } from '../redux/store';
 
 // Import React FilePond
 import { FilePond, registerPlugin } from "react-filepond";
@@ -36,14 +34,8 @@ registerPlugin(
   FilePondPluginImageTransform
 );
 
-
-
 // Our app
 export function FilePondComponent() {
-
-  const dispatch = useDispatch();
-
-  let serverId = null;
   
   const [files, setFiles] = useState([]);
   let pond = null;
@@ -60,9 +52,7 @@ export function FilePondComponent() {
         .processFiles(files)
         .then(
           (res) => {
-            serverId = res[0].serverId;
-            dispatch(setServerId(serverId));
-            console.log(serverId, "dispatch");
+            console.log(res[0].serverId);
             window.location.assign("/editor")
           })
         .catch((error) => console.log("err", error));
@@ -125,4 +115,4 @@ export function FilePondComponent() {
       <Button className="text-center" onClick={onSubmit}>Submit</Button>
     </div>
   );
-}
+};
