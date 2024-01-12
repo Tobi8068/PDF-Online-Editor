@@ -1,4 +1,4 @@
-let currentFile = 'uploads/d4aad56f854a473ad280b26b2ead3e3c.pdf';
+let currentFile = '';
 
 const setCurrentFile = (value) => {
   currentFile = value;

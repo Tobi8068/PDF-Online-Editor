@@ -23,10 +23,8 @@ app.use(cors());
 app.post('/upload', upload.array("files"), (req, res) => {
   console.log(req.files[0].originalname, req.files[0].filename);
   let oldPath = "uploads/" + req.files[0].filename;
-  let newPath = "uploads/" + req.files[0].filename + ".pdf";
-
+  let newPath = "uploads/" + req.files[0].filename +".pdf";
   setCurrentFile(newPath);
-
   fs.rename(oldPath, newPath, (err) => {
     if (err) {
       console.error('Error renaming file:', err);
@@ -34,12 +32,12 @@ app.post('/upload', upload.array("files"), (req, res) => {
     }
     else {
       console.log('File renamed successfully');
-
       const pdfFilePath = 'uploads/' + req.files[0].filename + ".pdf";
       const pdfFileData = fs.readFileSync(pdfFilePath);
       const base64Data = pdfFileData.toString('base64');
-      const dataUri = `data:application/pdf;base64,${base64Data}`;
-      res.json({ dataUri });
+      const str = String(base64Data)
+      const dataUri = `data:application/pdf; base64, ${str}`;
+      res.send(dataUri);
     }
   });
 });

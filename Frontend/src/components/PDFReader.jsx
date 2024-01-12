@@ -101,7 +101,7 @@ const PDFReader = () => {
     if (pond) {
       const files = pond.getFiles();
       files.forEach((file) => {
-        console.log("each file", file, file.getFileEncodeBase64String());
+        console.log("each file", file, "file",  file.getFileEncodeBase64String());
       });
       pond
         .processFiles(files)
@@ -110,7 +110,9 @@ const PDFReader = () => {
             toggleDiv();
             let data = res[0].serverId;
             let base64Data = data.split(",")[1];
-            setServerId(base64Data)
+            setServerId(base64Data);
+            console.log(base64Data);
+            console.log('test');
           })
         .catch((error) => console.log("err", error));
     }
@@ -177,7 +179,7 @@ const PDFReader = () => {
             instantUpload={false}
             allowMultiple={false}
             maxFiles={1}
-            server="http://localhost:3000/upload"
+            server="http://localhost:8081/upload"
             name="files"
             labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
           />
