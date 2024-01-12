@@ -42,18 +42,17 @@ const ControlPanel = (props) => {
   };
 
   return (
-    <div className="control-panel m-3 p-3 d-flex align-items-baseline justify-content-between">
+    <div className="control-panel p-4 d-flex align-items-baseline justify-content-between">
       <div className="d-flex justify-content-between align-items-baseline">
         <i
-          className={`fas fa-fast-backward mx-3 ${firstPageClass}`}
+          className={`fas fa-chevron-left mx-3 ${firstPageClass}`}
           onClick={goToFirstPage}
         />
         <i
-          className={`fas fa-backward mx-3 ${firstPageClass}`}
+          className={`fas fa-chevron-up mx-3 ${firstPageClass}`}
           onClick={goToPreviousPage}
         />
-        <span>
-          Page{' '}
+          <span className='mx-3'>
           <input
             name="pageNumber"
             type="number"
@@ -62,21 +61,20 @@ const ControlPanel = (props) => {
             className="p-0 pl-1 mx-2"
             value={pageNumber}
             onChange={onPageChange}
-          />{' '}
-          of {numPages}
+          />
+          /{numPages}{' '}5
         </span>
         <i
-          className={`fas fa-forward mx-3 ${lastPageClass}`}
+          className={`fas fa-chevron-down mx-3 ${lastPageClass}`}
           onClick={goToNextPage}
         />
         <i
-          className={`fas fa-fast-forward mx-3 ${lastPageClass}`}
+          className={`fas fa-chevron-right mx-3 ${lastPageClass}`}
           onClick={goToLastPage}
         />
-      </div>
-      <div className="d-flex justify-content-between align-items-baseline">
+      
         <i
-          className={`fas fa-search-minus mx-3 ${zoomOutClass}`}
+          className={`fas fa-search-minus ms-5 me-3 ${zoomOutClass}`}
           onClick={zoomOut}
         />
         <span>{(scale * 100).toFixed()}%</span>
@@ -84,10 +82,10 @@ const ControlPanel = (props) => {
           className={`fas fa-search-plus mx-3 ${zoomInClass}`}
           onClick={zoomIn}
         />
-      </div>
+        </div>
       <div className="mx-3">
         <a href="1.pdf" download={true} title="download">
-          <i className="fas fa-file-download clickable" />
+          <i className="fas fa-download clickable" />
         </a>
       </div>
     </div>

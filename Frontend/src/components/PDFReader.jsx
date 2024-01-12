@@ -9,7 +9,6 @@ import '../css/pdfeditor.css'
 import {
   Box,
   Container,
-  Heading,
   ChakraProvider
 } from "@chakra-ui/react";
 
@@ -48,7 +47,8 @@ const PDFReader = () => {
   const [scale, setScale] = useState(1.0);
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
-
+  const [showDiv, setShowDiv] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
   const [serverId, setServerId] = useState('JVBERi0xLjcKCjEgMCBvYmogICUgZW50cnkgcG9pbnQKPDwKICAvVHlwZSAvQ2F0YWxvZwogIC9QYWdlcyAyIDAgUgo+PgplbmRvYmoKCjIgMCBvYmoKPDwKICAvVHlwZSAvUGFnZXMKICAv' +
   'TWVkaWFCb3ggWyAwIDAgMjAwIDIwMCBdCiAgL0NvdW50IDEKICAvS2lkcyBbIDMgMCBSIF0K' +
   'Pj4KZW5kb2JqCgozIDAgb2JqCjw8CiAgL1R5cGUgL1BhZ2UKICAvUGFyZW50IDIgMCBSCiAg' +
@@ -64,6 +64,10 @@ const PDFReader = () => {
   const [files, setFiles] = useState([]);
   let pond = null;
 
+  const toggleDiv = () => {
+    setShowDiv(!showDiv);
+  };
+
   useEffect(() => {
     window.PDFAnnotate("pdf-container", serverId, {
         onPageUpdated(page, oldData, newData) {
@@ -77,6 +81,19 @@ const PDFReader = () => {
       pageImageCompression: "SLOW", // FAST, MEDIUM, SLOW(Helps to control the new PDF file size)
     });
   }, [scale, pageNumber, serverId]);
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(window.scrollY);
+    };
+
+    // Add event listener when the component mounts
+    window.addEventListener('scroll', handleScroll);
+
+    // Remove event listener when the component unmounts
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const onSubmit = () => {
     console.log("pond", pond);
@@ -90,22 +107,28 @@ const PDFReader = () => {
         .processFiles(files)
         .then(
           (res) => {
+            toggleDiv();
             let data = res[0].serverId;
-
             let base64Data = data.split(",")[1];
             setServerId(base64Data)
-
           })
         .catch((error) => console.log("err", error));
     }
   };
-
+  const scrollPositionStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    backgroundColor: 'rgb(245, 247, 249)', // Set background color as needed
+    padding: '10px',
+    zIndex: 999 // Ensure it's on top of other content
+  };
   return (
-
-<div style={{ backgroundColor: 'grey', minHeight: '100vh'}}>
-        <ChakraProvider>
+    <>
+    <div>
+    <ChakraProvider>
+      {showDiv && <div className='openbox'>
     <Container>
-      <Heading>Upload PDF File</Heading>
       <Box>
       <div>
           <FilePond
@@ -158,17 +181,14 @@ const PDFReader = () => {
             name="files"
             labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
           />
-
-          <Button className="text-center" onClick={onSubmit}>Submit</Button>
+          <Button className="text-center" onClick={onSubmit}>Upload</Button>
         </div>
       </Box>
     </Container>
+  </div>}
   </ChakraProvider>
-    <section
-        id="pdf-section"
-        className="d-flex flex-column align-items-center w-100"
-    >
-        <ControlPanel
+    </div>
+            <ControlPanel
           scale={scale}
           setScale={setScale}
           numPages={numPages}
@@ -176,9 +196,27 @@ const PDFReader = () => {
           setPageNumber={setPageNumber}
           file="1.pdf"
         />
-        <div id="pdf-container"></div>
+<div className='left-bar py-5'>
+  <div className='mt-3'></div>
+  <div onClick={toggleDiv}><i class="far far fa-file fa-lg"></i></div>
+  <div style={{position:'absolute', bottom:'40px', left:'20px'}}>
+  <div className='mt-3'><i class="fas fa-gear fa-lg"></i></div>
+  <div className='mt-3'><i class="fas fa-info fa-lg"></i></div>
+  </div>
+</div>
+<div style={{ backgroundColor: 'rgb(225, 225, 225)', minHeight: '100vh'}}>
+<section
+        id="pdf-section"
+        className="d-flex mt-4 flex-column align-items-center w-100">
+        <div id="pdf-container" style={{ maxHeight: '100%', overflow: 'auto' }}></div>
       </section>
+    
+      {/* <div style={scrollPositionStyle}>
+    <p>Vertical scroll position: {scrollPosition}</p>
+  </div> */}
     </div>
+
+    </>
   );
 };
 
