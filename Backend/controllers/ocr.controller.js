@@ -2,7 +2,6 @@ const { createWorker } = require('tesseract.js');
 const pdf2img = require('pdf-img-convert');
 const pdf = require('pdf-parse');
 
-
 const fs = require('fs');
 const { getCurrentFile } = require('../utils/currentFile');
 
@@ -10,11 +9,19 @@ const extractText = async (req, res) => {
 
   try {
     const pdfBuffer = fs.readFileSync(getCurrentFile());
+    
+    const txtURL = 'save/text.txt';
 
     pdf(pdfBuffer).then((data) => {
       console.log(data.text);
+      fs.writeFileSync(txtURL, data.text, (err) => {
+        if (err) {
+          console.error('Error while saving the file:', err);
+        } else {
+          console.log('The file has been saved successfully.');
+        }
+      });
     })
-
     // Convert PDF to images
 
     // const outputImages = await pdf2img.convert(getCurrentFile());

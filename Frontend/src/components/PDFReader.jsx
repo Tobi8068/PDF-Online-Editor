@@ -5,6 +5,9 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 import ControlPanel from './ControlPanel';
+import PageManage from './PageManage';
+import OCR from './OCR';
+
 import '../css/pdfeditor.css'
 import {
   Box,
@@ -48,19 +51,21 @@ const PDFReader = () => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [showDiv, setShowDiv] = useState(false);
+  const [showPageManage, setShowPageManage] = useState(false);
+  const [showOCR, setShowOCR] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [serverId, setServerId] = useState('JVBERi0xLjcKCjEgMCBvYmogICUgZW50cnkgcG9pbnQKPDwKICAvVHlwZSAvQ2F0YWxvZwogIC9QYWdlcyAyIDAgUgo+PgplbmRvYmoKCjIgMCBvYmoKPDwKICAvVHlwZSAvUGFnZXMKICAv' +
-  'TWVkaWFCb3ggWyAwIDAgMjAwIDIwMCBdCiAgL0NvdW50IDEKICAvS2lkcyBbIDMgMCBSIF0K' +
-  'Pj4KZW5kb2JqCgozIDAgb2JqCjw8CiAgL1R5cGUgL1BhZ2UKICAvUGFyZW50IDIgMCBSCiAg' +
-  'L1Jlc291cmNlcyA8PAogICAgL0ZvbnQgPDwKICAgICAgL0YxIDQgMCBSIAogICAgPj4KICA+' +
-  'PgogIC9Db250ZW50cyA1IDAgUgo+PgplbmRvYmoKCjQgMCBvYmoKPDwKICAvVHlwZSAvRm9u' +
-  'dAogIC9TdWJ0eXBlIC9UeXBlMQogIC9CYXNlRm9udCAvVGltZXMtUm9tYW4KPj4KZW5kb2Jq' +
-  'Cgo1IDAgb2JqICAlIHBhZ2UgY29udGVudAo8PAogIC9MZW5ndGggNDQKPj4Kc3RyZWFtCkJU' +
-  'CjcwIDUwIFRECi9GMSAxMiBUZgooSGVsbG8sIHdvcmxkISkgVGoKRVQKZW5kc3RyZWFtCmVu' +
-  'ZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDEwIDAwMDAwIG4g' +
-  'CjAwMDAwMDAwNzkgMDAwMDAgbiAKMDAwMDAwMDE3MyAwMDAwMCBuIAowMDAwMDAwMzAxIDAw' +
-  'MDAwIG4gCjAwMDAwMDAzODAgMDAwMDAgbiAKdHJhaWxlcgo8PAogIC9TaXplIDYKICAvUm9v' +
-  'dCAxIDAgUgo+PgpzdGFydHhyZWYKNDkyCiUlRU9G');
+    'TWVkaWFCb3ggWyAwIDAgMjAwIDIwMCBdCiAgL0NvdW50IDEKICAvS2lkcyBbIDMgMCBSIF0K' +
+    'Pj4KZW5kb2JqCgozIDAgb2JqCjw8CiAgL1R5cGUgL1BhZ2UKICAvUGFyZW50IDIgMCBSCiAg' +
+    'L1Jlc291cmNlcyA8PAogICAgL0ZvbnQgPDwKICAgICAgL0YxIDQgMCBSIAogICAgPj4KICA+' +
+    'PgogIC9Db250ZW50cyA1IDAgUgo+PgplbmRvYmoKCjQgMCBvYmoKPDwKICAvVHlwZSAvRm9u' +
+    'dAogIC9TdWJ0eXBlIC9UeXBlMQogIC9CYXNlRm9udCAvVGltZXMtUm9tYW4KPj4KZW5kb2Jq' +
+    'Cgo1IDAgb2JqICAlIHBhZ2UgY29udGVudAo8PAogIC9MZW5ndGggNDQKPj4Kc3RyZWFtCkJU' +
+    'CjcwIDUwIFRECi9GMSAxMiBUZgooSGVsbG8sIHdvcmxkISkgVGoKRVQKZW5kc3RyZWFtCmVu' +
+    'ZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDEwIDAwMDAwIG4g' +
+    'CjAwMDAwMDAwNzkgMDAwMDAgbiAKMDAwMDAwMDE3MyAwMDAwMCBuIAowMDAwMDAwMzAxIDAw' +
+    'MDAwIG4gCjAwMDAwMDAzODAgMDAwMDAgbiAKdHJhaWxlcgo8PAogIC9TaXplIDYKICAvUm9v' +
+    'dCAxIDAgUgo+PgpzdGFydHhyZWYKNDkyCiUlRU9G');
   const [files, setFiles] = useState([]);
   let pond = null;
 
@@ -68,9 +73,16 @@ const PDFReader = () => {
     setShowDiv(!showDiv);
   };
 
+  const togglePageManage = () => {
+    setShowPageManage(!showPageManage);
+  };
+
+  const toggleOCR = () => {
+    setShowOCR(!showOCR);
+  }
   useEffect(() => {
     window.PDFAnnotate("pdf-container", serverId, {
-        onPageUpdated(page, oldData, newData) {
+      onPageUpdated(page, oldData, newData) {
         console.log(page, oldData, newData);
       },
       ready() {
@@ -101,7 +113,7 @@ const PDFReader = () => {
     if (pond) {
       const files = pond.getFiles();
       files.forEach((file) => {
-        console.log("each file", file, "file",  file.getFileEncodeBase64String());
+        // console.log("each file", file, "file", file.getFileEncodeBase64String());
       });
       pond
         .processFiles(files)
@@ -111,12 +123,15 @@ const PDFReader = () => {
             let data = res[0].serverId;
             let base64Data = data.split(",")[1];
             setServerId(base64Data);
-            console.log(base64Data);
-            console.log('test');
           })
         .catch((error) => console.log("err", error));
     }
   };
+
+  const handleData = (data) => {
+    let base64Data = data.split(",")[1];
+    setServerId(base64Data);
+  }
   const scrollPositionStyle = {
     position: 'fixed',
     top: 0,
@@ -127,96 +142,101 @@ const PDFReader = () => {
   };
   return (
     <>
-    <div>
-    <ChakraProvider>
-      {showDiv && <div className='openbox'>
-    <Container>
-      <Box>
       <div>
-          <FilePond
-            files={files}
-            ref={(ref) => {
-              pond = ref;
-            }}
-            required
-            acceptedFileTypes={["application/pdf"]}
-            fileValidateTypeDetectType={(source, type) =>
-              // Note: we need this here to activate the file type validations and filtering
-              new Promise((resolve, reject) => {
-                // Do custom type detection here and return with promise
-                resolve(type);
-              })
-            }
-            allowFileEncode
-            allowImageTransform
-            imagePreviewHeight={400}
-            imageCropAspectRatio={"1:1"}
-            imageResizeTargetWidth={100}
-            imageResizeTargetHeight={100}
-            imageResizeMode={"cover"}
-            imageTransformOutputQuality={50}
-            imageTransformOutputQualityMode="optional"
-            imageTransformBeforeCreateBlob={(canvas) =>
-              new Promise((resolve) => {
-                // Do something with the canvas, like drawing some text on it
-                const ctx = canvas.getContext("2d");
-                ctx.font = "48px serif";
-                ctx.fillText("Hello world", 10, 50);
-                console.log("imageTransformBeforeCreateBlob", ctx, canvas);
-                // return canvas to the plugin for further processing
-                resolve(canvas);
-              })
-            }
-            imageTransformAfterCreateBlob={(blob) =>
-              new Promise((resolve) => {
-                // do something with the blob, for instance send it to a custom compression alogrithm
-                console.log("imageTransformAfterCreateBlob", blob);
-                // return the blob to the plugin for further processing
-                resolve(blob);
-              })
-            }
-            onupdatefiles={setFiles}
-            instantUpload={false}
-            allowMultiple={false}
-            maxFiles={1}
-            server="http://localhost:8081/upload"
-            name="files"
-            labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
-          />
-          <Button className="text-center" onClick={onSubmit}>Upload</Button>
+        <ChakraProvider>
+          {showDiv && <div className='openbox'>
+            <Container>
+              <Box>
+                <div>
+                  <FilePond
+                    files={files}
+                    ref={(ref) => {
+                      pond = ref;
+                    }}
+                    required
+                    acceptedFileTypes={["application/pdf"]}
+                    fileValidateTypeDetectType={(source, type) =>
+                      // Note: we need this here to activate the file type validations and filtering
+                      new Promise((resolve, reject) => {
+                        // Do custom type detection here and return with promise
+                        resolve(type);
+                      })
+                    }
+                    allowFileEncode
+                    allowImageTransform
+                    imagePreviewHeight={400}
+                    imageCropAspectRatio={"1:1"}
+                    imageResizeTargetWidth={100}
+                    imageResizeTargetHeight={100}
+                    imageResizeMode={"cover"}
+                    imageTransformOutputQuality={50}
+                    imageTransformOutputQualityMode="optional"
+                    imageTransformBeforeCreateBlob={(canvas) =>
+                      new Promise((resolve) => {
+                        // Do something with the canvas, like drawing some text on it
+                        const ctx = canvas.getContext("2d");
+                        ctx.font = "48px serif";
+                        ctx.fillText("Hello world", 10, 50);
+                        console.log("imageTransformBeforeCreateBlob", ctx, canvas);
+                        // return canvas to the plugin for further processing
+                        resolve(canvas);
+                      })
+                    }
+                    imageTransformAfterCreateBlob={(blob) =>
+                      new Promise((resolve) => {
+                        // do something with the blob, for instance send it to a custom compression alogrithm
+                        console.log("imageTransformAfterCreateBlob", blob);
+                        // return the blob to the plugin for further processing
+                        resolve(blob);
+                      })
+                    }
+                    onupdatefiles={setFiles}
+                    instantUpload={false}
+                    allowMultiple={false}
+                    maxFiles={1}
+                    server="http://localhost:8081/upload"
+                    name="files"
+                    labelIdle='Drag & Drop your files or <span className="filepond--label-action">Browse</span>'
+                  />
+                  <Button className="text-center" onClick={onSubmit}>Upload</Button>
+                </div>
+              </Box>
+            </Container>
+          </div>}
+          {showPageManage && <PageManage onData={handleData}/>}
+          {showOCR && <OCR/>}
+        </ChakraProvider>
+      </div>
+      <ControlPanel
+        scale={scale}
+        setScale={setScale}
+        numPages={numPages}
+        pageNumber={pageNumber}
+        setPageNumber={setPageNumber}
+        file="1.pdf"
+      />
+      <div className='d-flex flex-column gap-2 justify-content-between left-bar py-5'>
+        <div className='d-flex flex-column gap-4'>
+          <div className='mt-3' onClick={toggleDiv} style={{cursor: 'pointer'}}><i className="far far fa-folder-open fa-lg" title='upload file'></i></div>
+          <div onClick={togglePageManage} style={{cursor: 'pointer'}}><i className="fas fa-file fa-lg" title='page management'></i></div>
+          <div onClick={toggleOCR} style={{cursor: 'pointer'}}><i className="fas fa-file-arrow-down fa-lg" title='OCR function'></i></div>
         </div>
-      </Box>
-    </Container>
-  </div>}
-  </ChakraProvider>
-    </div>
-            <ControlPanel
-          scale={scale}
-          setScale={setScale}
-          numPages={numPages}
-          pageNumber={pageNumber}
-          setPageNumber={setPageNumber}
-          file="1.pdf"
-        />
-<div className='left-bar py-5'>
-  <div className='mt-3'></div>
-  <div onClick={toggleDiv}><i class="far far fa-file fa-lg"></i></div>
-  <div style={{position:'absolute', bottom:'40px', left:'20px'}}>
-  <div className='mt-3'><i class="fas fa-gear fa-lg"></i></div>
-  <div className='mt-3'><i class="fas fa-info fa-lg"></i></div>
-  </div>
-</div>
-<div style={{ backgroundColor: 'rgb(225, 225, 225)', minHeight: '100vh'}}>
-<section
-        id="pdf-section"
-        className="d-flex mt-4 flex-column align-items-center w-100">
-        <div id="pdf-container" style={{ maxHeight: '100%', overflow: 'auto' }}></div>
-      </section>
-    
-      {/* <div style={scrollPositionStyle}>
+        <div className='d-flex flex-column gap-4'>
+          <div style={{cursor: 'pointer'}}><i className="fas fa-gear fa-lg"></i></div>
+          <div style={{cursor: 'pointer'}}><i className="fas fa-info fa-lg"></i></div>
+        </div>
+      </div>
+      <div style={{ backgroundColor: 'rgb(225, 225, 225)', minHeight: '100vh' }}>
+        <section
+          id="pdf-section"
+          className="d-flex mt-4 flex-column align-items-center w-100">
+          <div id="pdf-container" style={{ maxHeight: '100%', overflow: 'auto' }}></div>
+        </section>
+
+        {/* <div style={scrollPositionStyle}>
     <p>Vertical scroll position: {scrollPosition}</p>
   </div> */}
-    </div>
+      </div>
 
     </>
   );

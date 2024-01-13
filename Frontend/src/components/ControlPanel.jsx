@@ -52,7 +52,7 @@ const ControlPanel = (props) => {
           className={`fas fa-chevron-up mx-3 ${firstPageClass}`}
           onClick={goToPreviousPage}
         />
-          <span className='mx-3'>
+        <span className='mx-3'>
           <input
             name="pageNumber"
             type="number"
@@ -72,7 +72,7 @@ const ControlPanel = (props) => {
           className={`fas fa-chevron-right mx-3 ${lastPageClass}`}
           onClick={goToLastPage}
         />
-      
+
         <i
           className={`fas fa-search-minus ms-5 me-3 ${zoomOutClass}`}
           onClick={zoomOut}
@@ -82,7 +82,7 @@ const ControlPanel = (props) => {
           className={`fas fa-search-plus mx-3 ${zoomInClass}`}
           onClick={zoomIn}
         />
-        </div>
+      </div>
       <div className="mx-3">
         <a href="1.pdf" download={true} title="download">
           <i className="fas fa-download clickable" />
