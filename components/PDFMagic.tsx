@@ -1,11 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Merge from "./Merge";
 import ReorderPages from "./ReorderPages";
 import ExtractText from "./ExtractText";
 import Image2Text from "./Image2Text";
-const MERGE_OP = "Merge";
-const SPLIT_OP = "Split";
 const REORDER_OP = "Reorder or Remove Pages";
 const EXTRACT_TEXT_OP = "Extract Text";
 const IMAGE2TEXT = "Image to Text";
