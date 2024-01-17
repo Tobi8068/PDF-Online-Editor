@@ -2,6 +2,14 @@ Hi, Stephane Hapi.
 
 Please run this command.
 
+For Backend
+
+-> npm install
+
+-> npm start
+
+For Frontend
+
 -> npm install
 
 -> npm run dev
