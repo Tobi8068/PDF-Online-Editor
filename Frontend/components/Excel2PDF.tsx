@@ -31,7 +31,7 @@ export default function Excel2PDF() {
     } else {
       console.error('No file selected');
     }
-    alert('successfully uploaded!')
+    alert('successfully converted!')
     setIsLoading(false);
   };
   const handleFileDownload = async () => {
@@ -54,7 +54,7 @@ export default function Excel2PDF() {
     <>
       <input
         aria-label="Add files"
-        accept="application/xlsx"
+        accept=".xlsx"
         onChange={handleFileChange}
         className="2xl:p-12 max-w-full p-5 my-4 rounded-lg border border-blue-700 bg-blue-50 dark:bg-slate-800 dark:border-slate-700 border-dashed block mx-auto"
         type="file"
@@ -64,7 +64,7 @@ export default function Excel2PDF() {
           isLoading={isLoading}
           onClick={handleFileUpload}
         >
-          Upload
+          Convert
         </Button >
         <Button
           isLoading={isLoading}

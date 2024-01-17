@@ -40,7 +40,7 @@ export default function Image2Text() {
     <>
       <input
         aria-label="Add files"
-        accept="application/image"
+        accept=".png, .jpeg, .jpg, .bmp"
         onChange={(e) => {
           if (!e.currentTarget.files) return;
           if (e.currentTarget.files.length > 0) {

@@ -58,7 +58,7 @@ export default function ExtractText() {
     <>
       <input
         aria-label="Add files"
-        accept="application/pdf"
+        accept=".pdf"
         onChange={(e) => {
           if (!e.currentTarget.files) return;
           if (e.currentTarget.files.length > 0) {
