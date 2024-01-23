@@ -27,6 +27,7 @@ const SerializableEmpty = Object.freeze({
  * Key/value storage for annotation data in forms.
  */
 class AnnotationStorage {
+  
   #modified = false;
 
   #storage = new Map();

@@ -45,8 +45,8 @@ class GenericL10n extends L10n {
    * @param {String} baseLang - The base language to use for translations.
    */
   static async *#generateBundles(defaultLang, baseLang) {
-    const { baseURL, paths } = await this.#getPaths();
 
+    const { baseURL, paths } = await this.#getPaths();
     const langs = [baseLang];
     if (defaultLang !== baseLang) {
       // Also fallback to the short-format of the base language
@@ -84,10 +84,15 @@ class GenericL10n extends L10n {
   }
 
   static async #getPaths() {
-    const { href } = document.querySelector(`link[type="application/l10n"]`);
-    const paths = await fetchData(href, /* type = */ "json");
-
-    return { baseURL: href.replace(/[^/]*$/, "") || "./", paths };
+    const link = document.querySelector(`link[type="application/l10n"]`);
+    if (link) {
+      const { href } = link;
+      const paths = await fetchData(href, /* type = */ "json");
+      return { baseURL: href.replace(/[^/]*$/, "") || "./", paths };
+    } else {
+      // Handle the case when the link element is not found
+      return { baseURL: "./", paths: "" };
+    }
   }
 }
 

@@ -261,7 +261,7 @@ body {
 
 #sidebarContainer {
   position: absolute;
-  inset-block: 32px 0;
+  inset-block: 0;
   inset-inline-start: calc(-1 * var(--sidebar-width));
   width: var(--sidebar-width);
   visibility: hidden;
@@ -272,6 +272,7 @@ body {
   transition-property: inset-inline-start;
   transition-duration: var(--sidebar-transition-duration);
   transition-timing-function: var(--sidebar-transition-timing-function);
+  margin-top: 30px;
 }
 
 #outerContainer:is(.sidebarMoving, .sidebarOpen) #sidebarContainer {
@@ -299,7 +300,7 @@ body {
 #viewerContainer {
   overflow: auto;
   position: absolute;
-  inset: 32px 0 0;
+  inset: 36px 0 0;
   outline: none;
 }
 #viewerContainer:not(.pdfPresentationMode) {
@@ -579,19 +580,19 @@ body {
 }
 
 #editorStampParamsToolbar {
-  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 0px);
+  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 0px + 165px);
 }
 
 #editorInkParamsToolbar {
-  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 28px);
+  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 28px + 165px);
 }
 
 #editorFreeTextParamsToolbar {
-  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 56px);
+  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 56px + 165px);
 }
 
 #editorHighlightParamsToolbar {
-  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 84px);
+  inset-inline-end: calc(var(--editor-toolbar-base-offset) + 84px + 165px);
 }
 
 #editorStampAddImage::before {
@@ -1520,4 +1521,62 @@ dialog :link {
   #scaleSelectContainer {
     display: none;
   }
+}
+
+
+.comment_control_panel{
+  position:fixed;
+  background-color: rgb(248, 255, 149);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  z-index:99999999;
+  padding: 20px;
+  display: none;
+}
+
+.second_toolbar{
+  display: flex;
+  justify-content: end;
+  width: 100%;
+  min-height: 30px;
+  background-color: #e7ebee;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tooltipbar{
+  display: inline-block;
+  position:absolute;
+  z-index: 999999;
+  background-color: aliceblue;
+  border-radius: 3px;
+}
+
+.form_container {
+  position: relative;
+  top: 20px;
+  float: right;
+  margin-right: 25px;
+  padding: 20px;
+  background-color: white;
+}
+.form_element {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.second_toolbar_button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  display: flex;
+  background: none;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  margin: 2px;
+  color: #0C0C0D;
+}
+.second_toolbar_button:hover {
+  background-color: #DDDEDF;
 }

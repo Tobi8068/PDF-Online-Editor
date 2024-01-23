@@ -68,6 +68,7 @@ class DownloadManager {
    * @returns {boolean} Indicating if the data was opened.
    */
   openOrDownloadData(data, filename, dest = null) {
+    
     const isPdfData = isPdfFile(filename);
     const contentType = isPdfData ? "application/pdf" : "";
 

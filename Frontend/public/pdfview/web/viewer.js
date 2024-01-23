@@ -37,6 +37,7 @@ window.PDFViewerApplicationConstants = AppConstants;
 window.PDFViewerApplicationOptions = AppOptions;
 
 function getViewerConfiguration() {
+
   return {
     appContainer: document.body,
     mainContainer: document.getElementById("viewerContainer"),
@@ -96,7 +97,7 @@ function getViewerConfiguration() {
       spreadNoneButton: document.getElementById("spreadNone"),
       spreadOddButton: document.getElementById("spreadOdd"),
       spreadEvenButton: document.getElementById("spreadEven"),
-      documentPropertiesButton: document.getElementById("documentProperties"),
+      // documentPropertiesButton: document.getElementById("documentProperties"),
     },
     sidebar: {
       // Divs (and sidebar button)
@@ -137,26 +138,7 @@ function getViewerConfiguration() {
       submitButton: document.getElementById("passwordSubmit"),
       cancelButton: document.getElementById("passwordCancel"),
     },
-    documentProperties: {
-      dialog: document.getElementById("documentPropertiesDialog"),
-      closeButton: document.getElementById("documentPropertiesClose"),
-      fields: {
-        fileName: document.getElementById("fileNameField"),
-        fileSize: document.getElementById("fileSizeField"),
-        title: document.getElementById("titleField"),
-        author: document.getElementById("authorField"),
-        subject: document.getElementById("subjectField"),
-        keywords: document.getElementById("keywordsField"),
-        creationDate: document.getElementById("creationDateField"),
-        modificationDate: document.getElementById("modificationDateField"),
-        creator: document.getElementById("creatorField"),
-        producer: document.getElementById("producerField"),
-        version: document.getElementById("versionField"),
-        pageCount: document.getElementById("pageCountField"),
-        pageSize: document.getElementById("pageSizeField"),
-        linearized: document.getElementById("linearizedField"),
-      },
-    },
+
     altTextDialog: {
       dialog: document.getElementById("altTextDialog"),
       optionDescription: document.getElementById("descriptionButton"),
@@ -165,6 +147,7 @@ function getViewerConfiguration() {
       cancelButton: document.getElementById("altTextCancel"),
       saveButton: document.getElementById("altTextSave"),
     },
+
     annotationEditorParams: {
       editorFreeTextFontSize: document.getElementById("editorFreeTextFontSize"),
       editorFreeTextColor: document.getElementById("editorFreeTextColor"),
@@ -173,6 +156,7 @@ function getViewerConfiguration() {
       editorInkOpacity: document.getElementById("editorInkOpacity"),
       editorStampAddImage: document.getElementById("editorStampAddImage"),
     },
+    
     printContainer: document.getElementById("printContainer"),
     openFileInput:
       typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")

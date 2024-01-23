@@ -52,19 +52,23 @@ class L10n {
 
   /** @inheritdoc */
   async get(ids, args = null, fallback) {
-    if (Array.isArray(ids)) {
-      ids = ids.map(id => ({ id }));
-      const messages = await this.#l10n.formatMessages(ids);
-      return messages.map(message => message.value);
-    }
 
-    const messages = await this.#l10n.formatMessages([
-      {
-        id: ids,
-        args,
-      },
-    ]);
-    return messages?.[0].value || fallback;
+    // if (Array.isArray(ids)) {
+    //   ids = ids.map(id => ({ id }));
+    //   const messages = await this.#l10n.formatMessages(ids);
+    //   return messages.map(message => message.value);
+    // }
+
+    // const messages = await this.#l10n.formatMessages([
+    //   {
+    //     id: ids,
+    //     args,
+    //   },
+    // ]);
+
+    return fallback;
+
+    // return messages?.[0].value || fallback;
   }
 
   /** @inheritdoc */

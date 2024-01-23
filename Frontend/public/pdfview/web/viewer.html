@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+
+
+<!DOCTYPE html>
 <!--
 Copyright 2012 Mozilla Foundation
 
@@ -41,6 +43,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!--<link rel="localization" href="toolkit/pdfviewer/viewer.ftl"/>-->
 <!--#else-->
     <link rel="stylesheet" href="viewer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <!--#endif-->
 
 <!--#if MOZCENTRAL-->
@@ -86,7 +89,10 @@ See https://github.com/adobe-type-tools/cmap-resources
         }
       }
     </script>
+
     <script src="viewer.js" type="module"></script>
+    <script src="pdfAnnotate.js"></script>
+    
 <!--#endif-->
   </head>
 
@@ -115,7 +121,6 @@ See https://github.com/adobe-type-tools/cmap-resources
           <div id="toolbarSidebarRight">
             <div id="outlineOptionsContainer">
               <div class="verticalToolbarSeparator"></div>
-
               <button id="currentOutlineItem" class="toolbarButton" disabled="disabled" title="Find Current Outline Item" tabindex="6" data-l10n-id="pdfjs-current-outline-item-button">
                 <span data-l10n-id="pdfjs-current-outline-item-button-label">Current Outline Item</span>
               </button>
@@ -158,6 +163,7 @@ See https://github.com/adobe-type-tools/cmap-resources
             <input type="checkbox" id="findMatchCase" class="toolbarField" tabindex="95">
             <label for="findMatchCase" class="toolbarLabel" data-l10n-id="pdfjs-find-match-case-checkbox-label">Match Case</label>
           </div>
+          
           <div id="findbarOptionsTwoContainer">
             <input type="checkbox" id="findMatchDiacritics" class="toolbarField" tabindex="96">
             <label for="findMatchDiacritics" class="toolbarLabel" data-l10n-id="pdfjs-find-match-diacritics-checkbox-label">Match Diacritics</label>
@@ -219,26 +225,6 @@ See https://github.com/adobe-type-tools/cmap-resources
 
         <div id="secondaryToolbar" class="secondaryToolbar hidden doorHangerRight">
           <div id="secondaryToolbarButtonContainer">
-<!--#if GENERIC-->
-            <button id="secondaryOpenFile" class="secondaryToolbarButton" title="Open File" tabindex="51" data-l10n-id="pdfjs-open-file-button">
-              <span data-l10n-id="pdfjs-open-file-button-label">Open</span>
-            </button>
-<!--#endif-->
-
-            <button id="secondaryPrint" class="secondaryToolbarButton visibleMediumView" title="Print" tabindex="52" data-l10n-id="pdfjs-print-button">
-              <span data-l10n-id="pdfjs-print-button-label">Print</span>
-            </button>
-
-            <button id="secondaryDownload" class="secondaryToolbarButton visibleMediumView" title="Save" tabindex="53" data-l10n-id="pdfjs-save-button">
-              <span data-l10n-id="pdfjs-save-button-label">Save</span>
-            </button>
-
-<!--#if GENERIC-->
-            <div class="horizontalToolbarSeparator"></div>
-<!--#else-->
-<!--        <div class="horizontalToolbarSeparator visibleMediumView"></div>-->
-<!--#endif-->
-
             <button id="presentationMode" class="secondaryToolbarButton" title="Switch to Presentation Mode" tabindex="54" data-l10n-id="pdfjs-presentation-mode-button">
               <span data-l10n-id="pdfjs-presentation-mode-button-label">Presentation Mode</span>
             </button>
@@ -307,11 +293,6 @@ See https://github.com/adobe-type-tools/cmap-resources
               </button>
             </div>
 
-            <div class="horizontalToolbarSeparator"></div>
-
-            <button id="documentProperties" class="secondaryToolbarButton" title="Document Properties…" tabindex="69" data-l10n-id="pdfjs-document-properties-button" aria-controls="documentPropertiesDialog">
-              <span data-l10n-id="pdfjs-document-properties-button-label">Document Properties…</span>
-            </button>
           </div>
         </div>  <!-- secondaryToolbar -->
 
@@ -341,8 +322,9 @@ See https://github.com/adobe-type-tools/cmap-resources
                 <span id="numPages" class="toolbarLabel"></span>
               </div>
               <div id="toolbarViewerRight">
+                
                 <div id="editorModeButtons" class="splitToolbarButton toggled" role="radiogroup">
-                  <button id="editorHighlight" class="toolbarButton" hidden="true" disabled="disabled" title="Highlight" role="radio" aria-checked="false" aria-controls="editorHighlightParamsToolbar" tabindex="31" data-l10n-id="pdfjs-editor-highlight-button">
+                  <button id="editorHighlight" class="toolbarButton" disabled="disabled" title="Highlight" role="radio" aria-checked="false" aria-controls="editorHighlightParamsToolbar" tabindex="31" data-l10n-id="pdfjs-editor-highlight-button">
                     <span data-l10n-id="pdfjs-editor-highlight-button-label">Highlight</span>
                   </button>
                   <button id="editorFreeText" class="toolbarButton" disabled="disabled" title="Text" role="radio" aria-checked="false" aria-controls="editorFreeTextParamsToolbar" tabindex="32" data-l10n-id="pdfjs-editor-free-text-button">
@@ -356,17 +338,47 @@ See https://github.com/adobe-type-tools/cmap-resources
                   </button>
                 </div>
 
+                <button class="second_toolbar_button" id="add_comment_mode" title="Add Comment">
+                  <i class="far fa-comment"></i>
+                </button>
                 <div id="editorModeSeparator" class="verticalToolbarSeparator"></div>
+                <button class="second_toolbar_button" id="add_form_check" title="Add checkbox" onclick="addForm(CHECKBOX)">
+                  <i class="fa-sharp fa-regular fa-square-check"></i>
+                </button>
+                <button class="second_toolbar_button" id="add_form_radio" title="Add radio button" onclick="addForm(RADIO)">
+                  <i class="fa-regular fa-circle-dot"></i>
+                </button>
+                <button class="second_toolbar_button" id="add_form_text" title="Add textfield" onclick="addForm(TEXTFIELD)">
+                  <i class="fa fa-font"></i>
+                </button>
+
+                <div id="editorModeSeparator" class="verticalToolbarSeparator"></div>
+
+                <button id="secondaryOpenFile" class="toolbarButton" title="Open File" tabindex="51" data-l10n-id="pdfjs-open-file-button">
+                  <span data-l10n-id="pdfjs-print-button-label">Open File</span>
+                </button>
+    
+                <button id="secondaryPrint" class="toolbarButton visibleMediumView" title="Print" tabindex="52" data-l10n-id="pdfjs-print-button">
+                  <span data-l10n-id="pdfjs-print-button-label">Print</span>
+                </button>
+    
+                <button id="secondaryDownload" class="toolbarButton visibleMediumView" title="Save" tabindex="53" data-l10n-id="pdfjs-save-button">
+                  <span data-l10n-id="pdfjs-save-button-label">Save</span>
+                </button>
 
                 <button id="print" class="toolbarButton hiddenMediumView" title="Print" tabindex="41" data-l10n-id="pdfjs-print-button">
                   <span data-l10n-id="pdfjs-print-button-label">Print</span>
                 </button>
 
-                <button id="download" class="toolbarButton hiddenMediumView" title="Save" tabindex="42" data-l10n-id="pdfjs-save-button">
+                <button id="download" style="display: none;" class="toolbarButton hiddenMediumView" title="Save" tabindex="42" data-l10n-id="pdfjs-save-button">
                   <span data-l10n-id="pdfjs-save-button-label">Save</span>
                 </button>
 
                 <div class="verticalToolbarSeparator hiddenMediumView"></div>
+
+                <button class="second_toolbar_button" title="Save" onclick="setDocument()">
+                  <i class="far fa-floppy-disk"></i>
+                </button>
 
                 <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="43" data-l10n-id="pdfjs-tools-button" aria-expanded="false" aria-controls="secondaryToolbar">
                   <span data-l10n-id="pdfjs-tools-button-label">Tools</span>
@@ -380,7 +392,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                   <div class="splitToolbarButtonSeparator"></div>
                   <button id="zoomIn" class="toolbarButton" title="Zoom In" tabindex="22" data-l10n-id="pdfjs-zoom-in-button">
                     <span data-l10n-id="pdfjs-zoom-in-button-label">Zoom In</span>
-                   </button>
+                  </button>
                 </div>
                 <span id="scaleSelectContainer" class="dropdownToolbarButton">
                   <select id="scaleSelect" title="Zoom" tabindex="23" data-l10n-id="pdfjs-zoom-select">
@@ -557,8 +569,21 @@ See https://github.com/adobe-type-tools/cmap-resources
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
 
+    <div id="comment_control_panel" class="comment_control_panel">
+      <p id="panel_title">Add Comment</p>
+      <div style="margin-top: 5px">
+        Title: <input id="comment_title" type="text">
+      </div>
+      <div style="margin-top: 5px">
+        Text: <input id="comment_text" type="text">
+      </div>
+      <button id="add_comment" style="background-color: #4cAF50; margin-top: 5px; width: 100%;">Ok</button>
+    </div>
+
 <!--#if GENERIC-->
     <input type="file" id="fileInput" class="hidden">
+    <script src="addcomment.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.16.0/dist/pdf-lib.js"></script>
 <!--#endif-->
   </body>
-</html>
+</html> 

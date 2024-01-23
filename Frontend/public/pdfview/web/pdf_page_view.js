@@ -31,6 +31,7 @@ import {
   setLayerDimensions,
   shadow,
 } from "pdfjs-lib";
+
 import {
   approximateFraction,
   DEFAULT_SCALE,
@@ -178,6 +179,7 @@ class PDFPageView {
 
     const div = document.createElement("div");
     div.className = "page";
+    div.setAttribute("id", this.id);
     div.setAttribute("data-page-number", this.id);
     div.setAttribute("role", "region");
     div.setAttribute("data-l10n-id", "pdfjs-page-landmark");
@@ -932,6 +934,7 @@ class PDFPageView {
     const { width, height } = viewport;
     const canvas = document.createElement("canvas");
     canvas.setAttribute("role", "presentation");
+    canvas.setAttribute("id", "page"+this.id);
 
     // Keep the canvas hidden until the first draw callback, or until drawing
     // is complete when `!this.renderingQueue`, to prevent black flickering.

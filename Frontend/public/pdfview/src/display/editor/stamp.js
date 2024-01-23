@@ -562,6 +562,7 @@ class StampEditor extends AnnotationEditor {
     }
 
     const { decorative, altText } = this.altTextData;
+    
     if (!decorative && altText) {
       serialized.accessibilityData = { type: "Figure", alt: altText };
     }

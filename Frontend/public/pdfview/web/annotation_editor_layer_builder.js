@@ -40,6 +40,7 @@ import { NullL10n } from "web-l10n_utils";
  */
 
 class AnnotationEditorLayerBuilder {
+  
   #annotationLayer = null;
 
   #drawLayer = null;

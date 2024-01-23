@@ -2360,9 +2360,11 @@ class FileAttachmentAnnotationElement extends AnnotationElement {
   getElementsToTriggerPopup() {
     return this.#trigger;
   }
+  
   addHighlightArea() {
     this.container.classList.add("highlightArea");
   }
+
   #download() {
     this.downloadManager?.openOrDownloadData(this.content, this.filename);
   }
@@ -7929,8 +7931,10 @@ class PageViewport {
     const bottomRight = _shared_util_js__WEBPACK_IMPORTED_MODULE_1__.Util.applyTransform([rect[2], rect[3]], this.transform);
     return [topLeft[0], topLeft[1], bottomRight[0], bottomRight[1]];
   }
+
   convertToPdfPoint(x, y) {
-    return _shared_util_js__WEBPACK_IMPORTED_MODULE_1__.Util.applyInverseTransform([x, y], this.transform);
+    let _x_y = _shared_util_js__WEBPACK_IMPORTED_MODULE_1__.Util.applyInverseTransform([x, y], this.transform);
+    return _x_y;
   }
 }
 class RenderingCancelledException extends _shared_util_js__WEBPACK_IMPORTED_MODULE_1__.BaseException {

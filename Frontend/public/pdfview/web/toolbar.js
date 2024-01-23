@@ -243,16 +243,19 @@ class Toolbar {
       mode === AnnotationEditorType.FREETEXT,
       editorFreeTextParamsToolbar
     );
+
     toggleCheckedBtn(
       editorHighlightButton,
       mode === AnnotationEditorType.HIGHLIGHT,
       editorHighlightParamsToolbar
     );
+    
     toggleCheckedBtn(
       editorInkButton,
       mode === AnnotationEditorType.INK,
       editorInkParamsToolbar
     );
+
     toggleCheckedBtn(
       editorStampButton,
       mode === AnnotationEditorType.STAMP,

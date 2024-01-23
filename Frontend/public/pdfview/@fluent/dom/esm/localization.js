@@ -59,12 +59,12 @@ export default class Localization {
         }
         if (!hasAtLeastOneBundle && typeof console !== "undefined") {
             // eslint-disable-next-line max-len
-            console.warn(`[fluent] Request for keys failed because no resource bundles got generated.
-  keys: ${JSON.stringify(keys)}.
-  resourceIds: ${JSON.stringify(this.resourceIds)}.`);
+//             console.warn(`[fluent] Request for keys failed because no resource bundles got generated.
+//   keys: ${JSON.stringify(keys)}.
+//   resourceIds: ${JSON.stringify(this.resourceIds)}.`);
         }
         return translations;
-    }
+    }p
     /**
      * Format translations into `{value, attributes}` objects.
      *

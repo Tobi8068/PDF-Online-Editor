@@ -366,16 +366,19 @@ class InkEditor extends AnnotationEditor {
    * @param {number} y
    */
   #startDrawing(x, y) {
+
     this.canvas.addEventListener("contextmenu", noContextMenu);
     this.canvas.addEventListener("pointerleave", this.#boundCanvasPointerleave);
     this.canvas.addEventListener("pointermove", this.#boundCanvasPointermove);
     this.canvas.addEventListener("pointerup", this.#boundCanvasPointerup);
+    
     this.canvas.removeEventListener(
       "pointerdown",
       this.#boundCanvasPointerdown
     );
 
     this.isEditing = true;
+
     if (!this.#isCanvasInitialized) {
       this.#isCanvasInitialized = true;
       this.#setCanvasDims();
@@ -384,6 +387,7 @@ class InkEditor extends AnnotationEditor {
         InkEditor._defaultColor || AnnotationEditor._defaultLineColor;
       this.opacity ??= InkEditor._defaultOpacity;
     }
+
     this.currentPath.push([x, y]);
     this.#hasSomethingToDraw = false;
     this.#setStroke();
@@ -394,6 +398,7 @@ class InkEditor extends AnnotationEditor {
         window.requestAnimationFrame(this.#requestFrameCallback);
       }
     };
+
     window.requestAnimationFrame(this.#requestFrameCallback);
   }
 
@@ -496,6 +501,7 @@ class InkEditor extends AnnotationEditor {
   }
 
   #drawPoints() {
+
     if (!this.#hasSomethingToDraw) {
       return;
     }
@@ -505,6 +511,7 @@ class InkEditor extends AnnotationEditor {
     const lastPoints = this.currentPath.slice(-3);
     const x = lastPoints.map(xy => xy[0]);
     const y = lastPoints.map(xy => xy[1]);
+    
     const xMin = Math.min(...x) - thickness;
     const xMax = Math.max(...x) + thickness;
     const yMin = Math.min(...y) - thickness;
@@ -519,6 +526,7 @@ class InkEditor extends AnnotationEditor {
       ctx.beginPath();
       ctx.rect(xMin, yMin, xMax - xMin, yMax - yMin);
       ctx.clip();
+
     } else {
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
@@ -608,6 +616,7 @@ class InkEditor extends AnnotationEditor {
    * Commit the curves we have in this editor.
    */
   commit() {
+
     if (this.#disableEditing) {
       return;
     }

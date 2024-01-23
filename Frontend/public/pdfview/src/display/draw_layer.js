@@ -65,7 +65,6 @@ class DrawLayer {
     const svg = DrawLayer._svgFactory.create(1, 1, /* skipDimensions = */ true);
     this.#parent.append(svg);
     DrawLayer.#setBox(svg, box);
-
     return svg;
   }
 

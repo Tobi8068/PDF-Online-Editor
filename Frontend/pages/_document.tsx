@@ -24,6 +24,8 @@ export default function Document() {
         <link rel="manifest" href="/manifest.json" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#2a61af" />
         <link rel="shortcut icon" href="/favicon.ico" />
+
+        {/* <script type="text/javascript" src="../lib/js/jquery-3.2.1.min.js"></script> */}
       </Head>
       <body>
         <Main />
