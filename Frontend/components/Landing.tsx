@@ -77,7 +77,7 @@ export default function Landing() {
                 </div>
                 <div className="service-content">
                   <h3>PDF Viewer</h3>
-                  <p>You can read your pdf document and use some extra features.</p>
+                  <p>You can read your PDF document and use some extra features.</p>
                 </div>
               </div>
             </div>
@@ -105,7 +105,7 @@ export default function Landing() {
                 </div>
                 <div className="service-content">
                   <h3>Extract Text</h3>
-                  <p>You can extract text from your pdf document.</p>
+                  <p>You can extract text from your PDF document.</p>
                 </div>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function Landing() {
                 </div>
                 <div className="service-content">
                   <h3>Word to PDF</h3>
-                  <p>You can convert your word document to pdf document easily.</p>
+                  <p>You can convert your Word document to PDF document easily.</p>
                 </div>
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function Landing() {
                 </div>
                 <div className="service-content">
                   <h3>Excel to PDF</h3>
-                  <p>You can convert your excel document to pdf document simply.</p>
+                  <p>You can convert your excel document to PDF document simply.</p>
                 </div>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function Landing() {
                 </div>
                 <div className="service-content">
                   <h3>Image to PDF</h3>
-                  <p>You can make pdf document from images perfectly.</p>
+                  <p>You can make PDF document from images perfectly.</p>
                 </div>
               </div>
             </div>

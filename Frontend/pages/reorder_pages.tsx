@@ -7,6 +7,7 @@ import { PDFDocument } from "@cantoo/pdf-lib";
 import { downloadFile } from "@/helper/download-file";
 import { debounce } from "lodash";
 import { BsTrash } from "react-icons/bs";
+import { IoMdAdd } from "react-icons/io";
 import Header from "@/components/Header";
 
 export default function ReorderPages() {
@@ -21,6 +22,26 @@ export default function ReorderPages() {
     }, 200),
     []
   );
+
+  function addNewPage(position: number) {
+    console.log(pdfDoc);
+    if(pdfDoc != undefined) {
+      pdfDoc.getData().then(async function (data) {
+        const uint8Array = new Uint8Array(data);
+        // Use the uint8Array for further processing
+        let pdfData = await PDFDocument.load(uint8Array);
+        const firstPage = pdfData.getPage(0);
+        const {width, height} = firstPage.getSize();
+        const newPage = pdfData.insertPage(position, [width, height]); 
+        const newData = await pdfData.save();
+        // const newPDF = await PDFDocumentProxy.load(newData);
+        // console.log(newPDF);
+        // if(newPDF != undefined) setPDFDoc(newPDF);
+        // console.log(pdfData);       
+        // setPDFDoc(pdfData)
+      });
+    }
+  }
 
   async function downloadReorderedPDF() {
     const resPDF = await PDFDocument.load(await file!.arrayBuffer());
@@ -149,20 +170,21 @@ export default function ReorderPages() {
                 className="cursor-pointer relative h-fit bg-white dark:bg-slate-800 m-1 rounded-lg border dark:border-slate-700 hover:bg-blue-100 dark:hover:bg-blue-900 group"
               >
                 <MiniPDFPage key={i} doc={pdfDoc} pageIndex={p.id} scale={scale} />
-                {/* <button
+                <button
                   className="absolute top-0 left-0 p-1 text-red-500 bg-transparent rounded-md hover:bg-red-400 hover:text-black z-10"
                   title="Insert page"
                   onClick={(ev) => {
-                    const newPage = { id: pageOrder.length + 1 };
-                    // pdfDoc
-                    const newPageOrder = [...pageOrder];
-                    newPageOrder.splice(i, 0, newPage);
-                    setPageOrder(newPageOrder);
-                    console.log(newPageOrder);
+                    // const newPage = { id: pageOrder.length + 1 };
+                    // // pdfDoc
+                    // const newPageOrder = [...pageOrder];
+                    // newPageOrder.splice(i, 0, newPage);
+                    // setPageOrder(newPageOrder);
+                    // console.log(newPageOrder);
+                    addNewPage(i);
                   }}
                 >
                   <IoMdAdd />
-                </button> */}
+                </button>
                 <button
                   className="absolute top-0 right-0 p-1 text-red-500 bg-transparent rounded-md hover:bg-red-400 hover:text-black z-10"
                   title="Remove page"
