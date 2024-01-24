@@ -10,6 +10,7 @@ const ExcelJS = require('exceljs');
 const puppeteer = require('puppeteer');
 const pdfkit = require('pdfkit');
 const sizeOf = require('image-size');
+const topdf = require('libreoffice-to-pdf');
 
 const app = express();
 const { setCurrentFile, getCurrentFile } = require('./utils/currentFile');
@@ -36,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // Handle POST requests to /upload_word
-app.post('/upload_word', [upload.single('file')], (req, res) => {
+app.post('/upload_word', [upload.single('file')], async (req, res) => {
   // Convert Word document to HTML
   mammoth.convertToHtml({ path: getCurrentFile() })
     .then(function (result) {
@@ -141,7 +142,7 @@ app.post('/upload_image', [upload.single('file')], async function (req, res) {
   pdfDoc.pipe(writeStream);
 
   pdfDoc.image(getCurrentFile(), 0, 0, { width: imageDimensions.width, height: imageDimensions.height });
-  
+
   pdfDoc.end();
   writeStream.on('finish', function () {
     console.log('PDF file created');
