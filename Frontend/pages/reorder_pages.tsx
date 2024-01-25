@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { PDFDocumentProxy, getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import MiniPDFPage from "../components/MiniPDFPage";
 import { ReactSortable } from "react-sortablejs";
@@ -23,22 +23,23 @@ export default function ReorderPages() {
     []
   );
 
-  function addNewPage(position: number) {
+  const pdfDocument = useRef<PDFDocument | null>(null);
+
+  async function addNewPage(position: number) {
     console.log(pdfDoc);
-    if(pdfDoc != undefined) {
-      pdfDoc.getData().then(async function (data) {
-        const uint8Array = new Uint8Array(data);
-        // Use the uint8Array for further processing
-        let pdfData = await PDFDocument.load(uint8Array);
-        const firstPage = pdfData.getPage(0);
-        const {width, height} = firstPage.getSize();
-        const newPage = pdfData.insertPage(position, [width, height]); 
-        const newData = await pdfData.save();
-        // const newPDF = await PDFDocumentProxy.load(newData);
-        // console.log(newPDF);
-        // if(newPDF != undefined) setPDFDoc(newPDF);
-        // console.log(pdfData);       
-        // setPDFDoc(pdfData)
+    console.log(pageOrder);
+
+    if (pdfDocument.current) {
+      const firstPage = pdfDocument.current.getPages()[0];
+      const {width, height} = firstPage.getSize();
+      pdfDocument.current.insertPage(position, [width, height]);
+      const modifiedPdfBytes = await pdfDocument.current.save();
+      const modifiedPdfUrl = URL.createObjectURL(new Blob([modifiedPdfBytes], { type: 'application/pdf' }));
+      getDocument(modifiedPdfUrl).promise.then((doc) => {
+        setPDFDoc(doc);
+        console.log("doc is changed!", pdfDoc);
+        setPageOrder([...Array(doc.numPages).keys()].map((i) => ({ id: i })));
+        console.log(pageOrder);
       });
     }
   }
@@ -64,18 +65,24 @@ export default function ReorderPages() {
   }
 
   useEffect(() => {
-    if (file) {
-      const url = URL.createObjectURL(file);
-      getDocument(url).promise.then((doc) => {
-        setPDFDoc(doc);
-        setPageOrder([...Array(doc.numPages).keys()].map((i) => ({ id: i })));
-      });
+    const loadPDF = async () => {
+      if (file) {
+        const url = URL.createObjectURL(file);
+        getDocument(url).promise.then((doc) => {
+          setPDFDoc(doc);
+          setPageOrder([...Array(doc.numPages).keys()].map((i) => ({ id: i })));
+        });
+        // PDF-LIB
+        const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer());
+        pdfDocument.current = await PDFDocument.load(existingPdfBytes);
+      }
     }
+    loadPDF();
   }, [file]);
 
   return (
     <div>
-      <Header text="Reorder or remove pages"/>
+      <Header text="Reorder or remove pages" />
       <input
         aria-label="Add files"
         accept="application/pdf"
