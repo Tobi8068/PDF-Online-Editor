@@ -22,10 +22,12 @@ let offsetX = 0, offsetY = 0;
 let isAddFormModeOn = false;
 let isEditing = false;
 let currentMode = null;
-const CHECKBOX = 0, RADIO = 1, TEXTFIELD = 2;
-let checkboxCount = 1; radioCount = 1, textfieldCount = 1, radioOptionCount = 1;
-let isCheckbox = false, isRadioButton = false, isTextField = false;
+const CHECKBOX = 0, RADIO = 1, TEXTFIELD = 2, COMBOBOX = 3, LIST = 4, BUTTON = 5;
+let checkboxCount = 1; radioCount = 1, textfieldCount = 1, comboCount = 1, listCount = 1, buttonCount = 1;
+let isCheckbox = false, isRadioButton = false, isTextField = false, isCombo = false, isList = false, isButton = false;
 
+let comboboxOptionCount = 0;
+let comboboxOptionArray = [];
 //////////
 let new_comment_x = 0, new_comment_y = 0;
 
@@ -101,13 +103,22 @@ const handleText = function (e) {
     });
 }
 
+const handleCombo = function (e) {
+    document.getElementById("combo-option").style.display = 'none';
+    const formFieldName = document.getElementById("combo-input-name").value;
+    form_storage.push({
+        id: form_storage.length + 1,
+        form_type: COMBOBOX,
+        form_field_name: formFieldName,
+        page_number: PDFViewerApplication.page,
+        optionArray: comboboxOptionArray,
+        x: new_comment_x - 15,
+        y: new_comment_y - 30,
+        width: formWidth,
+        height: formHeight
+    })
+}
 const eventHandler = async function (e) {
-
-    pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
-
-    const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
-    const page = pdfDoc.getPage(PDFViewerApplication.page - 1);
-    const { width, height } = page.getSize();
 
     let ost = computePageOffset();
     let x = e.pageX - ost.left;
@@ -194,7 +205,6 @@ const eventHandler = async function (e) {
                             let mpageId = String(PDFViewerApplication.page)
                             let mpg = document.getElementById(mpageId)
                             mpg.addEventListener('mousemove', moveEventHandler);
-                            console.log(current_checkbox_id)
                             document.getElementById("checkbox_tooltipbar" + current_checkbox_id).remove();
                         });
 
@@ -205,16 +215,10 @@ const eventHandler = async function (e) {
 
                         deleteBtn.addEventListener("click", () => {
                             current_checkbox_id = tooltipbar.id.replace("checkbox_tooltipbar", "")
-                            console.log("test_checkbox_id", current_checkbox_id)
                             document.getElementById('checkbox' + current_checkbox_id).remove();
-
-                            console.log("id:", current_checkbox_id)
-
                             form_storage = form_storage.filter(function (checkbox) {
                                 return checkbox.id !== parseInt(current_checkbox_id);
                             });
-
-                            console.log(form_storage)
                         })
 
                         tooltipbar.appendChild(deleteBtn)
@@ -271,8 +275,6 @@ const eventHandler = async function (e) {
 
             radio_icon.addEventListener("click", () => {
 
-                console.log("apl")
-
                 current_radio_id = radio_id;
 
                 let isradiotooltipshow = false;
@@ -281,8 +283,6 @@ const eventHandler = async function (e) {
                 if (document.getElementById("radio_tooltipbar" + current_radio_id)) {
                     isradiotooltipshow = true;
                 }
-
-                console.log(isradiotooltipshow)
 
                 if (isDragging) {
                     isDragging = false;
@@ -324,8 +324,6 @@ const eventHandler = async function (e) {
                             form_storage = form_storage.filter(function (radio) {
                                 return radio.id !== parseInt(current_radio_id);
                             });
-
-                            console.log(form_storage)
                         })
 
                         tooltipbar.appendChild(deleteBtn)
@@ -392,18 +390,15 @@ const eventHandler = async function (e) {
 
             text_icon.addEventListener("click", () => {
 
-                
+
                 current_text_id = text_id;
-                console.log("text_id: ", current_text_id);
-                
+
                 let istexttooltipshow = false;
 
 
                 if (document.getElementById("text_tooltipbar" + current_text_id)) {
                     istexttooltipshow = true;
                 }
-
-                console.log(istexttooltipshow)
 
                 if (isDragging) {
                     isDragging = false;
@@ -441,14 +436,9 @@ const eventHandler = async function (e) {
                         deleteBtn.addEventListener("click", () => {
                             current_text_id = tooltipbar.id.replace("text_tooltipbar", "")
                             document.getElementById('text' + current_text_id).remove();
-
-                            console.log("id:", current_text_id)
-
                             form_storage = form_storage.filter(function (item) {
                                 return item.id !== parseInt(current_text_id);
                             });
-
-                            console.log(form_storage)
                         })
 
                         tooltipbar.appendChild(deleteBtn)
@@ -476,6 +466,155 @@ const eventHandler = async function (e) {
             document.getElementById("text-save-button").addEventListener("click", handleText);
 
             textpg.appendChild(textDiv);
+            break;
+        case COMBOBOX:
+            formWidth = 80;
+            removeCombo();
+            isCombo = !isCombo;
+
+            let combo_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
+
+            new_comment_x = combo_x_y[0]
+            new_comment_y = combo_x_y[1]
+
+            let combo_id = form_storage.length + 1;
+
+            let combopageId = String(PDFViewerApplication.page);
+            let combopg = document.getElementById(combopageId);
+            var rect = combopg.getBoundingClientRect(), bodyElt = document.body;
+            var top = rect.top;
+            var left = rect.left;
+
+            let comboDiv = document.createElement("div");
+            comboDiv.id = "combo" + combo_id;
+            comboDiv.style.position = "absolute";
+            comboDiv.style.top = e.pageY - top - 20 + "px"
+            comboDiv.style.left = e.pageX - left - 23 + "px"
+            comboDiv.style.zIndex = 100;
+
+            let combo_icon = document.createElement("div");
+            combo_icon.style.minHeight = "25px";
+            combo_icon.style.minWidth = "80px";
+            combo_icon.style.backgroundColor = "white";
+            combo_icon.style.border = "1px solid black";
+            combo_icon.style.display = "flex";
+            combo_icon.style.justifyContent = "center";
+            combo_icon.style.alignItems = "center";
+            combo_icon.innerHTML = `<select id="combo-field-value" style="min-width: 80px; min-height: 25px; font-size: 24px"></select>`
+
+            combo_icon.addEventListener("click", (e) => {
+                e.preventDefault();
+
+                current_combo_id = combo_id;
+
+                let iscombotooltipshow = false;
+
+
+                if (document.getElementById("combo_tooltipbar" + current_combo_id)) {
+                    iscombotooltipshow = true;
+                }
+
+                if (isDragging) {
+                    isDragging = false;
+                }
+                else {
+                    if (!iscombotooltipshow) {
+
+                        let tooltipbar = document.createElement("div")
+
+                        tooltipbar.id = "combo_tooltipbar" + current_combo_id;
+                        tooltipbar.style.position = "absolute";
+                        tooltipbar.style.zIndex = 100;
+                        tooltipbar.style.top = "27px"
+                        tooltipbar.style.minWidth = "100px"
+
+                        let moveBtn = document.createElement("button");
+                        moveBtn.style.padding = "5px";
+                        moveBtn.innerHTML = `<i class="fas fa-arrows-up-down-left-right"></i>`
+
+                        moveBtn.addEventListener("click", (e) => {
+                            isDragging = true;
+                            DrawType = 'combo';
+                            current_combo_id = tooltipbar.id.replace("combo_tooltipbar", "")
+                            let mpageId = String(PDFViewerApplication.page)
+                            let mpg = document.getElementById(mpageId)
+                            mpg.addEventListener('mousemove', moveEventHandler);
+                            document.getElementById("combo_tooltipbar" + current_combo_id).remove();
+                        });
+
+                        tooltipbar.appendChild(moveBtn);
+                        let deleteBtn = moveBtn = document.createElement("button");
+                        deleteBtn.style.padding = "5px";
+                        deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
+
+                        deleteBtn.addEventListener("click", () => {
+                            current_combo_id = tooltipbar.id.replace("combo_tooltipbar", "")
+                            document.getElementById('combo' + current_combo_id).remove();
+                            form_storage = form_storage.filter(function (item) {
+                                return item.id !== parseInt(current_combo_id);
+                            });
+                        })
+
+                        tooltipbar.appendChild(deleteBtn)
+
+                        comboDiv.appendChild(tooltipbar)
+                    }
+                    else {
+                        document.getElementById("combo_tooltipbar" + current_combo_id).remove();
+                    }
+                }
+
+            })
+
+            const comboFieldOption = document.getElementById("combo-option");
+
+            comboFieldOption.style.display = "flex";
+
+            comboFieldOption.style.top = e.pageY + 40 + "px";
+            comboFieldOption.style.left = e.pageX - 50 + "px";
+
+            document.getElementById("combo-input-name").value = `Combobox Form Field ${comboCount++}`
+
+            document.getElementById("add-option").addEventListener('click', () => {
+                const optionName = document.getElementById("option-description").value;
+                const optionContainer = document.getElementById("option-content");
+                const optionContent = document.createElement("div");
+                const deleteDivId = `delete-span-${comboboxOptionCount}`;
+
+                optionContent.id = `comboOption${deleteDivId}`;
+                optionContent.className = 'combobox-options-content';
+                const contentSpan = document.createElement('span');
+                contentSpan.textContent = optionName;
+
+                const deleteSpan = document.createElement('span');
+                deleteSpan.className = 'option-delete';
+                deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+
+                comboboxOptionArray.push(optionName);
+
+                deleteSpan.addEventListener('click', function () {
+                    // Remove the corresponding div when the delete span is clicked
+                    comboboxOptionArray = comboboxOptionArray.filter(function (item) {
+                        return item !== optionName;
+                    })
+                    optionContent.remove();
+                });
+                optionContent.appendChild(contentSpan);
+                optionContent.appendChild(deleteSpan);
+
+                if (optionName != '') {
+                    optionContainer.appendChild(optionContent);
+                    comboboxOptionCount++;
+                }
+
+                document.getElementById("option-description").value = '';
+            });
+
+            comboDiv.appendChild(combo_icon);
+
+            document.getElementById("combo-save-button").addEventListener("click", handleCombo);
+
+            combopg.appendChild(comboDiv);
             break;
         default:
             break;
@@ -505,6 +644,10 @@ const removeText = function () {
     removeEventListener();
     document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
 }
+const removeCombo = function () {
+    removeEventListener();
+    document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+}
 
 const addForm = function (mode) {
     currentMode = mode;
@@ -518,6 +661,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-solid fa-square-check'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
             }
             if (isCheckbox) {
                 removeEventListener();
@@ -527,6 +671,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-solid fa-square-check'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
             }
             isCheckbox = !isCheckbox;
             break;
@@ -539,6 +684,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-solid fa-circle-dot'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
             }
             if (isRadioButton) {
                 removeEventListener();
@@ -548,6 +694,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-solid fa-circle-dot'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
             }
             isRadioButton = !isRadioButton;
             break;
@@ -560,6 +707,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa-solid fa-i'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
             }
             if (isTextField) {
                 removeEventListener();
@@ -569,8 +717,36 @@ const addForm = function (mode) {
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa-solid fa-i'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
             }
             isTextField = !isTextField;
+            break;
+        case COMBOBOX:
+            if (isEditing) {
+                removeCombo();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='far fa-caret-square-down'></i>";
+            }
+            if (isCombo) {
+                removeEventListener();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='far fa-caret-square-down'></i>";
+            }
+            isCombo = !isCombo;
+            break;
+        case LIST:
+            break;
+        case BUTTON:
             break;
         default:
             break;
@@ -581,7 +757,6 @@ let setDocument = async function () {
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
     pdfBytes = await pdfDoc.save();
-    console.log('set document');
     if (form_storage.length != 0) addFormElements()
         .then(() => {
             add_txt_comment();
@@ -611,8 +786,6 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
 
         comment_x = x_y[0]
         comment_y = x_y[1]
-
-        console.log(comment_x, comment_y)
     }
 
 })
@@ -623,7 +796,6 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
     let comment_text = document.getElementById("comment_text").value
 
     let commentId = comment_storage.length + 1;
-    console.log("first", commentId)
 
     comment_storage.push({
         id: commentId,
@@ -638,8 +810,6 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
     var rect = pg.getBoundingClientRect(), bodyElt = document.body;
     var top = rect.top;
     var left = rect.left;
-    console.log("mouse_XY", mouse_x, mouse_y)
-    console.log("page_XY", "top", top, "left", left)
 
     let comment_div = document.createElement("div");
     comment_div.id = "comment" + commentId
@@ -657,7 +827,6 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
 
     comment_icon.addEventListener("click", (e) => {
 
-        console.log(comment_title, commentId)
         current_comment_id = commentId;
         let istooltipshow = false;
         if (document.getElementById("tooltipbar" + current_comment_id)) {
@@ -694,14 +863,9 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
                 deleteBtn.addEventListener("click", () => {
                     current_comment_id = tooltipbar.id.replace("tooltipbar", "")
                     document.getElementById('comment' + current_comment_id).remove();
-
-                    console.log("id:", current_comment_id)
-
                     comment_storage = comment_storage.filter(function (comment) {
                         return comment.id !== parseInt(current_comment_id);
                     });
-
-                    console.log(comment_storage)
                 })
                 tooltipbar.appendChild(deleteBtn)
                 comment_div.appendChild(tooltipbar)
@@ -732,7 +896,6 @@ const moveEventHandler = (event) => {
 
         offsetX = event.clientX - initialX;
         offsetY = event.clientY - initialY;
-        console.log(current_comment_id)
         let srect = pg.getBoundingClientRect(), bodyElt = document.body;
 
         let stop = srect.top;
@@ -760,12 +923,10 @@ const moveEventHandler = (event) => {
         });
 
     }
-
     if (isDragging & DrawType === "checkbox") {
 
         offsetX = event.clientX - initialX;
         offsetY = event.clientY - initialY;
-        console.log(current_checkbox_id)
         let srect = pg.getBoundingClientRect(), bodyElt = document.body;
         let stop = srect.top;
         let sleft = srect.left;
@@ -791,12 +952,10 @@ const moveEventHandler = (event) => {
         });
 
     }
-
     if (isDragging & DrawType === "radio") {
 
         offsetX = event.clientX - initialX;
         offsetY = event.clientY - initialY;
-        console.log(current_radio_id)
         let srect = pg.getBoundingClientRect(), bodyElt = document.body;
         let stop = srect.top;
         let sleft = srect.left;
@@ -816,19 +975,16 @@ const moveEventHandler = (event) => {
         form_storage.map(function (item) {
 
             if (item.id === parseInt(current_radio_id)) {
-                console.log(item.data.x)
                 item.data.x = new_radio_x - 15;
                 item.data.y = new_radio_y - 8;
             }
         });
 
     }
-
     if (isDragging & DrawType === "text") {
 
         offsetX = event.clientX - initialX;
         offsetY = event.clientY - initialY;
-        console.log(current_text_id)
         let srect = pg.getBoundingClientRect(), bodyElt = document.body;
         let stop = srect.top;
         let sleft = srect.left;
@@ -853,6 +1009,34 @@ const moveEventHandler = (event) => {
         });
 
     }
+    if (isDragging & DrawType === "combo") {
+
+        offsetX = event.clientX - initialX;
+        offsetY = event.clientY - initialY;
+        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
+        let stop = srect.top;
+        let sleft = srect.left;
+        document.getElementById("combo" + current_combo_id).style.left = (event.x - sleft - 30) + "px";
+        document.getElementById("combo" + current_combo_id).style.top = (event.y - stop - 30) + "px";
+
+        let new_ost = computePageOffset();
+
+        let new_combo_x = event.pageX - new_ost.left
+        let new_combo_y = event.pageY - new_ost.top
+
+        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_combo_x, new_combo_y)
+
+        new_combo_x = new_x_y[0]
+        new_combo_y = new_x_y[1]
+
+        form_storage.map(function (item) {
+            if (item.id === parseInt(current_combo_id)) {
+                item.x = new_combo_x - 15;
+                item.y = new_combo_y - 10;
+            }
+        });
+
+    }
 
 }
 
@@ -872,7 +1056,6 @@ document.getElementById("add_comment_mode").addEventListener("click", (e) => {
 
 function add_txt_comment() {
     pdfFactory = new pdfAnnotate.AnnotationFactory(pdfBytes);
-    console.log(pdfFactory)
     if (comment_storage.length != 0) {
         comment_storage.forEach((comment_item) => {
             pdfFactory.createTextAnnotation(
@@ -893,7 +1076,7 @@ async function addFormElements() {
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
     const form = pdfDoc.getForm();
     let page;
-    let checkboxForm, radioForm, textfieldForm;
+    let checkboxForm, radioForm, textfieldForm, comboboxForm;
     let radioOption;
     if (form_storage.length != 0) {
         form_storage.forEach((form_item) => {
@@ -906,7 +1089,6 @@ async function addFormElements() {
             }
             switch (form_item.form_type) {
                 case CHECKBOX:
-                    console.log("fieldName: ", form_item.form_field_name);
                     checkboxForm = form.createCheckBox(form_item.form_field_name);
                     checkboxForm.addToPage(page, {
                         x: form_item.x,
@@ -934,11 +1116,20 @@ async function addFormElements() {
                     });
                     textfieldForm.setText(form_item.text);
                     break;
+                case COMBOBOX:
+                    comboboxForm = form.createDropdown(form_item.form_field_name);
+                    comboboxForm.addOptions(form_item.optionArray);
+                    comboboxForm.addToPage(page, {
+                        x: form_item.x,
+                        y: form_item.y,
+                        width: form_item.width,
+                        height: form_item.height
+                    });
+                    break;
                 default:
                     break;
             }
         })
     }
     pdfBytes = await pdfDoc.save();
-    console.log('add form elements');
 }

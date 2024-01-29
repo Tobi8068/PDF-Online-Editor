@@ -43,8 +43,11 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!--<link rel="localization" href="toolkit/pdfviewer/viewer.ftl"/>-->
 <!--#else-->
     <link rel="stylesheet" href="viewer.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<!--#endif-->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script> -->
+    <!--#endif-->
 
 <!--#if MOZCENTRAL-->
 <!--<script src="resource://pdf.js/web/viewer.mjs" type="module"></script>-->
@@ -350,6 +353,15 @@ See https://github.com/adobe-type-tools/cmap-resources
                 </button>
                 <button class="second_toolbar_button" id="add_form_text" title="Add textfield" onclick="addForm(TEXTFIELD)">
                   <i class="fa fa-font"></i>
+                </button>
+                <button class="second_toolbar_button" id="add_form_combo" title="Add combobox" onclick="addForm(COMBOBOX)">
+                  <i class="fa fa-caret-down"></i>
+                </button>
+                <button class="second_toolbar_button" id="add_form_list" title="Add list" onclick="addForm(LIST)">
+                  <i class="fa fa-list" aria-hidden="true"></i>
+                </button>
+                <button class="second_toolbar_button" id="add_form_button" title="Add button" onclick="addForm(BUTTON)">
+                  <i class="fa fa-toggle-off"></i>
                 </button>
 
                 <div id="editorModeSeparator" class="verticalToolbarSeparator"></div>
@@ -687,6 +699,37 @@ See https://github.com/adobe-type-tools/cmap-resources
         </div>
       </div>
       <div id="text-save-button" class="checkbox-option-footer">
+        <div class="form-save-button">Save</div>
+      </div>
+    </div>
+    <!-- Combobox Option -->
+    <div id="combo-option" class="checkbox-option" style="height: auto;">
+      <div class="checkbox-option-header">
+        <div class="checkbox-option-header-text">
+          <h4>Combobox Field Properties</h4>
+        </div>
+      </div>
+      <div class="checkbox-option-content">
+        <div class="form-input">
+          <div>
+            <span>Form Field Name*</span>
+          </div>
+          <div class="form-field-input-container">
+            <input id="combo-input-name" class="form-field-input" type="text"/>
+          </div>
+        </div>
+        <div class="combobox-options">
+          <div class="combobox-options-content">
+            <span>Options</span>
+          </div>
+          <div id="option-content"></div>
+          <div class="combobox-options-content">
+            <input id="option-description" type="text" class="form-field-input-combo" placeholder="Enter description here">
+          </div>
+          <div id="add-option" class="combobox-add-option"><u>Add Option</u></div>
+        </div>
+      </div>
+      <div id="combo-save-button" class="checkbox-option-footer">
         <div class="form-save-button">Save</div>
       </div>
     </div>

@@ -181,12 +181,6 @@ export default function ReorderPages() {
                   className="absolute top-0 left-0 p-1 text-red-500 bg-transparent rounded-md hover:bg-red-400 hover:text-black z-10"
                   title="Insert page"
                   onClick={(ev) => {
-                    // const newPage = { id: pageOrder.length + 1 };
-                    // // pdfDoc
-                    // const newPageOrder = [...pageOrder];
-                    // newPageOrder.splice(i, 0, newPage);
-                    // setPageOrder(newPageOrder);
-                    // console.log(newPageOrder);
                     addNewPage(i);
                   }}
                 >

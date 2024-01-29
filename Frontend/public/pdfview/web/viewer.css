@@ -1651,7 +1651,6 @@ dialog :link {
   justify-content: space-between;
   gap: 5px;
   background-color: white;
-  border: #888;
   border-radius: 4px;
   box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.3);
   width: 360px;
@@ -1697,7 +1696,7 @@ dialog :link {
 
 .form-field-input {
   padding: 5px;
-  width: 320px;
+  /* width: 320px; */
 }
 .form-field-input:focus {
   outline: none;
@@ -1717,4 +1716,29 @@ dialog :link {
 }
 .form-save-button {
   color: blue;
+}
+.combobox-options {
+  padding: 5px;
+}
+.combobox-options-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 0px;
+  border-bottom: 1px solid #888;
+}
+.form-field-input-combo {
+  padding: 5px;
+  border: none;
+}
+.form-field-input-combo:focus {
+  outline: none;
+}
+.combobox-add-option {
+  color: blue;
+  padding: 8px 8px 8px 0px;
+  cursor: pointer;
+}
+.option-delete {
+  cursor: pointer;
 }
