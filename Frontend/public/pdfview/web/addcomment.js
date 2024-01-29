@@ -27,7 +27,9 @@ let checkboxCount = 1; radioCount = 1, textfieldCount = 1, comboCount = 1, listC
 let isCheckbox = false, isRadioButton = false, isTextField = false, isCombo = false, isList = false, isButton = false;
 
 let comboboxOptionCount = 0;
+let listboxOptionCount = 0;
 let comboboxOptionArray = [];
+let listboxOptionArray = [];
 //////////
 let new_comment_x = 0, new_comment_y = 0;
 
@@ -53,6 +55,8 @@ let computePageOffset = function () {
 }
 
 const handleCheckbox = function (e) {
+    formWidth = 25;
+    formHeight = 25;
     document.getElementById("checkbox-option").style.display = 'none';
     const formFieldName = document.getElementById("checkbox-field-input-name").value;
     form_storage.push({
@@ -69,6 +73,8 @@ const handleCheckbox = function (e) {
 }
 
 const handleRadio = function (e) {
+    formWidth = 25;
+    formHeight = 25;
     document.getElementById("radio-button-option").style.display = 'none';
     const formFieldName = document.getElementById("radio-field-input-name").value;
     form_storage.push({
@@ -87,6 +93,8 @@ const handleRadio = function (e) {
 }
 
 const handleText = function (e) {
+    formWidth = 100;
+    formHeight = 25;
     document.getElementById("text-field-option").style.display = 'none';
     const formFieldName = document.getElementById("text-field-input-name").value;
     const initialValue = document.getElementById("text-field-value").value;
@@ -104,6 +112,8 @@ const handleText = function (e) {
 }
 
 const handleCombo = function (e) {
+    formWidth = 80;
+    formHeight = 25;
     document.getElementById("combo-option").style.display = 'none';
     const formFieldName = document.getElementById("combo-input-name").value;
     form_storage.push({
@@ -112,12 +122,30 @@ const handleCombo = function (e) {
         form_field_name: formFieldName,
         page_number: PDFViewerApplication.page,
         optionArray: comboboxOptionArray,
-        x: new_comment_x - 15,
-        y: new_comment_y - 30,
+        x: new_comment_x - 11,
+        y: new_comment_y - 18,
         width: formWidth,
         height: formHeight
     })
 }
+const handleList = function (e) {
+    formWidth = 80;
+    formHeight = 100;
+    document.getElementById("list-option").style.display = 'none';
+    const formFieldName = document.getElementById("list-input-name").value;
+    form_storage.push({
+        id: form_storage.length + 1,
+        form_type: LIST,
+        form_field_name: formFieldName,
+        page_number: PDFViewerApplication.page,
+        optionArray: listboxOptionArray,
+        x: new_comment_x - 12,
+        y: new_comment_y - 93,
+        width: formWidth,
+        height: formHeight
+    })
+}
+
 const eventHandler = async function (e) {
 
     let ost = computePageOffset();
@@ -127,7 +155,6 @@ const eventHandler = async function (e) {
     switch (currentMode) {
 
         case CHECKBOX:
-            formWidth = 25;
             removeCheckbox();
             isCheckbox = !isCheckbox;
 
@@ -239,7 +266,6 @@ const eventHandler = async function (e) {
             document.getElementById("checkbox-save-button").addEventListener("click", handleCheckbox);
             break;
         case RADIO:
-            formWidth = 25;
             removeRadio();
             isRadioButton = !isRadioButton;
 
@@ -354,7 +380,6 @@ const eventHandler = async function (e) {
             radiopg.appendChild(radio);
             break;
         case TEXTFIELD:
-            formWidth = 100;
             removeText();
             isTextField = !isTextField;
 
@@ -468,7 +493,6 @@ const eventHandler = async function (e) {
             textpg.appendChild(textDiv);
             break;
         case COMBOBOX:
-            formWidth = 80;
             removeCombo();
             isCombo = !isCombo;
 
@@ -494,13 +518,13 @@ const eventHandler = async function (e) {
 
             let combo_icon = document.createElement("div");
             combo_icon.style.minHeight = "25px";
-            combo_icon.style.minWidth = "80px";
+            combo_icon.style.minWidth = "100px";
             combo_icon.style.backgroundColor = "white";
             combo_icon.style.border = "1px solid black";
             combo_icon.style.display = "flex";
             combo_icon.style.justifyContent = "center";
             combo_icon.style.alignItems = "center";
-            combo_icon.innerHTML = `<select id="combo-field-value" style="min-width: 80px; min-height: 25px; font-size: 24px"></select>`
+            combo_icon.innerHTML = `<select id="combo-field-value" style="min-width: 100px; min-height: 25px; font-size: 24px"></select>`
 
             combo_icon.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -590,7 +614,7 @@ const eventHandler = async function (e) {
                 deleteSpan.className = 'option-delete';
                 deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
 
-                comboboxOptionArray.push(optionName);
+                if(optionName != '') comboboxOptionArray.push(optionName);
 
                 deleteSpan.addEventListener('click', function () {
                     // Remove the corresponding div when the delete span is clicked
@@ -616,6 +640,158 @@ const eventHandler = async function (e) {
 
             combopg.appendChild(comboDiv);
             break;
+        case LIST:
+            removeList();
+            isList = !isList;
+
+            let list_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
+
+            new_comment_x = list_x_y[0]
+            new_comment_y = list_x_y[1]
+
+            let list_id = form_storage.length + 1;
+
+            let listpageId = String(PDFViewerApplication.page);
+            let listpg = document.getElementById(listpageId);
+            var rect = listpg.getBoundingClientRect(), bodyElt = document.body;
+            var top = rect.top;
+            var left = rect.left;
+
+            let listDiv = document.createElement("div");
+            listDiv.id = "list" + list_id;
+            listDiv.style.position = "absolute";
+            listDiv.style.top = e.pageY - top - 20 + "px"
+            listDiv.style.left = e.pageX - left - 23 + "px"
+            listDiv.style.zIndex = 100;
+
+            let list_icon = document.createElement("div");
+            list_icon.style.minHeight = "120px";
+            list_icon.style.minWidth = "80px";
+            list_icon.style.backgroundColor = "#EEE";
+            list_icon.style.border = "1px solid black";
+            list_icon.style.display = "flex";
+            list_icon.style.justifyContent = "center";
+            list_icon.style.alignItems = "center";
+            list_icon.innerHTML = `<div id="list-field-value" style="min-width: 80px; min-height: 120px; font-size: 24px"></div>`
+
+            list_icon.addEventListener("click", (e) => {
+                e.preventDefault();
+
+                current_list_id = list_id;
+
+                let islisttooltipshow = false;
+
+
+                if (document.getElementById("list_tooltipbar" + current_list_id)) {
+                    islisttooltipshow = true;
+                }
+
+                if (isDragging) {
+                    isDragging = false;
+                }
+                else {
+                    if (!islisttooltipshow) {
+
+                        let tooltipbar = document.createElement("div")
+
+                        tooltipbar.id = "list_tooltipbar" + current_list_id;
+                        tooltipbar.style.position = "absolute";
+                        tooltipbar.style.zIndex = 100;
+                        tooltipbar.style.top = "160px"
+                        tooltipbar.style.minWidth = "100px"
+
+                        let moveBtn = document.createElement("button");
+                        moveBtn.style.padding = "5px";
+                        moveBtn.innerHTML = `<i class="fas fa-arrows-up-down-left-right"></i>`
+
+                        moveBtn.addEventListener("click", (e) => {
+                            isDragging = true;
+                            DrawType = 'list';
+                            current_list_id = tooltipbar.id.replace("list_tooltipbar", "")
+                            let mpageId = String(PDFViewerApplication.page)
+                            let mpg = document.getElementById(mpageId)
+                            mpg.addEventListener('mousemove', moveEventHandler);
+                            document.getElementById("list_tooltipbar" + current_list_id).remove();
+                        });
+
+                        tooltipbar.appendChild(moveBtn);
+                        let deleteBtn = moveBtn = document.createElement("button");
+                        deleteBtn.style.padding = "5px";
+                        deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
+
+                        deleteBtn.addEventListener("click", () => {
+                            current_list_id = tooltipbar.id.replace("list_tooltipbar", "")
+                            document.getElementById('list' + current_list_id).remove();
+                            form_storage = form_storage.filter(function (item) {
+                                return item.id !== parseInt(current_list_id);
+                            });
+                        })
+
+                        tooltipbar.appendChild(deleteBtn)
+
+                        listDiv.appendChild(tooltipbar)
+                    }
+                    else {
+                        document.getElementById("list_tooltipbar" + current_list_id).remove();
+                    }
+                }
+
+            })
+
+            const listFieldOption = document.getElementById("list-option");
+
+            listFieldOption.style.display = "flex";
+
+            listFieldOption.style.top = e.pageY + 40 + "px";
+            listFieldOption.style.left = e.pageX - 50 + "px";
+
+            document.getElementById("list-input-name").value = `List Form Field ${listCount++}`
+
+            document.getElementById("add-option-list").addEventListener('click', () => {
+                const optionName = document.getElementById("option-description-list").value;
+                const optionContainer = document.getElementById("option-content-list");
+                const optionContent = document.createElement("div");
+                const deleteDivId = `delete-span-${listboxOptionCount}`;
+
+                optionContent.id = `listOption${deleteDivId}`;
+                optionContent.className = 'combobox-options-content';
+                const contentSpan = document.createElement('span');
+                contentSpan.textContent = optionName;
+
+                const deleteSpan = document.createElement('span');
+                deleteSpan.className = 'option-delete';
+                deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+
+                if(optionName != '') listboxOptionArray.push(optionName);
+
+                deleteSpan.addEventListener('click', function () {
+                    // Remove the corresponding div when the delete span is clicked
+                    listboxOptionArray = listboxOptionArray.filter(function (item) {
+                        return item !== optionName;
+                    })
+                    optionContent.remove();
+                    console.log(listboxOptionArray);
+                });
+                optionContent.appendChild(contentSpan);
+                optionContent.appendChild(deleteSpan);
+
+                if (optionName != '') {
+                    optionContainer.appendChild(optionContent);
+                    listboxOptionCount++;
+                }
+
+                console.log(listboxOptionArray);
+
+                document.getElementById("option-description-list").value = '';
+            });
+
+            listDiv.appendChild(list_icon);
+
+            document.getElementById("list-save-button").addEventListener("click", handleList);
+
+            listpg.appendChild(listDiv);
+            break;
+        case BUTTON:
         default:
             break;
     }
@@ -648,6 +824,14 @@ const removeCombo = function () {
     removeEventListener();
     document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
 }
+const removeList = function () {
+    removeEventListener();
+    document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+}
+const removeButton = function () {
+    removeEventListener();
+    document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+}
 
 const addForm = function (mode) {
     currentMode = mode;
@@ -662,6 +846,8 @@ const addForm = function (mode) {
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-solid fa-square-check'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             if (isCheckbox) {
                 removeEventListener();
@@ -672,6 +858,8 @@ const addForm = function (mode) {
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-solid fa-square-check'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             isCheckbox = !isCheckbox;
             break;
@@ -685,6 +873,8 @@ const addForm = function (mode) {
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-solid fa-circle-dot'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             if (isRadioButton) {
                 removeEventListener();
@@ -695,6 +885,8 @@ const addForm = function (mode) {
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_radio").innerHTML = "<i class='fa-solid fa-circle-dot'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             isRadioButton = !isRadioButton;
             break;
@@ -708,6 +900,8 @@ const addForm = function (mode) {
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa-solid fa-i'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             if (isTextField) {
                 removeEventListener();
@@ -718,6 +912,8 @@ const addForm = function (mode) {
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa-solid fa-i'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             isTextField = !isTextField;
             break;
@@ -731,6 +927,8 @@ const addForm = function (mode) {
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='far fa-caret-square-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             if (isCombo) {
                 removeEventListener();
@@ -741,12 +939,64 @@ const addForm = function (mode) {
                 document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
                 document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
                 document.getElementById("add_form_combo").innerHTML = "<i class='far fa-caret-square-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
             }
             isCombo = !isCombo;
             break;
         case LIST:
+            if (isEditing) {
+                removeList();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list-check' aria-hidden='true'></i>";
+            }
+            if (isList) {
+                removeEventListener();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list-check' aria-hidden='true'></i>";
+            }
+            isList = !isList;
             break;
         case BUTTON:
+            if (isEditing) {
+                removeButton();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-on'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+            }
+            if (isButton) {
+                removeEventListener();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-on'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+            }
+            isButton = !isButton;
             break;
         default:
             break;
@@ -1035,7 +1285,33 @@ const moveEventHandler = (event) => {
                 item.y = new_combo_y - 10;
             }
         });
+    }
+    if (isDragging & DrawType === "list") {
 
+        offsetX = event.clientX - initialX;
+        offsetY = event.clientY - initialY;
+        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
+        let stop = srect.top;
+        let sleft = srect.left;
+        document.getElementById("list" + current_list_id).style.left = (event.x - sleft - 30) + "px";
+        document.getElementById("list" + current_list_id).style.top = (event.y - stop - 30) + "px";
+
+        let new_ost = computePageOffset();
+
+        let new_list_x = event.pageX - new_ost.left
+        let new_list_y = event.pageY - new_ost.top
+
+        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_list_x, new_list_y)
+
+        new_list_x = new_x_y[0]
+        new_list_y = new_x_y[1]
+
+        form_storage.map(function (item) {
+            if (item.id === parseInt(current_list_id)) {
+                item.x = new_list_x - 15;
+                item.y = new_list_y - 10;
+            }
+        });
     }
 
 }
@@ -1126,6 +1402,15 @@ async function addFormElements() {
                         height: form_item.height
                     });
                     break;
+                case LIST:
+                    listboxForm = form.createOptionList(form_item.form_field_name);
+                    listboxForm.addOptions(form_item.optionArray);
+                    listboxForm.addToPage(page, {
+                        x: form_item.x,
+                        y: form_item.y,
+                        width: form_item.width,
+                        height: form_item.height
+                    });
                 default:
                     break;
             }
