@@ -40,6 +40,8 @@ let formHeight = 25;
 let current_checkbox_id = 0;
 let current_radio_id = 0;
 let current_text_id = 0;
+let current_combo_id = 0;
+let current_list_id = 0;
 
 
 document.getElementById("outerContainer").appendChild(comment_control)
@@ -1308,8 +1310,8 @@ const moveEventHandler = (event) => {
 
         form_storage.map(function (item) {
             if (item.id === parseInt(current_list_id)) {
-                item.x = new_list_x - 15;
-                item.y = new_list_y - 10;
+                item.x = new_list_x - 14;
+                item.y = new_list_y - 85;
             }
         });
     }
