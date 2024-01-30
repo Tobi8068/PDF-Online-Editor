@@ -1005,9 +1005,24 @@ const addForm = function (mode) {
     }
 }
 
-let setDocument = async function () {
+const setDocument = async function () {
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+    pdfBytes = await pdfDoc.save();
+    if (form_storage.length != 0) addFormElements()
+        .then(() => {
+            add_txt_comment();
+        });
+    else {
+        add_txt_comment();
+    }
+}
+
+const flatten = async function () {
+    pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
+    const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+    const form = pdfDoc.getForm();
+    form.flatten();
     pdfBytes = await pdfDoc.save();
     if (form_storage.length != 0) addFormElements()
         .then(() => {
