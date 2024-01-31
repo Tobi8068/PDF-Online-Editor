@@ -42,6 +42,7 @@ let current_radio_id = 0;
 let current_text_id = 0;
 let current_combo_id = 0;
 let current_list_id = 0;
+let current_button_id = 0;
 
 
 document.getElementById("outerContainer").appendChild(comment_control)
@@ -147,6 +148,33 @@ const handleList = function (e) {
         height: formHeight
     })
 }
+const handleButton = function (e) {
+    formWidth = 80;
+    formHeight = 25;
+    document.getElementById("button-field-option").style.display = 'none';
+    const formFieldName = document.getElementById("button-field-input-name").value;
+    const initialValue = document.getElementById("button-text").value;
+    form_storage.push({
+        id: form_storage.length + 1,
+        form_type: BUTTON,
+        form_field_name: formFieldName,
+        text: initialValue,
+        page_number: PDFViewerApplication.page,
+        x: new_comment_x - 12,
+        y: new_comment_y - 15,
+        width: formWidth,
+        height: formHeight
+    });
+}
+
+const showOption = function (e, id, x, y) {
+    const fieldOption = document.getElementById(id);
+
+    fieldOption.style.display = "flex";
+
+    fieldOption.style.top = e.pageY + x + "px";
+    fieldOption.style.left = e.pageX + y + "px";
+}
 
 const eventHandler = async function (e) {
 
@@ -180,12 +208,7 @@ const eventHandler = async function (e) {
             checkbox.style.left = e.pageX - left - 23 + "px"
             checkbox.style.zIndex = 100;
 
-            const checkboxOption = document.getElementById("checkbox-option");
-
-            checkboxOption.style.display = "flex";
-
-            checkboxOption.style.top = e.pageY + 40 + "px";
-            checkboxOption.style.left = e.pageX - 180 + "px";
+            showOption(e, "checkbox-option", 40, -180);
 
             document.getElementById("checkbox-field-input-name").value = `Checkbox Form Field ${checkboxCount++}`
 
@@ -365,15 +388,9 @@ const eventHandler = async function (e) {
 
             })
 
-            const radioButtonOption = document.getElementById("radio-button-option");
-
-            radioButtonOption.style.display = "flex";
-
-            radioButtonOption.style.top = e.pageY + 40 + "px";
-            radioButtonOption.style.left = e.pageX - 180 + "px";
+            showOption(e, "radio-button-option", 40, -180);
 
             document.getElementById("radio-field-input-name").value = `Radio Group Form Field ${radioCount++}`
-
 
             radio.appendChild(radio_icon);
 
@@ -479,12 +496,7 @@ const eventHandler = async function (e) {
 
             })
 
-            const textFieldOption = document.getElementById("text-field-option");
-
-            textFieldOption.style.display = "flex";
-
-            textFieldOption.style.top = e.pageY + 40 + "px";
-            textFieldOption.style.left = e.pageX - 50 + "px";
+            showOption(e, "text-field-option", 40, -50);
 
             document.getElementById("text-field-input-name").value = `Text Form Field ${textfieldCount++}`
 
@@ -592,12 +604,7 @@ const eventHandler = async function (e) {
 
             })
 
-            const comboFieldOption = document.getElementById("combo-option");
-
-            comboFieldOption.style.display = "flex";
-
-            comboFieldOption.style.top = e.pageY + 40 + "px";
-            comboFieldOption.style.left = e.pageX - 50 + "px";
+            showOption(e, 'combo-option', 40, -50);
 
             document.getElementById("combo-input-name").value = `Combobox Form Field ${comboCount++}`
 
@@ -616,7 +623,7 @@ const eventHandler = async function (e) {
                 deleteSpan.className = 'option-delete';
                 deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
 
-                if(optionName != '') comboboxOptionArray.push(optionName);
+                if (optionName != '') comboboxOptionArray.push(optionName);
 
                 deleteSpan.addEventListener('click', function () {
                     // Remove the corresponding div when the delete span is clicked
@@ -740,12 +747,7 @@ const eventHandler = async function (e) {
 
             })
 
-            const listFieldOption = document.getElementById("list-option");
-
-            listFieldOption.style.display = "flex";
-
-            listFieldOption.style.top = e.pageY + 40 + "px";
-            listFieldOption.style.left = e.pageX - 50 + "px";
+            showOption(e, "list-option", 40, -50);
 
             document.getElementById("list-input-name").value = `List Form Field ${listCount++}`
 
@@ -764,7 +766,7 @@ const eventHandler = async function (e) {
                 deleteSpan.className = 'option-delete';
                 deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
 
-                if(optionName != '') listboxOptionArray.push(optionName);
+                if (optionName != '') listboxOptionArray.push(optionName);
 
                 deleteSpan.addEventListener('click', function () {
                     // Remove the corresponding div when the delete span is clicked
@@ -794,6 +796,117 @@ const eventHandler = async function (e) {
             listpg.appendChild(listDiv);
             break;
         case BUTTON:
+            removeButton();
+            isButton = !isButton;
+
+            let button_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
+
+            new_comment_x = button_x_y[0]
+            new_comment_y = button_x_y[1]
+
+            let button_id = form_storage.length + 1;
+
+            let buttonpageId = String(PDFViewerApplication.page);
+            let buttonpg = document.getElementById(buttonpageId);
+            var rect = buttonpg.getBoundingClientRect(), bodyElt = document.body;
+            var top = rect.top;
+            var left = rect.left;
+
+            let buttonDiv = document.createElement("div");
+            buttonDiv.id = "button" + button_id;
+            buttonDiv.style.position = "absolute";
+            buttonDiv.style.top = e.pageY - top - 20 + "px"
+            buttonDiv.style.left = e.pageX - left - 23 + "px"
+            buttonDiv.style.zIndex = 100;
+
+            let button_icon = document.createElement("div");
+            button_icon.style.minHeight = "25px";
+            button_icon.style.minWidth = "80px";
+            button_icon.style.backgroundColor = "white";
+            button_icon.style.display = "flex";
+            button_icon.style.justifyContent = "center";
+            button_icon.style.alignItems = "center";
+            button_icon.innerHTML = `<input id="button-field-value" type="button" style="min-width: 80px; min-height: 25px; font-size: 24px"></input>`
+
+            button_icon.addEventListener("click", () => {
+
+
+                current_button_id = button_id;
+
+                let isbuttontooltipshow = false;
+
+
+                if (document.getElementById("button_tooltipbar" + current_button_id)) {
+                    isbuttontooltipshow = true;
+                }
+
+                if (isDragging) {
+                    isDragging = false;
+                }
+                else {
+                    if (!isbuttontooltipshow) {
+
+                        let tooltipbar = document.createElement("div")
+
+                        tooltipbar.id = "button_tooltipbar" + current_button_id;
+                        tooltipbar.style.position = "absolute";
+                        tooltipbar.style.zIndex = 100;
+                        tooltipbar.style.top = "27px"
+                        tooltipbar.style.minWidth = "100px"
+
+                        let moveBtn = document.createElement("button");
+                        moveBtn.style.padding = "5px";
+                        moveBtn.innerHTML = `<i class="fas fa-arrows-up-down-left-right"></i>`
+
+                        moveBtn.addEventListener("click", (e) => {
+                            isDragging = true;
+                            DrawType = 'button';
+                            current_button_id = tooltipbar.id.replace("button_tooltipbar", "")
+                            let mpageId = String(PDFViewerApplication.page)
+                            let mpg = document.getElementById(mpageId)
+                            mpg.addEventListener('mousemove', moveEventHandler);
+                            document.getElementById("button_tooltipbar" + current_button_id).remove();
+                        });
+
+                        tooltipbar.appendChild(moveBtn);
+                        let deleteBtn = moveBtn = document.createElement("button");
+                        deleteBtn.style.padding = "5px";
+                        deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
+
+                        deleteBtn.addEventListener("click", () => {
+                            current_button_id = tooltipbar.id.replace("button_tooltipbar", "")
+                            document.getElementById('button' + current_button_id).remove();
+                            form_storage = form_storage.filter(function (item) {
+                                return item.id !== parseInt(current_button_id);
+                            });
+                        })
+
+                        tooltipbar.appendChild(deleteBtn)
+
+                        buttonDiv.appendChild(tooltipbar)
+                    }
+                    else {
+                        document.getElementById("button_tooltipbar" + current_button_id).remove();
+                    }
+                }
+
+            })
+
+            showOption(e, "button-field-option", 40, -50);
+            const buttonValue = document.getElementById("button-text");
+            buttonValue.addEventListener('change', () => {
+                document.getElementById("button-field-value").value = buttonValue.value;
+            })
+            
+
+            document.getElementById("button-field-input-name").value = `Button Form Field ${buttonCount++}`;
+
+            buttonDiv.appendChild(button_icon);
+
+            document.getElementById("button-save-button").addEventListener("click", handleButton);
+
+            buttonpg.appendChild(buttonDiv);
+            break;
         default:
             break;
     }
@@ -1159,174 +1272,112 @@ const moveEventHandler = (event) => {
 
     let pageId = String(PDFViewerApplication.page)
     let pg = document.getElementById(pageId)
+
+    offsetX = event.clientX - initialX;
+    offsetY = event.clientY - initialY;
+    let srect = pg.getBoundingClientRect(), bodyElt = document.body;
+
+    let stop = srect.top;
+    let sleft = srect.left;
+
+    let new_ost = computePageOffset();
+
+    let new_x = event.pageX - new_ost.left
+    let new_y = event.pageY - new_ost.top
+
+    let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_x, new_y)
+
+    new_x = new_x_y[0]
+    new_y = new_x_y[1]
+
     if (isDragging & DrawType === "comment") {
-
-        offsetX = event.clientX - initialX;
-        offsetY = event.clientY - initialY;
-        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
-
-        let stop = srect.top;
-        let sleft = srect.left;
 
         document.getElementById("comment" + current_comment_id).style.left = (event.x - sleft - 30) + "px";
         document.getElementById("comment" + current_comment_id).style.top = (event.y - stop - 30) + "px";
 
-        let new_ost = computePageOffset();
-
-        let new_comment_x = event.pageX - new_ost.left
-        let new_comment_y = event.pageY - new_ost.top
-
-        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_comment_x, new_comment_y)
-
-        new_comment_x = new_x_y[0]
-        new_comment_y = new_x_y[1]
-
         comment_storage.map(function (comment) {
 
             if (comment.id === parseInt(current_comment_id)) {
-                comment.x = new_comment_x;
-                comment.y = new_comment_y;
+                comment.x = new_x;
+                comment.y = new_y;
             }
         });
 
     }
     if (isDragging & DrawType === "checkbox") {
 
-        offsetX = event.clientX - initialX;
-        offsetY = event.clientY - initialY;
-        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
-        let stop = srect.top;
-        let sleft = srect.left;
         document.getElementById("checkbox" + current_checkbox_id).style.left = (event.x - sleft - 30) + "px";
         document.getElementById("checkbox" + current_checkbox_id).style.top = (event.y - stop - 30) + "px";
-
-        let new_ost = computePageOffset();
-
-        let new_check_x = event.pageX - new_ost.left
-        let new_check_y = event.pageY - new_ost.top
-
-        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_check_x, new_check_y)
-
-        new_check_x = new_x_y[0]
-        new_check_y = new_x_y[1]
 
         form_storage.map(function (item) {
 
             if (item.id === parseInt(current_checkbox_id)) {
-                item.x = new_check_x - 15;
-                item.y = new_check_y - 8;
+                item.x = new_x - 15;
+                item.y = new_y - 8;
             }
         });
 
     }
     if (isDragging & DrawType === "radio") {
 
-        offsetX = event.clientX - initialX;
-        offsetY = event.clientY - initialY;
-        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
-        let stop = srect.top;
-        let sleft = srect.left;
         document.getElementById("radio" + current_radio_id).style.left = (event.x - sleft - 30) + "px";
         document.getElementById("radio" + current_radio_id).style.top = (event.y - stop - 30) + "px";
-
-        let new_ost = computePageOffset();
-
-        let new_radio_x = event.pageX - new_ost.left
-        let new_radio_y = event.pageY - new_ost.top
-
-        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_radio_x, new_radio_y)
-
-        new_radio_x = new_x_y[0]
-        new_radio_y = new_x_y[1]
 
         form_storage.map(function (item) {
 
             if (item.id === parseInt(current_radio_id)) {
-                item.data.x = new_radio_x - 15;
-                item.data.y = new_radio_y - 8;
+                item.data.x = new_x - 15;
+                item.data.y = new_y - 8;
             }
         });
 
     }
     if (isDragging & DrawType === "text") {
 
-        offsetX = event.clientX - initialX;
-        offsetY = event.clientY - initialY;
-        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
-        let stop = srect.top;
-        let sleft = srect.left;
         document.getElementById("text" + current_text_id).style.left = (event.x - sleft - 30) + "px";
         document.getElementById("text" + current_text_id).style.top = (event.y - stop - 30) + "px";
 
-        let new_ost = computePageOffset();
-
-        let new_text_x = event.pageX - new_ost.left
-        let new_text_y = event.pageY - new_ost.top
-
-        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_text_x, new_text_y)
-
-        new_text_x = new_x_y[0]
-        new_text_y = new_x_y[1]
-
         form_storage.map(function (item) {
             if (item.id === parseInt(current_text_id)) {
-                item.x = new_text_x - 15;
-                item.y = new_text_y - 10;
+                item.x = new_x - 15;
+                item.y = new_y - 10;
             }
         });
 
     }
     if (isDragging & DrawType === "combo") {
 
-        offsetX = event.clientX - initialX;
-        offsetY = event.clientY - initialY;
-        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
-        let stop = srect.top;
-        let sleft = srect.left;
         document.getElementById("combo" + current_combo_id).style.left = (event.x - sleft - 30) + "px";
         document.getElementById("combo" + current_combo_id).style.top = (event.y - stop - 30) + "px";
 
-        let new_ost = computePageOffset();
-
-        let new_combo_x = event.pageX - new_ost.left
-        let new_combo_y = event.pageY - new_ost.top
-
-        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_combo_x, new_combo_y)
-
-        new_combo_x = new_x_y[0]
-        new_combo_y = new_x_y[1]
-
         form_storage.map(function (item) {
             if (item.id === parseInt(current_combo_id)) {
-                item.x = new_combo_x - 15;
-                item.y = new_combo_y - 10;
+                item.x = new_x - 15;
+                item.y = new_y - 10;
             }
         });
     }
     if (isDragging & DrawType === "list") {
 
-        offsetX = event.clientX - initialX;
-        offsetY = event.clientY - initialY;
-        let srect = pg.getBoundingClientRect(), bodyElt = document.body;
-        let stop = srect.top;
-        let sleft = srect.left;
         document.getElementById("list" + current_list_id).style.left = (event.x - sleft - 30) + "px";
         document.getElementById("list" + current_list_id).style.top = (event.y - stop - 30) + "px";
 
-        let new_ost = computePageOffset();
-
-        let new_list_x = event.pageX - new_ost.left
-        let new_list_y = event.pageY - new_ost.top
-
-        let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_list_x, new_list_y)
-
-        new_list_x = new_x_y[0]
-        new_list_y = new_x_y[1]
-
         form_storage.map(function (item) {
             if (item.id === parseInt(current_list_id)) {
-                item.x = new_list_x - 14;
-                item.y = new_list_y - 85;
+                item.x = new_x - 14;
+                item.y = new_y - 85;
+            }
+        });
+    }
+    if (isDragging & DrawType === "button") {
+
+        document.getElementById("button" + current_button_id).style.left = (event.x - sleft - 30) + "px";
+        document.getElementById("button" + current_button_id).style.top = (event.y - stop - 30) + "px";
+
+        form_storage.map(function (item) {
+            if (item.id === parseInt(current_button_id)) {
+                item.x = new_x - 14;
+                item.y = new_y - 85;
             }
         });
     }
@@ -1428,6 +1479,15 @@ async function addFormElements() {
                         width: form_item.width,
                         height: form_item.height
                     });
+                case BUTTON:
+                    buttonfieldForm = form.createButton(form_item.form_field_name);
+                    buttonfieldForm.addToPage(form_item.text, page, {
+                        x: form_item.x,
+                        y: form_item.y,
+                        width: form_item.width,
+                        height: form_item.height
+                    });
+                    break;
                 default:
                     break;
             }
