@@ -277,13 +277,13 @@ const eventHandler = async function (e) {
             checkbox.style.zIndex = 100;
 
             showOption(e, "checkbox-option", 40, -180);
-            
+
             document.getElementById("checkbox-field-input-name").value = `Checkbox Form Field ${checkboxCount++}`
-            
+
             checkbox.addEventListener("click", () => {
-                
+
                 current_checkbox_id = checkboxId;
-                
+
                 let istooltipshow = false;
 
                 if (document.getElementById("checkbox_tooltipbar" + current_checkbox_id)) {
@@ -298,14 +298,19 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div")
 
+                        const left = checkbox.style.width;
+                        const top = checkbox.style.height;
+
                         tooltipbar.id = "checkbox_tooltipbar" + current_checkbox_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = "27px"
-                        tooltipbar.style.minWidth = "100px"
+                        tooltipbar.style.top = top;
+                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
+                        tooltipbar.style.minWidth = "100px";
 
                         let deleteBtn = moveBtn = document.createElement("button");
                         deleteBtn.style.padding = "5px";
+                        deleteBtn.style.float = "right";
                         deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
 
                         deleteBtn.addEventListener("click", () => {
@@ -378,14 +383,19 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div")
 
+                        const left = radio.style.width;
+                        const top = radio.style.height;
+
                         tooltipbar.id = "radio_tooltipbar" + current_radio_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = "27px"
+                        tooltipbar.style.top = top;
+                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
                         tooltipbar.style.minWidth = "100px"
 
                         let deleteBtn = moveBtn = document.createElement("button");
                         deleteBtn.style.padding = "5px";
+                        deleteBtn.style.float = "right";
                         deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
 
                         deleteBtn.addEventListener("click", () => {
@@ -466,14 +476,19 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div")
 
+                        const left = textDiv.style.width;
+                        const top = textDiv.style.height;
+
                         tooltipbar.id = "text_tooltipbar" + current_text_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = "27px"
+                        tooltipbar.style.top = top;
+                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
                         tooltipbar.style.minWidth = "100px"
 
                         let deleteBtn = moveBtn = document.createElement("button");
                         deleteBtn.style.padding = "5px";
+                        deleteBtn.style.float = "right";
                         deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
 
                         deleteBtn.addEventListener("click", () => {
@@ -551,14 +566,19 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div")
 
+                        const left = comboDiv.style.width;
+                        const top = comboDiv.style.height;
+
                         tooltipbar.id = "combo_tooltipbar" + current_combo_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = "27px"
+                        tooltipbar.style.top = top;
+                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
                         tooltipbar.style.minWidth = "100px"
-                        
+
                         let deleteBtn = moveBtn = document.createElement("button");
                         deleteBtn.style.padding = "5px";
+                        deleteBtn.style.float = "right";
                         deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
 
                         deleteBtn.addEventListener("click", () => {
@@ -655,6 +675,9 @@ const eventHandler = async function (e) {
 
                 current_list_id = list_id;
 
+                const left = listDiv.style.width;
+                const top = listDiv.style.height;
+
                 let islisttooltipshow = false;
 
 
@@ -673,11 +696,13 @@ const eventHandler = async function (e) {
                         tooltipbar.id = "list_tooltipbar" + current_list_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = "160px"
+                        tooltipbar.style.top = top;
+                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
                         tooltipbar.style.minWidth = "100px"
 
                         let deleteBtn = moveBtn = document.createElement("button");
                         deleteBtn.style.padding = "5px";
+                        deleteBtn.style.float = "right";
                         deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
 
                         deleteBtn.addEventListener("click", () => {
@@ -793,14 +818,19 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div")
 
+                        const left = buttonDiv.style.width;
+                        const top = buttonDiv.style.height;
+
                         tooltipbar.id = "button_tooltipbar" + current_button_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = "27px"
+                        tooltipbar.style.top = top;
+                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
                         tooltipbar.style.minWidth = "100px"
 
                         let deleteBtn = moveBtn = document.createElement("button");
                         deleteBtn.style.padding = "5px";
+                        deleteBtn.style.float = "right";
                         deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
 
                         deleteBtn.addEventListener("click", () => {
@@ -1244,15 +1274,15 @@ const moveEventHandler = (event, currentId) => {
 
     }
     if (DrawType === RADIO) {
-        
+
         form_storage.map(function (item) {
-            
+
             if (item.id === parseInt(currentId)) {
                 item.data.x = new_x - item.data.width * 12.5 / 25;
                 item.data.y = new_y + item.data.height * 12.5 / 25;
             }
         });
-        
+
     }
     if (DrawType === TEXTFIELD) {
 
