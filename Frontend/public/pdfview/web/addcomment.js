@@ -119,18 +119,36 @@ const handleRadio = function (e) {
     document.getElementById("radio-button-option").style.display = 'none';
     const formFieldName = document.getElementById("radio-field-input-name").value;
     e.stopPropagation();
-    form_storage.push({
-        id: form_storage.length + 1,
-        form_type: RADIO,
-        page_number: PDFViewerApplication.page,
-        data: {
-            option: formFieldName,
-            x: pos_x_pdf,
-            y: pos_y_pdf,
-            width: formWidth,
-            height: formHeight
+    for(let i = 0; i < form_storage.length; i++){
+        if(form_storage[i].data.option == formFieldName && form_storage[i].id == current_form_id) {
+            break;
         }
-    });
+        else if(form_storage[i].data.option != formFieldName && form_storage[i].id == current_form_id){
+            form_storage[i].data.option = formFieldName;
+            break;
+        }
+    }
+    let count = 0;
+    for(let j = 0; j < form_storage.length; j++) {
+        if(form_storage[j].id != current_form_id) count++;
+    }
+    if( count == form_storage.length || form_storage == null ) { 
+        form_storage.push({
+            id: baseId,
+            form_type: RADIO,
+            page_number: PDFViewerApplication.page,
+            data: {
+                option: formFieldName,
+                x: pos_x_pdf,
+                y: pos_y_pdf,
+                width: formWidth,
+                height: formHeight,
+                xPage: formWidth,
+                yPage: formHeight
+            }
+        });
+    }
+    console.log(form_storage);
     document.getElementById("radio-save-button").removeEventListener("click", handleRadio);
 }
 // When click "Save" button, save the information of TextField element.
@@ -326,13 +344,43 @@ const resizeCanvas = function (id, type, currentId, optionId) {
             }
         })
 }
-// Hande the specified event.
+// Show the specified OptionPane and add resizebar.
+const showOptionAndResizebar = function (optionId, object, objectWidth, objectHeight) {
+    isOptionPane = true;
+    let option = showOption(optionId, objectWidth / 2 - 180, objectHeight + 15);
+    removeParentEvent(CHECKBOX_OPTION);
+    addResizebar(object.id);
+    object.append(option);
+}
+// Add Delete button and define action.
+const addDeleteButton = function (currentId, container, type) {
+    let deleteBtn = document.createElement("button");
+    deleteBtn.style.padding = "5px";
+    deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
+
+    deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        currentId = container.id.replace(`${type}_tooltipbar`, "")
+        document.getElementById(`${type}` + currentId).style.display = "none";
+        form_storage = form_storage.filter(function (item) {
+            return item.id !== parseInt(currentId);
+        });
+    })
+    container.appendChild(deleteBtn)
+}
+// Handle the specified event.
 const eventHandler = async function (e) {
     baseId++;
 
     let ost = computePageOffset();
     let x = e.pageX - ost.left;
     let y = e.pageY - ost.top;
+
+    let pageId = String(PDFViewerApplication.page);
+    let pg = document.getElementById(pageId);
+    var rect = pg.getBoundingClientRect(), bodyElt = document.body;
+    var top = rect.top;
+    var left = rect.left;
 
     switch (currentMode) {
 
@@ -348,12 +396,6 @@ const eventHandler = async function (e) {
             let checkboxId = baseId;
             current_form_id = checkboxId;
 
-            let pageId = String(PDFViewerApplication.page);
-            let pg = document.getElementById(pageId);
-            var rect = pg.getBoundingClientRect(), bodyElt = document.body;
-            var top = rect.top;
-            var left = rect.left;
-
             const checkboxWidth = 25;
             const checkboxHeight = 25;
 
@@ -366,16 +408,11 @@ const eventHandler = async function (e) {
             checkbox.style.height = checkboxHeight + "px";
             checkbox.style.background = "#3C97FE80";
             checkbox.style.zIndex = 100;
-            console.log("checkbbox ID: ", checkbox.id);
 
             pg.appendChild(checkbox);
 
             // Show Checkbox OptinePane
-            isOptionPane = true;
-            let option = showOption(CHECKBOX_OPTION, checkboxWidth / 2 - 180, checkboxHeight + 15);
-            removeParentEvent(CHECKBOX_OPTION);
-            addResizebar(checkbox.id);
-            checkbox.append(option);
+            showOptionAndResizebar(CHECKBOX_OPTION, checkbox, checkboxWidth, checkboxHeight);
 
             document.getElementById("checkbox-field-input-name").value = `Checkbox Form Field ${checkboxCount++}`
 
@@ -397,17 +434,11 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div");
                         current_form_id = checkboxId;
-                        console.log(checkboxId)
-                        console.log(form_storage)
                         form_storage.map((element) => {
                             if(element.id == checkboxId) {
                                 document.getElementById("checkbox-field-input-name").value = element.form_field_name;
                                 isOptionPane = true;
-                                console.log("element: ", element.width, element.height);
-                                console.log("elementPage: ", element.xPage, element.yPage);
                                 option = showOption(CHECKBOX_OPTION, element.xPage / 2 - 180, element.yPage + 15);
-                                console.log(option);
-                                console.log(checkboxId)
                                 checkbox.append(option);
                             }
                         })
@@ -417,27 +448,14 @@ const eventHandler = async function (e) {
                         const left = checkbox.style.width;
                         const top = checkbox.style.height;
 
-                        let deleteBtn = moveBtn = document.createElement("button");
-                        deleteBtn.style.padding = "5px";
-                        deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
-
+                        
                         tooltipbar.id = "checkbox_tooltipbar" + current_checkbox_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
                         tooltipbar.style.top = ((parseInt(top) / 2) - 12.5) + 'px';
                         tooltipbar.style.left = parseInt(left) + 10 + 'px';
-
-                        deleteBtn.addEventListener("click", (e) => {
-                            e.stopPropagation();
-                            current_checkbox_id = tooltipbar.id.replace("checkbox_tooltipbar", "")
-                            console.log(current_checkbox_id);
-                            document.getElementById('checkbox' + current_checkbox_id).style.display = "none";
-                            form_storage = form_storage.filter(function (checkbox) {
-                                return checkbox.id !== parseInt(current_checkbox_id);
-                            });
-                            console.log(form_storage);
-                        })
-                        tooltipbar.appendChild(deleteBtn)
+                        
+                        addDeleteButton(current_checkbox_id, tooltipbar, "checkbox")
 
                         checkbox.appendChild(tooltipbar)
                     }
@@ -446,7 +464,6 @@ const eventHandler = async function (e) {
                     }
                 }
             })
-            current_comment_id = checkboxId;
 
             document.getElementById("checkbox-save-button").addEventListener("click", handleCheckbox);
             resizeCanvas(checkbox.id, CHECKBOX, checkboxId, CHECKBOX_OPTION);
@@ -461,16 +478,14 @@ const eventHandler = async function (e) {
             pos_x_pdf = radio_x_y[0]
             pos_y_pdf = radio_x_y[1]
 
-            let radio_id = form_storage.length + 1;
+            let radioId = baseId;
+            current_form_id = radioId;
 
-            let radiopageId = String(PDFViewerApplication.page);
-            let radiopg = document.getElementById(radiopageId);
-            var rect = radiopg.getBoundingClientRect(), bodyElt = document.body;
-            var top = rect.top;
-            var left = rect.left;
+            const radioWidth = 25;
+            const radioHeight = 25;
 
             let radio = document.createElement("div");
-            radio.id = "radio" + radio_id;
+            radio.id = "radio" + radioId;
             radio.style.position = "absolute";
             radio.style.top = e.pageY - top - 5 + "px"
             radio.style.left = e.pageX - left - 21 + "px"
@@ -480,9 +495,16 @@ const eventHandler = async function (e) {
             radio.style.background = "#3C97FE80";
             radio.style.zIndex = 100;
 
+            pg.appendChild(radio);
+
+            // Show RadioGroup OptinePane
+            showOptionAndResizebar(RADIO_OPTION, radio, radioWidth, radioHeight);
+
+            document.getElementById("radio-field-input-name").value = `Radio Group Form Field ${radioCount++}`
+
             radio.addEventListener("click", () => {
 
-                current_radio_id = radio_id;
+                current_radio_id = radioId;
 
                 let isradiotooltipshow = false;
 
@@ -498,31 +520,27 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div")
 
+                        current_form_id = radioId;
+                        form_storage.map((element) => {
+                            if(element.id == radioId) {
+                                document.getElementById("radio-field-input-name").value = element.data.option;
+                                isOptionPane = true;
+                                option = showOption(RADIO_OPTION, element.xPage / 2 - 180, element.yPage + 15);
+                                radio.append(option);
+                            }
+                        })
+                        
+                        document.getElementById("radio-save-button").addEventListener("click", handleRadio);
                         const left = radio.style.width;
                         const top = radio.style.height;
-
+                        
                         tooltipbar.id = "radio_tooltipbar" + current_radio_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = top;
-                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
-                        tooltipbar.style.minWidth = "100px"
-
-                        let deleteBtn = moveBtn = document.createElement("button");
-                        deleteBtn.style.padding = "5px";
-                        deleteBtn.style.float = "right";
-                        deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
-
-                        deleteBtn.addEventListener("click", () => {
-                            current_radio_id = tooltipbar.id.replace("radio_tooltipbar", "")
-                            document.getElementById('radio' + current_radio_id).remove();
-
-                            form_storage = form_storage.filter(function (radio) {
-                                return radio.id !== parseInt(current_radio_id);
-                            });
-                        })
-
-                        tooltipbar.appendChild(deleteBtn)
+                        tooltipbar.style.top = ((parseInt(top) / 2) - 12.5) + 'px';
+                        tooltipbar.style.left = parseInt(left) + 10 + 'px';
+                        
+                        addDeleteButton(current_radio_id, tooltipbar, "radio");
 
                         radio.appendChild(tooltipbar)
                     }
@@ -533,15 +551,8 @@ const eventHandler = async function (e) {
 
             })
 
-            showOption(e, "radio-button-option", 40, -180);
-
-            document.getElementById("radio-field-input-name").value = `Radio Group Form Field ${radioCount++}`
-
             document.getElementById("radio-save-button").addEventListener("click", handleRadio);
-
-            radiopg.appendChild(radio);
-
-            resizeCanvas(radio.id, RADIO, radio_id);
+            resizeCanvas(radio.id, RADIO, radioId, RADIO_OPTION);
 
             break;
         case TEXTFIELD:
@@ -1457,7 +1468,6 @@ const resizeHandler = function (width, height, currentId) {
                 item.height = height * 0.74;
                 item.xPage = width;
                 item.yPage = height;
-                console.log("resizeHandler", item.width, item.height);
             }
         });
     }
