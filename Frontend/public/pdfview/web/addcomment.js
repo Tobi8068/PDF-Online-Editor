@@ -13,11 +13,11 @@ let mouse_x = 0;
 let mouse_y = 0;
 
 let current_comment_id = 0;
+let current_form_id = 0;
 
 let isDragging = false;
 let DrawType = "nothing";
 let initialX, initialY;
-let offsetX = 0, offsetY = 0;
 
 let isAddFormModeOn = false;
 let isEditing = false;
@@ -31,10 +31,15 @@ let listboxOptionCount = 0;
 let comboboxOptionArray = [];
 let listboxOptionArray = [];
 //////////
-let new_comment_x = 0, new_comment_y = 0;
+let pos_x_pdf = 0, pos_y_pdf = 0;
+let pos_x_page = 0; pos_y_page = 0;
 
 let formWidth = 25;
 let formHeight = 25;
+
+const CHECKBOX_OPTION = "checkbox-option";
+
+let isOptionPane = false;
 //////////
 
 let current_checkbox_id = 0;
@@ -57,23 +62,46 @@ let computePageOffset = function () {
     }
 }
 
-const handleCheckbox = function (e) {
+// When click "Save" button, save the information of Checkbox element.
+
+const handleCheckbox = function (e) {  
     formWidth = 25;
     formHeight = 25;
+    isOptionPane = false;
     document.getElementById("checkbox-option").style.display = 'none';
     const formFieldName = document.getElementById("checkbox-field-input-name").value;
-    form_storage.push({
-        id: form_storage.length + 1,
-        form_type: CHECKBOX,
-        form_field_name: formFieldName,
-        page_number: PDFViewerApplication.page,
-        x: new_comment_x,
-        y: new_comment_y,
-        width: formWidth,
-        height: formHeight
-    });
+    e.stopPropagation();
+    for(let i = 0; i < form_storage.length; i++){
+        if(form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
+            break;
+        }
+        else if(form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id){
+            form_storage[i].form_field_name = formFieldName;
+            break;
+        }
+    }
+    let count = 0;
+    for(let j = 0; j < form_storage.length; j++) {
+        if(form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
+    } 
+    if( count == form_storage.length || form_storage == null ) {
+        form_storage.push({
+            id: form_storage.length + 1,
+            form_type: CHECKBOX,
+            form_field_name: formFieldName,
+            page_number: PDFViewerApplication.page,
+            x: pos_x_pdf,
+            y: pos_y_pdf,
+            width: formWidth,
+            height: formHeight,
+            xPage: pos_x_page,
+            yPage: pos_y_page
+        });
+    }
+
     document.getElementById("checkbox-save-button").removeEventListener("click", handleCheckbox);
 }
+// When click "Save" button, save the information of RadioGroup element.
 
 const handleRadio = function (e) {
     formWidth = 25;
@@ -86,14 +114,15 @@ const handleRadio = function (e) {
         page_number: PDFViewerApplication.page,
         data: {
             option: formFieldName,
-            x: new_comment_x,
-            y: new_comment_y,
+            x: pos_x_pdf,
+            y: pos_y_pdf,
             width: formWidth,
             height: formHeight
         }
     });
     document.getElementById("radio-save-button").removeEventListener("click", handleRadio);
 }
+// When click "Save" button, save the information of TextField element.
 
 const handleText = function (e) {
     formWidth = 100;
@@ -105,12 +134,13 @@ const handleText = function (e) {
         form_type: TEXTFIELD,
         form_field_name: formFieldName,
         page_number: PDFViewerApplication.page,
-        x: new_comment_x,
-        y: new_comment_y,
+        x: pos_x_pdf,
+        y: pos_y_pdf,
         width: formWidth,
         height: formHeight
     });
 }
+// When click "Save" button, save the information of Combobox element.
 
 const handleCombo = function (e) {
     formWidth = 80;
@@ -123,30 +153,46 @@ const handleCombo = function (e) {
         form_field_name: formFieldName,
         page_number: PDFViewerApplication.page,
         optionArray: comboboxOptionArray,
-        x: new_comment_x - 11,
-        y: new_comment_y - 18,
+        x: pos_x_pdf - 11,
+        y: pos_y_pdf - 18,
         width: formWidth,
         height: formHeight
     })
 }
+// When click "Save" button, save the information of Listbox element.
+
 const handleList = function (e) {
     formWidth = 80;
     formHeight = 100;
     document.getElementById("list-option").style.display = 'none';
     const formFieldName = document.getElementById("list-input-name").value;
-    console.log(formFieldName);
     form_storage.push({
         id: form_storage.length + 1,
         form_type: LIST,
         form_field_name: formFieldName,
         page_number: PDFViewerApplication.page,
         optionArray: listboxOptionArray,
-        x: new_comment_x - 12,
-        y: new_comment_y - 93,
+        x: pos_x_pdf - 12,
+        y: pos_y_pdf - 93,
         width: formWidth,
         height: formHeight
     })
 }
+// Remove the parent event.
+const removeParentEvent = function (id) {
+    document.getElementById(id).addEventListener('click', function (e) {
+        e.stopPropagation();
+    })
+    interact(`#${id}`).draggable({
+        listeners : {
+            move(event) {
+                event.stopPropagation();
+            }
+        }
+    })
+}
+// When click "Save" button, save the information of Button element.
+
 const handleButton = function (e) {
     formWidth = 80;
     formHeight = 25;
@@ -159,27 +205,54 @@ const handleButton = function (e) {
         form_field_name: formFieldName,
         text: initialValue,
         page_number: PDFViewerApplication.page,
-        x: new_comment_x - 12,
-        y: new_comment_y - 15,
+        x: pos_x_pdf - 12,
+        y: pos_y_pdf - 15,
         width: formWidth,
         height: formHeight
     });
 }
+// Display 4 points around the canvas to resize the canvas - top, left, right, bottom.
 
-const showOption = function (e, id, x, y) {
+const addResizebar = function (objectId) {
+    const top = document.createElement('div');
+    top.id = "top";
+    top.classList.add('resize-point');
+    top.classList.add('top-center');
+    const left = document.createElement('div');
+    left.id = "left";
+    left.classList.add('resize-point');
+    left.classList.add('middle-left');
+    const right = document.createElement('div');
+    right.id = "right";
+    right.classList.add('resize-point');
+    right.classList.add('middle-right');
+    const bottom = document.createElement('div');
+    bottom.id = "bottom";
+    bottom.classList.add('resize-point');
+    bottom.classList.add('bottom-center');
+    const container = document.getElementById(objectId);
+    container.append(top, left, right, bottom);
+}
+// Show the OptionPane to edit the properties of elements.
+
+const showOption = function (id, x, y) {
     const fieldOption = document.getElementById(id);
 
-    fieldOption.style.display = "flex";
+    if(isOptionPane) fieldOption.style.display = "flex";
+    else fieldOption.style.display = "none";
 
-    fieldOption.style.top = e.pageY + x + "px";
-    fieldOption.style.left = e.pageX + y + "px";
+    fieldOption.style.top = y + "px";
+    fieldOption.style.left = x + "px";
+    
+    return fieldOption;
 }
+// Resize and move canvas using Interact.js library.
 
 const resizeCanvas = function (id, type, currentId) {
     interact(`#${id}`)
         .resizable({
             // resize from all edges and corners
-            edges: { left: true, right: true, bottom: true, top: true },
+            edges: { left: '#left', right: '#right', bottom: '#bottom', top: '#top' },
 
             listeners: {
                 move(event) {
@@ -201,6 +274,8 @@ const resizeCanvas = function (id, type, currentId) {
                     target.setAttribute('data-y', y)
                     DrawType = type;
                     resizeHandler(event.rect.width, event.rect.height, currentId);
+                    showOption(CHECKBOX_OPTION, event.rect.width / 2 - 180, event.rect.height + 15)
+
                 }
             },
             modifiers: [
@@ -218,7 +293,6 @@ const resizeCanvas = function (id, type, currentId) {
             inertia: true
         })
         .draggable({
-
             listeners: {
                 move(event) {
                     var target = event.target
@@ -234,18 +308,20 @@ const resizeCanvas = function (id, type, currentId) {
                     target.setAttribute('data-y', y)
                     DrawType = type;
                     moveEventHandler(event, currentId);
+                    console.log("move: ", x, y, event.rect.width, event.rect.height);
                 },
             }
         })
-    return {
-        rect: event.rect
-    }
 }
+// Hande the specified event.
 const eventHandler = async function (e) {
 
+    pos_x_page = e.pageX;
+    pos_y_page = e.pageY;
+
     let ost = computePageOffset();
-    let x = e.pageX - ost.left;
-    let y = e.pageY - ost.top;
+    let x = pos_x_page - ost.left;
+    let y = pos_y_page - ost.top;
 
     switch (currentMode) {
 
@@ -255,8 +331,8 @@ const eventHandler = async function (e) {
 
             let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
 
-            new_comment_x = new_x_y[0]
-            new_comment_y = new_x_y[1]
+            pos_x_pdf = new_x_y[0]
+            pos_y_pdf = new_x_y[1]
 
             let checkboxId = form_storage.length + 1;
 
@@ -266,17 +342,27 @@ const eventHandler = async function (e) {
             var top = rect.top;
             var left = rect.left;
 
+            const checkboxWidth = 25;
+            const checkboxHeight = 25;
+
             let checkbox = document.createElement("div");
             checkbox.id = "checkbox" + checkboxId;
             checkbox.style.position = "absolute";
             checkbox.style.top = e.pageY - top - 5 + "px";
             checkbox.style.left = e.pageX - left - 21 + "px";
-            checkbox.style.width = "25px";
-            checkbox.style.height = "25px";
+            checkbox.style.width = checkboxWidth + "px";
+            checkbox.style.height = checkboxHeight + "px";
             checkbox.style.background = "#3C97FE80";
             checkbox.style.zIndex = 100;
 
-            showOption(e, "checkbox-option", 40, -180);
+            pg.appendChild(checkbox);
+
+            // Show Checkbox OptinePane
+            isOptionPane = true;
+            let option = showOption(CHECKBOX_OPTION, checkboxWidth / 2 - 180, checkboxHeight + 15);
+            removeParentEvent(CHECKBOX_OPTION);
+            addResizebar(checkbox.id);
+            checkbox.append(option);
 
             document.getElementById("checkbox-field-input-name").value = `Checkbox Form Field ${checkboxCount++}`
 
@@ -296,31 +382,43 @@ const eventHandler = async function (e) {
                 else {
                     if (!istooltipshow) {
 
-                        let tooltipbar = document.createElement("div")
+                        let tooltipbar = document.createElement("div");
+                        current_form_id = checkboxId;
+                        console.log("checkbix", checkboxId)
+                        form_storage.map((element) => {
+                            if(element.id == checkboxId) {
+                                document.getElementById("checkbox-field-input-name").value = element.form_field_name;
+                                isOptionPane = true;
+                                option = showOption(CHECKBOX_OPTION, element.width / 2 - 180, element.height + 15);
+                                console.log(option);
+                                checkbox.append(option);
+                            }
+                        })
+                        
+                        document.getElementById("checkbox-save-button").addEventListener("click", handleCheckbox);
+
 
                         const left = checkbox.style.width;
                         const top = checkbox.style.height;
 
+                        let deleteBtn = moveBtn = document.createElement("button");
+                        deleteBtn.style.padding = "5px";
+                        deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
+
                         tooltipbar.id = "checkbox_tooltipbar" + current_checkbox_id;
                         tooltipbar.style.position = "absolute";
                         tooltipbar.style.zIndex = 100;
-                        tooltipbar.style.top = top;
-                        tooltipbar.style.left = (parseInt(left) - 100) + 'px';
-                        tooltipbar.style.minWidth = "100px";
+                        tooltipbar.style.top = ((parseInt(top) / 2) - 12.5) + 'px';
+                        tooltipbar.style.left = parseInt(left) + 10 + 'px';
 
-                        let deleteBtn = moveBtn = document.createElement("button");
-                        deleteBtn.style.padding = "5px";
-                        deleteBtn.style.float = "right";
-                        deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
-
-                        deleteBtn.addEventListener("click", () => {
+                        deleteBtn.addEventListener("click", (e) => {
+                            e.stopPropagation();
                             current_checkbox_id = tooltipbar.id.replace("checkbox_tooltipbar", "")
                             document.getElementById('checkbox' + current_checkbox_id).remove();
                             form_storage = form_storage.filter(function (checkbox) {
                                 return checkbox.id !== parseInt(current_checkbox_id);
                             });
                         })
-
                         tooltipbar.appendChild(deleteBtn)
 
                         checkbox.appendChild(tooltipbar)
@@ -329,10 +427,9 @@ const eventHandler = async function (e) {
                         document.getElementById("checkbox_tooltipbar" + current_checkbox_id).remove();
                     }
                 }
-
             })
+            current_comment_id = checkboxId;
 
-            pg.appendChild(checkbox);
             document.getElementById("checkbox-save-button").addEventListener("click", handleCheckbox);
             resizeCanvas(checkbox.id, CHECKBOX, checkboxId);
 
@@ -343,8 +440,8 @@ const eventHandler = async function (e) {
 
             let radio_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
 
-            new_comment_x = radio_x_y[0]
-            new_comment_y = radio_x_y[1]
+            pos_x_pdf = radio_x_y[0]
+            pos_y_pdf = radio_x_y[1]
 
             let radio_id = form_storage.length + 1;
 
@@ -435,8 +532,8 @@ const eventHandler = async function (e) {
 
             let text_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
 
-            new_comment_x = text_x_y[0]
-            new_comment_y = text_x_y[1]
+            pos_x_pdf = text_x_y[0]
+            pos_y_pdf = text_x_y[1]
 
             let text_id = form_storage.length + 1;
 
@@ -457,7 +554,6 @@ const eventHandler = async function (e) {
             textDiv.style.zIndex = 100;
 
             textDiv.addEventListener("click", () => {
-
 
                 current_text_id = text_id;
 
@@ -526,8 +622,8 @@ const eventHandler = async function (e) {
 
             let combo_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
 
-            new_comment_x = combo_x_y[0]
-            new_comment_y = combo_x_y[1]
+            pos_x_pdf = combo_x_y[0]
+            pos_y_pdf = combo_x_y[1]
 
             let combo_id = form_storage.length + 1;
 
@@ -650,8 +746,8 @@ const eventHandler = async function (e) {
 
             let list_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
 
-            new_comment_x = list_x_y[0]
-            new_comment_y = list_x_y[1]
+            pos_x_pdf = list_x_y[0]
+            pos_y_pdf = list_x_y[1]
 
             let list_id = form_storage.length + 1;
 
@@ -774,8 +870,8 @@ const eventHandler = async function (e) {
 
             let button_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
 
-            new_comment_x = button_x_y[0]
-            new_comment_y = button_x_y[1]
+            pos_x_pdf = button_x_y[0]
+            pos_y_pdf = button_x_y[1]
 
             let button_id = form_storage.length + 1;
 
@@ -1231,8 +1327,6 @@ const moveEventHandler = (event, currentId) => {
     let pageId = String(PDFViewerApplication.page)
     let pg = document.getElementById(pageId)
 
-    offsetX = event.clientX - initialX;
-    offsetY = event.clientY - initialY;
     let srect = pg.getBoundingClientRect(), bodyElt = document.body;
 
     let stop = srect.top;
@@ -1326,9 +1420,11 @@ const moveEventHandler = (event, currentId) => {
 }
 
 const resizeHandler = function (width, height, currentId) {
+    console.log("resize handler")
     if (DrawType == RADIO) {
         form_storage.map(function (item) {
             if (item.id === parseInt(currentId)) {
+                // item.data.x = 
                 item.data.width = width * 0.74;
                 item.data.height = height * 0.74;
             }
@@ -1385,6 +1481,7 @@ async function addFormElements() {
     if (form_storage.length != 0) {
         form_storage.forEach((form_item) => {
             page = pdfDoc.getPage(form_item.page_number - 1);
+            const {width, height} = page.getSize();
             if (form_item.form_type == RADIO) {
                 if (radioOption != form_item.data.option) {
                     radioOption = form_item.data.option;
@@ -1400,8 +1497,6 @@ async function addFormElements() {
                         width: form_item.width,
                         height: form_item.height
                     });
-                    console.log("pos x: ", form_item.x, "pos y: ", form_item.y);
-                    console.log("width: ", form_item.width, "height: ", form_item.height);
                     break;
                 case RADIO:
                     radioForm.addOptionToPage(radioCount + '', page, {
