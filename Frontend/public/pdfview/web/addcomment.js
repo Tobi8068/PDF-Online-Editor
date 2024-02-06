@@ -248,7 +248,7 @@ const showOption = function (id, x, y) {
 }
 // Resize and move canvas using Interact.js library.
 
-const resizeCanvas = function (id, type, currentId) {
+const resizeCanvas = function (id, type, currentId, optionId) {
     interact(`#${id}`)
         .resizable({
             // resize from all edges and corners
@@ -272,9 +272,10 @@ const resizeCanvas = function (id, type, currentId) {
 
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
+                    console.log("offset: ", x, y)
                     DrawType = type;
                     resizeHandler(event.rect.width, event.rect.height, currentId);
-                    showOption(CHECKBOX_OPTION, event.rect.width / 2 - 180, event.rect.height + 15)
+                    showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
 
                 }
             },
@@ -389,14 +390,14 @@ const eventHandler = async function (e) {
                             if(element.id == checkboxId) {
                                 document.getElementById("checkbox-field-input-name").value = element.form_field_name;
                                 isOptionPane = true;
-                                option = showOption(CHECKBOX_OPTION, element.width / 2 - 180, element.height + 15);
+                                console.log("element: ", element.width, element.height);
+                                option = showOption(CHECKBOX_OPTION, element.xPage / 2 - 180, element.yPage + 15);
                                 console.log(option);
                                 checkbox.append(option);
                             }
                         })
                         
                         document.getElementById("checkbox-save-button").addEventListener("click", handleCheckbox);
-
 
                         const left = checkbox.style.width;
                         const top = checkbox.style.height;
@@ -431,7 +432,7 @@ const eventHandler = async function (e) {
             current_comment_id = checkboxId;
 
             document.getElementById("checkbox-save-button").addEventListener("click", handleCheckbox);
-            resizeCanvas(checkbox.id, CHECKBOX, checkboxId);
+            resizeCanvas(checkbox.id, CHECKBOX, checkboxId, CHECKBOX_OPTION);
 
             break;
         case RADIO:
@@ -1427,6 +1428,8 @@ const resizeHandler = function (width, height, currentId) {
                 // item.data.x = 
                 item.data.width = width * 0.74;
                 item.data.height = height * 0.74;
+                item.data.xPage = width;
+                item.data.yPage = height;
             }
         });
     }
@@ -1435,6 +1438,9 @@ const resizeHandler = function (width, height, currentId) {
             if (item.id === parseInt(currentId)) {
                 item.width = width * 0.74;
                 item.height = height * 0.74;
+                item.xPage = width;
+                item.yPage = height;
+                console.log("resizeHandler", item.width, item.height);
             }
         });
     }
