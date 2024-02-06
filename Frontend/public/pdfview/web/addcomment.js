@@ -2,6 +2,7 @@ let comment_control = document.getElementById("comment_control_panel")
 
 let comment_storage = [];
 let form_storage = [];
+let baseId = 0;
 
 let comment_x = 0, comment_y = 0;
 
@@ -78,15 +79,13 @@ const handleCheckbox = function (e) {
     e.stopPropagation();
     for(let i = 0; i < form_storage.length; i++){
         if(form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            console.log("same");
-            console.log(form_storage)
+            break;
+        }
+        else if(form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id){
             break;
         }
         else if(form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id){
-            console.log(form_storage[i], formFieldName, current_form_id)
             form_storage[i].form_field_name = formFieldName;
-            console.log("diff");
-            console.log(form_storage)
             break;
         }
     }
@@ -95,9 +94,8 @@ const handleCheckbox = function (e) {
         if(form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
     } 
     if( count == form_storage.length || form_storage == null ) {
-        console.log("new element");
         form_storage.push({
-            id: form_storage.length + 1,
+            id: baseId,
             form_type: CHECKBOX,
             form_field_name: formFieldName,
             page_number: PDFViewerApplication.page,
@@ -108,7 +106,6 @@ const handleCheckbox = function (e) {
             xPage: formWidth,
             yPage: formHeight
         });
-        console.log(form_storage)
     }
 
     document.getElementById("checkbox-save-button").removeEventListener("click", handleCheckbox);
@@ -251,6 +248,7 @@ const addResizebar = function (objectId) {
 
 const showOption = function (id, x, y) {
     const fieldOption = document.getElementById(id);
+    console.log("fieldOption: ", fieldOption);
 
     if(isOptionPane) fieldOption.style.display = "flex";
     else fieldOption.style.display = "none";
@@ -330,6 +328,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
 }
 // Hande the specified event.
 const eventHandler = async function (e) {
+    baseId++;
 
     let ost = computePageOffset();
     let x = e.pageX - ost.left;
@@ -346,7 +345,7 @@ const eventHandler = async function (e) {
             pos_x_pdf = new_x_y[0]
             pos_y_pdf = new_x_y[1]
 
-            let checkboxId = form_storage.length + 1;
+            let checkboxId = baseId;
             current_form_id = checkboxId;
 
             let pageId = String(PDFViewerApplication.page);
@@ -367,6 +366,7 @@ const eventHandler = async function (e) {
             checkbox.style.height = checkboxHeight + "px";
             checkbox.style.background = "#3C97FE80";
             checkbox.style.zIndex = 100;
+            console.log("checkbbox ID: ", checkbox.id);
 
             pg.appendChild(checkbox);
 
@@ -430,10 +430,12 @@ const eventHandler = async function (e) {
                         deleteBtn.addEventListener("click", (e) => {
                             e.stopPropagation();
                             current_checkbox_id = tooltipbar.id.replace("checkbox_tooltipbar", "")
-                            document.getElementById('checkbox' + current_checkbox_id).remove();
+                            console.log(current_checkbox_id);
+                            document.getElementById('checkbox' + current_checkbox_id).style.display = "none";
                             form_storage = form_storage.filter(function (checkbox) {
                                 return checkbox.id !== parseInt(current_checkbox_id);
                             });
+                            console.log(form_storage);
                         })
                         tooltipbar.appendChild(deleteBtn)
 
