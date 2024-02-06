@@ -103,6 +103,8 @@ const handleCheckbox = function (e) {
     e.stopPropagation();
 
     const { count, formFieldName } = checkFormField("checkbox-field-input-name");
+    const label = document.getElementById("checkbox-label").value;
+    const value = document.getElementById("checkbox-value").value;
     
     if( count == form_storage.length || form_storage == null ) {
         form_storage.push({
@@ -115,7 +117,9 @@ const handleCheckbox = function (e) {
             width: formWidth,
             height: formHeight,
             xPage: formWidth,
-            yPage: formHeight
+            yPage: formHeight,
+            label: label,
+            value: value
         });
     }
 
@@ -128,6 +132,8 @@ const handleRadio = function (e) {
     formWidth = 25;
     formHeight = 25;
     isOptionPane = false;
+    const label = document.getElementById("radio-label").value;
+    const value = document.getElementById("radio-value").value;
     document.getElementById("radio-button-option").style.display = 'none';
     const formFieldName = document.getElementById("radio-field-input-name").value;
     e.stopPropagation();
@@ -159,10 +165,11 @@ const handleRadio = function (e) {
                 width: formWidth,
                 height: formHeight,
                 xPage: formWidth,
-                yPage: formHeight
+                yPage: formHeight,
+                label: label,
+                value: value
             }
         });
-        console.log(form_storage);
     }
     document.getElementById("radio-save-button").removeEventListener("click", handleRadio);
 }
@@ -224,7 +231,7 @@ const handleCombo = function (e) {
 // When click "Save" button, save the information of Listbox element.
 
 const handleList = function (e) {
-    formWidth = 80;
+    formWidth = 100;
     formHeight = 100;
     document.getElementById("list-option").style.display = 'none';
     const formFieldName = document.getElementById("list-input-name").value;
@@ -453,6 +460,8 @@ const eventHandler = async function (e) {
             showOptionAndResizebar(CHECKBOX_OPTION, checkbox, checkboxWidth, checkboxHeight);
 
             document.getElementById("checkbox-field-input-name").value = `Checkbox Form Field ${checkboxCount++}`
+            document.getElementById("checkbox-label").value = `Label ${checkboxCount}`;
+            document.getElementById("checkbox-value").value = `Value ${checkboxCount}`;
 
             checkbox.addEventListener("click", () => {
 
@@ -475,6 +484,8 @@ const eventHandler = async function (e) {
                         form_storage.map((element) => {
                             if(element.id == checkboxId) {
                                 document.getElementById("checkbox-field-input-name").value = element.form_field_name;
+                                document.getElementById("checkbox-label").value = element.label;
+                                document.getElementById("checkbox-value").value = element.value;
                                 isOptionPane = true;
                                 option = showOption(CHECKBOX_OPTION, element.xPage / 2 - 180, element.yPage + 15);
                                 checkbox.append(option);
@@ -527,6 +538,8 @@ const eventHandler = async function (e) {
             showOptionAndResizebar(RADIO_OPTION, radio, radioWidth, radioHeight);
 
             document.getElementById("radio-field-input-name").value = `Radio Group Form Field ${radioCount++}`
+            document.getElementById("radio-label").value = `Label ${radioCount}`;
+            document.getElementById("radio-value").value = `Value ${radioCount}`;
 
             radio.addEventListener("click", () => {
 
@@ -550,6 +563,8 @@ const eventHandler = async function (e) {
                         form_storage.map((element) => {
                             if(element.id == radioId) {
                                 document.getElementById("radio-field-input-name").value = element.data.option;
+                                document.getElementById("radio-label").value = element.data.label;
+                                document.getElementById("radio-value").value = element.data.value;
                                 isOptionPane = true;
                                 option = showOption(RADIO_OPTION, element.xPage / 2 - 180, element.yPage + 15);
                                 radio.append(option);
