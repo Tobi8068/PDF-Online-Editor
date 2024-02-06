@@ -38,6 +38,11 @@ let formWidth = 25;
 let formHeight = 25;
 
 const CHECKBOX_OPTION = "checkbox-option";
+const RADIO_OPTION = "radio-button-option";
+const TEXT_OPTION = "text-field-option";
+const COMBO_OPTION = "combo-option";
+const LIST_OPTION = "list-option";
+const BUTTON_OPTION = "button-field-option";
 
 let isOptionPane = false;
 //////////
@@ -73,10 +78,15 @@ const handleCheckbox = function (e) {
     e.stopPropagation();
     for(let i = 0; i < form_storage.length; i++){
         if(form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
+            console.log("same");
+            console.log(form_storage)
             break;
         }
         else if(form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id){
+            console.log(form_storage[i], formFieldName, current_form_id)
             form_storage[i].form_field_name = formFieldName;
+            console.log("diff");
+            console.log(form_storage)
             break;
         }
     }
@@ -85,6 +95,7 @@ const handleCheckbox = function (e) {
         if(form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
     } 
     if( count == form_storage.length || form_storage == null ) {
+        console.log("new element");
         form_storage.push({
             id: form_storage.length + 1,
             form_type: CHECKBOX,
@@ -94,9 +105,10 @@ const handleCheckbox = function (e) {
             y: pos_y_pdf,
             width: formWidth,
             height: formHeight,
-            xPage: pos_x_page,
-            yPage: pos_y_page
+            xPage: formWidth,
+            yPage: formHeight
         });
+        console.log(form_storage)
     }
 
     document.getElementById("checkbox-save-button").removeEventListener("click", handleCheckbox);
@@ -106,8 +118,10 @@ const handleCheckbox = function (e) {
 const handleRadio = function (e) {
     formWidth = 25;
     formHeight = 25;
+    isOptionPane = false;
     document.getElementById("radio-button-option").style.display = 'none';
     const formFieldName = document.getElementById("radio-field-input-name").value;
+    e.stopPropagation();
     form_storage.push({
         id: form_storage.length + 1,
         form_type: RADIO,
@@ -317,12 +331,9 @@ const resizeCanvas = function (id, type, currentId, optionId) {
 // Hande the specified event.
 const eventHandler = async function (e) {
 
-    pos_x_page = e.pageX;
-    pos_y_page = e.pageY;
-
     let ost = computePageOffset();
-    let x = pos_x_page - ost.left;
-    let y = pos_y_page - ost.top;
+    let x = e.pageX - ost.left;
+    let y = e.pageY - ost.top;
 
     switch (currentMode) {
 
@@ -336,6 +347,7 @@ const eventHandler = async function (e) {
             pos_y_pdf = new_x_y[1]
 
             let checkboxId = form_storage.length + 1;
+            current_form_id = checkboxId;
 
             let pageId = String(PDFViewerApplication.page);
             let pg = document.getElementById(pageId);
@@ -385,14 +397,17 @@ const eventHandler = async function (e) {
 
                         let tooltipbar = document.createElement("div");
                         current_form_id = checkboxId;
-                        console.log("checkbix", checkboxId)
+                        console.log(checkboxId)
+                        console.log(form_storage)
                         form_storage.map((element) => {
                             if(element.id == checkboxId) {
                                 document.getElementById("checkbox-field-input-name").value = element.form_field_name;
                                 isOptionPane = true;
                                 console.log("element: ", element.width, element.height);
+                                console.log("elementPage: ", element.xPage, element.yPage);
                                 option = showOption(CHECKBOX_OPTION, element.xPage / 2 - 180, element.yPage + 15);
                                 console.log(option);
+                                console.log(checkboxId)
                                 checkbox.append(option);
                             }
                         })
