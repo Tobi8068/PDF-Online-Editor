@@ -1827,11 +1827,20 @@ dialog :link {
 }
 
 /* Resize Point */
+.top-left {
+  top: -5px;
+  left: -5px;
+}
+
 .top-center {
   top: -5px;
   left: 50%;
   transform: translateX(-50%);
   cursor: ns-resize;
+}
+.top-right {
+  top: -5px;
+  right: -5px;
 }
 
 .middle-left {
@@ -1848,11 +1857,21 @@ dialog :link {
   cursor: ew-resize;
 }
 
+.bottom-left {
+  bottom: -5px;
+  left: -5px;
+}
+
 .bottom-center {
   bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
   cursor: ns-resize;
+}
+
+.bottom-right {
+  bottom: -5px;
+  right: -5px;
 }
 
 .resize-point {
@@ -1862,3 +1881,7 @@ dialog :link {
   position: absolute;
   border-radius: 50%;
 }
+.resize-t {}
+.resize-b {}
+.resize-l {}
+.resize-r {}

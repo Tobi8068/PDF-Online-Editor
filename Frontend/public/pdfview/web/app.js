@@ -49,7 +49,7 @@ import {
   PromiseCapability,
   shadow,
   UnexpectedResponseException,
-  version,
+  version
 } from "pdfjs-lib";
 import { AppOptions, OptionKind } from "./app_options.js";
 import { AutomationEventBus, EventBus } from "./event_utils.js";
