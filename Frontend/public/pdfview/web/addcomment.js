@@ -124,8 +124,6 @@ const handleCheckbox = function (e) {
             value: value
         });
     }
-
-    console.log(form_storage);
     document.getElementById("checkbox-save-button").removeEventListener("click", handleCheckbox);
 }
 // When click "Save" button, save the information of RadioGroup element.
@@ -173,6 +171,7 @@ const handleRadio = function (e) {
             }
         });
     }
+    console.log("radio save: ", form_storage)
     document.getElementById("radio-save-button").removeEventListener("click", handleRadio);
 }
 // When click "Save" button, save the information of TextField element.
@@ -439,25 +438,24 @@ const showOption = function (id, x, y) {
 
 const resizeCanvas = function (id, type, currentId, optionId) {
     interact(`#${id}`)
-        .resizable({
-            // resize from all edges and corners
-            edges: {left: '.resize-l', right: '.resize-r', bottom: '.resize-b', top: '.resize-t' },
-
-            listeners: {
-                move(event) {
-
+    .resizable({
+        // resize from all edges and corners
+        edges: { left: '.resize-l', right: '.resize-r', bottom: '.resize-b', top: '.resize-t' },
+        
+        listeners: {
+            move(event) {    
                     var target = event.target
-                    var x = (parseFloat(target.getAttribute('data-x')) || 0)
-                    var y = (parseFloat(target.getAttribute('data-y')) || 0)
-
+                    let x = (parseFloat(target.getAttribute('data-x')) || 0)
+                    let y = (parseFloat(target.getAttribute('data-y')) || 0)
+                    
                     // update the element's style
                     target.style.width = event.rect.width + 'px'
                     target.style.height = event.rect.height + 'px'
-
+                    
                     // translate when resizing from top or left edges
                     x += event.deltaRect.left
                     y += event.deltaRect.top
-
+                    
                     target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
 
                     target.setAttribute('data-x', x)
@@ -465,6 +463,18 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     DrawType = type;
                     resizeHandler(event.rect.width, event.rect.height, currentId);
                     showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
+                },
+                end(event) {
+                    let target = event.target
+                    let x = (parseFloat(target.getAttribute('data-x')) || 0)
+                    let y = (parseFloat(target.getAttribute('data-y')) || 0)
+                    // update the element's style
+                    target.style.width = event.rect.width + 'px'
+                    target.style.height = event.rect.height + 'px'
+                    target.setAttribute('data-x', x)
+                    target.setAttribute('data-y', y)
+
+                    moveEventHandler(event, x, y, currentId);
                 }
             },
             modifiers: [
@@ -488,16 +498,20 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     // keep the dragged position in the data-x/data-y attributes
                     var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
                     var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-
                     // translate the element
                     target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
 
-                    // update the posiion attributes
+                    // update the position attributes
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
                     DrawType = type;
-                    moveEventHandler(event, currentId);
                 },
+                end(event) {
+                    const target = event.target;
+                    var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
+                    var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+                    moveEventHandler(event, x, y, currentId);
+                }
             }
         })
 }
@@ -553,12 +567,12 @@ const eventHandler = async function (e) {
         case CHECKBOX:
             removeCheckbox();
             isCheckbox = !isCheckbox;
-            
+
             let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
-            
+
             pos_x_pdf = new_x_y[0]
             pos_y_pdf = new_x_y[1]
-            
+
             let checkboxId = baseId;
             current_form_id = checkboxId;
 
@@ -630,12 +644,12 @@ const eventHandler = async function (e) {
         case RADIO:
             removeRadio();
             isRadioButton = !isRadioButton;
-
+            
             let radio_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
-
-            pos_x_pdf = radio_x_y[0]
-            pos_y_pdf = radio_x_y[1]
-
+            
+            pos_x_pdf = radio_x_y[0];
+            pos_y_pdf = radio_x_y[1];
+            
             let radioId = baseId;
             current_form_id = radioId;
 
@@ -1484,7 +1498,7 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
 
 })
 
-const moveEventHandler = (event, currentId) => {
+const moveEventHandler = (event, offsetX, offsetY, currentId) => {
 
     let pageId = String(PDFViewerApplication.page)
     let pg = document.getElementById(pageId)
@@ -1501,9 +1515,6 @@ const moveEventHandler = (event, currentId) => {
 
     let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_x, new_y)
 
-    // new_x = new_x_y[0]
-    // new_y = new_x_y[0]
-
     if (isDragging & DrawType === "comment") {
 
         document.getElementById("comment" + current_comment_id).style.left = (event.x - sleft - 30) + "px";
@@ -1518,74 +1529,35 @@ const moveEventHandler = (event, currentId) => {
         });
 
     }
-    if (DrawType === CHECKBOX) {
+    if (offsetX != 0 || offsetY != 0) {
+        console.log(offsetX * 0.75 * 0.75);
+        if (DrawType === RADIO) {
+    
+            form_storage.map(function (item) {
+    
+                console.log("item: ", item);
+                if (item.id === parseInt(currentId)) {
+                    item.data.x = item.data.x + offsetX * 0.75 * 0.75;
+                    item.data.y = item.data.y - offsetY * 0.75 * 0.75;
+                }
 
-        form_storage.map(function (item) {
-
-            if (item.id === parseInt(currentId)) {
-                item.x = new_x_y[0];
-                item.y = new_x_y[1];
-            }
-        });
-
+            });
+    
+        } else {
+            form_storage.map(function (item) {
+                if (item.id === parseInt(currentId)) {
+                    item.x = item.x + offsetX * 0.75 * 0.75;
+                    item.y = item.y - offsetY * 0.75 * 0.75;
+                }
+            });
+        }
     }
-    if (DrawType === RADIO) {
-
-        form_storage.map(function (item) {
-
-            if (item.id === parseInt(currentId)) {
-                item.data.x = new_x_y[0];
-                item.data.y = new_x_y[1];
-            }
-        });
-
-    }
-    if (DrawType === TEXTFIELD) {
-
-        form_storage.map(function (item) {
-
-            if (item.id === parseInt(currentId)) {
-                item.x = new_x_y[0];
-                item.y = new_x_y[1];
-            }
-        });
-
-    }
-    if (DrawType === COMBOBOX) {
-
-        form_storage.map(function (item) {
-            if (item.id === parseInt(currentId)) {
-                item.x = new_x_y[0];
-                item.y = new_x_y[1];
-            }
-        });
-    }
-    if (DrawType === LIST) {
-
-        form_storage.map(function (item) {
-            if (item.id === parseInt(currentId)) { //14, 85
-                item.x = new_x_y[0];
-                item.y = new_x_y[1];
-            }
-        });
-    }
-    if (DrawType === BUTTON) {
-
-        form_storage.map(function (item) {
-            if (item.id === parseInt(currentId)) {
-                item.x = new_x_y[0];
-                item.y = new_x_y[1];
-            }
-        });
-    }
-
 }
 
 const resizeHandler = function (width, height, currentId) {
     if (DrawType == RADIO) {
         form_storage.map(function (item) {
             if (item.id === parseInt(currentId)) {
-                // item.data.x = 
                 item.data.width = width * 0.75 * 0.75;
                 item.data.height = height * 0.75 * 0.75;
                 item.data.xPage = width;
@@ -1665,6 +1637,7 @@ async function addFormElements() {
                     });
                     break;
                 case RADIO:
+                    console.log(form_storage);
                     radioForm.addOptionToPage(radioCount + '', page, {
                         x: form_item.data.x,
                         y: form_item.data.y - form_item.data.height,
@@ -1722,16 +1695,16 @@ async function addFormElements() {
                         `;
                         buttonfieldForm.acroField.getWidgets().forEach((widget) => {
                             widget.dict.set(
-                              PDFLib.PDFName.of('AA'),
-                              pdfDoc.context.obj({
-                                U: {
-                                  Type: 'Action',
-                                  S: 'JavaScript',
-                                  JS: PDFLib.PDFHexString.fromText(resetFormScript),
-                                },
-                              }),
+                                PDFLib.PDFName.of('AA'),
+                                pdfDoc.context.obj({
+                                    U: {
+                                        Type: 'Action',
+                                        S: 'JavaScript',
+                                        JS: PDFLib.PDFHexString.fromText(resetFormScript),
+                                    },
+                                }),
                             );
-                          });
+                        });
                         console.log("success");
                     }
                     break;
