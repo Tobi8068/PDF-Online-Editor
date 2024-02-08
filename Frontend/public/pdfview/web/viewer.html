@@ -702,7 +702,7 @@ See https://github.com/adobe-type-tools/cmap-resources
   <script src="addcomment.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.16.0/dist/pdf-lib.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <!-- Checkbox Option -->
   <div id="checkbox-option" class="checkbox-option">
     <div class="checkbox-option-header">
@@ -796,6 +796,36 @@ See https://github.com/adobe-type-tools/cmap-resources
         </div>
         <div class="form-field-input-container">
           <input id="text-field-input-name" class="form-field-input" type="text" />
+        </div>
+      </div>
+      <div class="form-input">
+        <div>
+          <span>Text Style</span>
+        </div>
+        <div class="form-field-input-container">
+          <div class="form-style-container">
+            <div class="form-style-name">
+              <i class="fa fa-font"></i>
+              <span>Font</span>
+            </div>
+            <select id="text-font-style" class="form-field-input">
+            </select>
+          </div>
+          <div class="form-style-container">
+            <div class="form-style-name">
+              <i class="fa fa-text-height"></i>
+              <span>Font Size</span>
+            </div>
+            <select id="text-font-size" class="form-field-input">
+            </select>
+          </div>
+          <div class="form-style-container">
+            <div class="form-style-name">
+              <i class="fa fa-fill"></i>
+              <span>Color</span>
+            </div>
+            <input type="color" id="text-font-color" name="colorPicker" class="form-field-input">
+          </div>
         </div>
       </div>
     </div>

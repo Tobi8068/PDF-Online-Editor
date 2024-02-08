@@ -1773,6 +1773,18 @@ dialog :link {
 .form-field-input:focus {
   outline: none;
 }
+.form-style-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #888;
+  padding: 5px;
+}
+.form-style-name {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
 
 .checkbox-option-footer {
   display: flex;

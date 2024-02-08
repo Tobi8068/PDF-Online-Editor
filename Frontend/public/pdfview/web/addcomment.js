@@ -34,6 +34,11 @@ let listboxOptionArray = [];
 //////////
 let pos_x_pdf = 0, pos_y_pdf = 0;
 let pos_x_page = 0; pos_y_page = 0;
+let fontStyle = '', fontSize = 0, textColor = '';
+const fontStyleArr = ['Courier', 'CourierBold', 'CourierBoldOblique', 'CourierOblique', 'Helvetica',
+                    'HelveticaBold', 'HelveticaBoldOblique', 'HelveticaOblique', 'Symbol', 'TimesRoman',
+                    'TimesRomanBold', 'TimesRomanBoldItalic', 'TimesRomanItalic', 'ZapfDingbats'];
+const fontSizeArr = ['auto', 4, 6, 8, 10, 12, 14, 16, 18, 24, 36, 48, 64, 72, 96, 144, 192];
 
 let formWidth = 25;
 let formHeight = 25;
@@ -74,22 +79,18 @@ const checkFormField = function (id) {
     const formFieldName = document.getElementById(id).value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            console.log("1");
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
-            console.log("2");
             break;
         }
         else if (form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id) {
-            console.log("3");
             form_storage[i].form_field_name = formFieldName;
             break;
         }
     }
     let count = 0;
     for (let j = 0; j < form_storage.length; j++) {
-        console.log("4");
         if (form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
     }
     return { count, formFieldName };
@@ -171,7 +172,6 @@ const handleRadio = function (e) {
             }
         });
     }
-    console.log("radio save: ", form_storage)
     document.getElementById("radio-save-button").removeEventListener("click", handleRadio);
 }
 // When click "Save" button, save the information of TextField element.
@@ -182,8 +182,27 @@ const handleText = function (e) {
     isOptionPane = false;
     document.getElementById("text-field-option").style.display = 'none';
     e.stopPropagation();
-
-    const { count, formFieldName } = checkFormField("text-field-input-name")
+    const formFieldName = document.getElementById("text-field-input-name").value;
+    fontStyle = document.getElementById('text-font-style').value;
+    fontSize = parseInt(document.getElementById('text-font-size').value);
+    textColor = document.getElementById('text-font-color').value;
+    for (let i = 0; i < form_storage.length; i++) {
+        if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
+            
+            break;
+        }
+        else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
+            break;
+        }
+        else if (form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id) {
+            form_storage[i].form_field_name = formFieldName;
+            break;
+        }
+    }
+    let count = 0;
+    for (let j = 0; j < form_storage.length; j++) {
+        if (form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
+    }
 
     if (count == form_storage.length || form_storage == null) {
         form_storage.push({
@@ -195,9 +214,15 @@ const handleText = function (e) {
             y: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
+            fontStyle: fontStyle,
+            fontSize: fontSize,
+            textColor: textColor,
             xPage: formWidth,
             yPage: formHeight
         });
+        fontStyle = '';
+        fontSize = 1;
+        textColor = '';
     }
     document.getElementById("text-save-button").removeEventListener("click", handleText);
 }
@@ -213,24 +238,20 @@ const handleCombo = function (e) {
     const formFieldName = document.getElementById("combo-input-name").value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            console.log("1");
             form_storage.optionArray = comboboxOptionArray;
             comboboxOptionArray = [];
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
-            console.log("2");
             break;
         }
         else if (form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id) {
-            console.log("3");
             form_storage[i].form_field_name = formFieldName;
             break;
         }
     }
     let count = 0;
     for (let j = 0; j < form_storage.length; j++) {
-        console.log("4");
         if (form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
     }
     if (count == form_storage.length || form_storage == null) {
@@ -261,24 +282,20 @@ const handleList = function (e) {
     const formFieldName = document.getElementById("list-input-name").value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            console.log("1");
             form_storage.optionArray = listboxOptionArray;
             listboxOptionArray = [];
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
-            console.log("2");
             break;
         }
         else if (form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id) {
-            console.log("3");
             form_storage[i].form_field_name = formFieldName;
             break;
         }
     }
     let count = 0;
     for (let j = 0; j < form_storage.length; j++) {
-        console.log("4");
         if (form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
     }
     if (count == form_storage.length || form_storage == null) {
@@ -332,23 +349,20 @@ const handleButton = function (e) {
     const initialValue = document.getElementById("button-text").value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            console.log("1");
-            form_storage.action = form_action;
+            form_storage[i].action = form_action;
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
-            console.log("2");
             break;
         }
         else if (form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id) {
-            console.log("3");
             form_storage[i].form_field_name = formFieldName;
+            form_storage[i].action = form_action;
             break;
         }
     }
     let count = 0;
     for (let j = 0; j < form_storage.length; j++) {
-        console.log("4");
         if (form_storage[j].form_field_name != formFieldName && form_storage[j].id != current_form_id) count++;
     }
     if (count == form_storage.length || form_storage == null) {
@@ -368,7 +382,6 @@ const handleButton = function (e) {
         });
         form_action = 0;
     }
-    console.log(form_storage);
     document.getElementById("button-save-button").removeEventListener("click", handleButton);
 }
 // Display 4 points around the canvas to resize the canvas - top, left, right, bottom.
@@ -751,6 +764,17 @@ const eventHandler = async function (e) {
 
             // Show TextField OptionPane
             showOptionAndResizebar(TEXT_OPTION, textDiv, textWidth, textHeight);
+            let selectStyleContent = '';
+            let selectSizeContent = '';
+            fontStyleArr.map((item) => {
+                selectStyleContent += `<option value=${item}>${item}</option>`;
+            })
+            fontSizeArr.map((item) => {
+                if(item == 'auto') selectSizeContent += `<option value='12'}>Default</option>`; 
+                else selectSizeContent += `<option value=${item}>${item}</option>`;
+            })
+            document.getElementById("text-font-style").innerHTML = selectStyleContent;
+            document.getElementById("text-font-size").innerHTML = selectSizeContent;
 
             document.getElementById("text-field-input-name").value = `Text Form Field ${textfieldCount++}`
 
@@ -778,6 +802,9 @@ const eventHandler = async function (e) {
                                 document.getElementById("text-field-input-name").value = element.form_field_name;
                                 isOptionPane = true;
                                 option = showOption(TEXT_OPTION, element.xPage / 2 - 180, element.yPage + 15);
+                                document.getElementById("text-font-style").value = element.fontStyle;
+                                document.getElementById("text-font-size").value = element.fontSize;
+                                document.getElementById("text-font-color").value = element.textColor;
                                 textDiv.append(option);
                             }
                         })
@@ -1110,7 +1137,6 @@ const eventHandler = async function (e) {
                                 isOptionPane = true;
                                 option = showOption(BUTTON_OPTION, element.xPage / 2 - 180, element.yPage + 15);
                                 const selectedValue = document.getElementById("button-field-input-action");
-                                console.log(element.action)
                                 if (element.action == SUBMIT) {
                                     selectedValue.value = "submit";
                                 } else if (element.action == RESET) {
@@ -1143,13 +1169,11 @@ const eventHandler = async function (e) {
 }
 const addEventListener = function () {
     document.getElementById("viewer").addEventListener('click', eventHandler);
-    console.log("added");
     isEditing = true;
 }
 
 const removeEventListener = function () {
     document.getElementById("viewer").removeEventListener('click', eventHandler);
-    console.log("removed");
     isEditing = false;
 }
 
@@ -1530,13 +1554,10 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
 
     }
     if (offsetX != 0 || offsetY != 0) {
-        console.log(offsetX * 0.75 * 0.75);
         if (DrawType === RADIO) {
     
             form_storage.map(function (item) {
-    
-                console.log("item: ", item);
-                if (item.id === parseInt(currentId)) {
+                    if (item.id === parseInt(currentId)) {
                     item.data.x = item.data.x + offsetX * 0.75 * 0.75;
                     item.data.y = item.data.y - offsetY * 0.75 * 0.75;
                 }
@@ -1608,18 +1629,47 @@ function add_txt_comment() {
     pdfFactory.download();
 }
 
+const hexToRgb = function (hex) {
+    // Remove the '#' at the beginning if present
+    hex = hex.replace('#', '');
+    
+    // Parse the hexadecimal color components
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    return { r, g, b };
+}
+
+
 async function addFormElements() {
+    const fontStyles = {
+        'Courier': PDFLib.StandardFonts.Courier,
+        'CourierBold': PDFLib.StandardFonts.CourierBold,
+        'CourierBoldOblique': PDFLib.StandardFonts.CourierBoldOblique,
+        'CourierOblique': PDFLib.StandardFonts.CourierOblique,
+        'Helvetica': PDFLib.StandardFonts.Helvetica,
+        'HelveticaBold': PDFLib.StandardFonts.HelveticaBold,
+        'HelveticaBoldOblique': PDFLib.StandardFonts.HelveticaBoldOblique,
+        'HelveticaOblique': PDFLib.StandardFonts.HelveticaOblique,
+        'Symbol': PDFLib.StandardFonts.Symbol,
+        'TimesRoman': PDFLib.StandardFonts.TimesRoman,
+        'TimesRomanBold': PDFLib.StandardFonts.TimesRomanBold,
+        'TimesRomanBoldItalic': PDFLib.StandardFonts.TimesRomanBoldItalic,
+        'TimesRomanItalic': PDFLib.StandardFonts.TimesRomanItalic,
+        'ZapfDingbats': PDFLib.StandardFonts.ZapfDingbats,
+    };
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+    pdfDoc.registerFontkit(fontkit);
     const form = pdfDoc.getForm();
     let page;
     let checkboxForm, radioForm, textfieldForm, comboboxForm;
     let radioOption;
+    let customFont = '';
     if (form_storage.length != 0) {
-        form_storage.forEach((form_item) => {
+        form_storage.forEach(async (form_item) => {
             page = pdfDoc.getPage(form_item.page_number - 1);
-            const { width, height } = page.getSize();
-            console.log(width, height);
             if (form_item.form_type == RADIO) {
                 if (radioOption != form_item.data.option) {
                     radioOption = form_item.data.option;
@@ -1637,7 +1687,6 @@ async function addFormElements() {
                     });
                     break;
                 case RADIO:
-                    console.log(form_storage);
                     radioForm.addOptionToPage(radioCount + '', page, {
                         x: form_item.data.x,
                         y: form_item.data.y - form_item.data.height,
@@ -1648,12 +1697,19 @@ async function addFormElements() {
                     break;
                 case TEXTFIELD:
                     textfieldForm = form.createTextField(form_item.form_field_name);
+                    const {r, g, b} = hexToRgb(form_item.textColor);
                     textfieldForm.addToPage(page, {
                         x: form_item.x,
                         y: form_item.y - form_item.height,
                         width: form_item.width,
-                        height: form_item.height
+                        height: form_item.height,
+                        textColor: PDFLib.rgb(r, g, b)
                     });
+                    const selectedFont = fontStyles[form_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
+                    customFont = await pdfDoc.embedFont(selectedFont);
+                    textfieldForm.updateAppearances(customFont);
+                    textfieldForm.defaultUpdateAppearances(customFont);
+                    textfieldForm.setFontSize(form_item.fontSize);
                     break;
                 case COMBOBOX:
                     comboboxForm = form.createDropdown(form_item.form_field_name);
@@ -1705,7 +1761,6 @@ async function addFormElements() {
                                 }),
                             );
                         });
-                        console.log("success");
                     }
                     break;
                 default:
