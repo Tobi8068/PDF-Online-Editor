@@ -36,8 +36,8 @@ let pos_x_pdf = 0, pos_y_pdf = 0;
 let pos_x_page = 0; pos_y_page = 0;
 let fontStyle = '', fontSize = 0, textColor = '';
 const fontStyleArr = ['Courier', 'CourierBold', 'CourierBoldOblique', 'CourierOblique', 'Helvetica',
-                    'HelveticaBold', 'HelveticaBoldOblique', 'HelveticaOblique', 'Symbol', 'TimesRoman',
-                    'TimesRomanBold', 'TimesRomanBoldItalic', 'TimesRomanItalic', 'ZapfDingbats'];
+    'HelveticaBold', 'HelveticaBoldOblique', 'HelveticaOblique', 'Symbol', 'TimesRoman',
+    'TimesRomanBold', 'TimesRomanBoldItalic', 'TimesRomanItalic', 'ZapfDingbats'];
 const fontSizeArr = ['auto', 4, 6, 8, 10, 12, 14, 16, 18, 24, 36, 48, 64, 72, 96, 144, 192];
 
 let formWidth = 25;
@@ -188,7 +188,7 @@ const handleText = function (e) {
     textColor = document.getElementById('text-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            
+
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
@@ -221,7 +221,7 @@ const handleText = function (e) {
             yPage: formHeight
         });
         fontStyle = '';
-        fontSize = 1;
+        fontSize = 12;
         textColor = '';
     }
     document.getElementById("text-save-button").removeEventListener("click", handleText);
@@ -236,6 +236,9 @@ const handleCombo = function (e) {
     e.stopPropagation();
 
     const formFieldName = document.getElementById("combo-input-name").value;
+    fontStyle = document.getElementById('combo-font-style').value;
+    fontSize = parseInt(document.getElementById('combo-font-size').value);
+    textColor = document.getElementById('combo-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
             form_storage.optionArray = comboboxOptionArray;
@@ -265,9 +268,15 @@ const handleCombo = function (e) {
             y: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
+            fontStyle: fontStyle,
+            fontSize: fontSize,
+            textColor: textColor,
             xPage: formWidth,
             yPage: formHeight
         });
+        fontStyle = '';
+        fontSize = 12;
+        textColor = '';
         comboboxOptionArray = [];
     }
     document.getElementById("combo-save-button").removeEventListener("click", handleCombo);
@@ -280,6 +289,9 @@ const handleList = function (e) {
     document.getElementById("list-option").style.display = 'none';
     e.stopPropagation();
     const formFieldName = document.getElementById("list-input-name").value;
+    fontStyle = document.getElementById('list-font-style').value;
+    fontSize = parseInt(document.getElementById('list-font-size').value);
+    textColor = document.getElementById('list-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
             form_storage.optionArray = listboxOptionArray;
@@ -309,9 +321,15 @@ const handleList = function (e) {
             y: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
+            fontStyle: fontStyle,
+            fontSize: fontSize,
+            textColor: textColor,
             xPage: formWidth,
             yPage: formHeight
         });
+        fontStyle = '';
+        fontSize = 12;
+        textColor = '';
         listboxOptionArray = [];
     }
     document.getElementById("list-save-button").removeEventListener("click", handleCombo);
@@ -347,6 +365,9 @@ const handleButton = function (e) {
 
     const formFieldName = document.getElementById("button-field-input-name").value;
     const initialValue = document.getElementById("button-text").value;
+    fontStyle = document.getElementById('button-font-style').value;
+    fontSize = parseInt(document.getElementById('button-font-size').value);
+    textColor = document.getElementById('button-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
             form_storage[i].action = form_action;
@@ -377,9 +398,15 @@ const handleButton = function (e) {
             y: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
+            fontStyle: fontStyle,
+            fontSize: fontSize,
+            textColor: textColor,
             xPage: formWidth,
             yPage: formHeight
         });
+        fontStyle = '';
+        fontSize = 12;
+        textColor = '';
         form_action = 0;
     }
     document.getElementById("button-save-button").removeEventListener("click", handleButton);
@@ -451,24 +478,24 @@ const showOption = function (id, x, y) {
 
 const resizeCanvas = function (id, type, currentId, optionId) {
     interact(`#${id}`)
-    .resizable({
-        // resize from all edges and corners
-        edges: { left: '.resize-l', right: '.resize-r', bottom: '.resize-b', top: '.resize-t' },
-        
-        listeners: {
-            move(event) {    
+        .resizable({
+            // resize from all edges and corners
+            edges: { left: '.resize-l', right: '.resize-r', bottom: '.resize-b', top: '.resize-t' },
+
+            listeners: {
+                move(event) {
                     var target = event.target
                     let x = (parseFloat(target.getAttribute('data-x')) || 0)
                     let y = (parseFloat(target.getAttribute('data-y')) || 0)
-                    
+
                     // update the element's style
                     target.style.width = event.rect.width + 'px'
                     target.style.height = event.rect.height + 'px'
-                    
+
                     // translate when resizing from top or left edges
                     x += event.deltaRect.left
                     y += event.deltaRect.top
-                    
+
                     target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
 
                     target.setAttribute('data-x', x)
@@ -529,12 +556,25 @@ const resizeCanvas = function (id, type, currentId, optionId) {
         })
 }
 // Show the specified OptionPane and add resizebar.
-const showOptionAndResizebar = function (optionId, object, objectWidth, objectHeight) {
+const showOptionAndResizebar = function (optionId, object, objectWidth, objectHeight, id) {
     isOptionPane = true;
     let option = showOption(optionId, objectWidth / 2 - 180, objectHeight + 15);
     removeParentEvent(optionId);
     addResizebar(object.id);
     object.append(option);
+    if (optionId != CHECKBOX_OPTION && optionId != RADIO_OPTION) {
+        let selectStyleContent = '';
+        let selectSizeContent = '';
+        fontStyleArr.map((item) => {
+            selectStyleContent += `<option value=${item}>${item}</option>`;
+        })
+        fontSizeArr.map((item) => {
+            if (item == 'auto') selectSizeContent += `<option value='12'}>Default</option>`;
+            else selectSizeContent += `<option value=${item}>${item}</option>`;
+        })
+        document.getElementById(`${id}-font-style`).innerHTML = selectStyleContent;
+        document.getElementById(`${id}-font-size`).innerHTML = selectSizeContent;
+    }
 }
 // Add Delete button and define action.
 const addDeleteButton = function (currentId, container, object, type) {
@@ -657,12 +697,12 @@ const eventHandler = async function (e) {
         case RADIO:
             removeRadio();
             isRadioButton = !isRadioButton;
-            
+
             let radio_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
-            
+
             pos_x_pdf = radio_x_y[0];
             pos_y_pdf = radio_x_y[1];
-            
+
             let radioId = baseId;
             current_form_id = radioId;
 
@@ -763,18 +803,7 @@ const eventHandler = async function (e) {
             pg.appendChild(textDiv);
 
             // Show TextField OptionPane
-            showOptionAndResizebar(TEXT_OPTION, textDiv, textWidth, textHeight);
-            let selectStyleContent = '';
-            let selectSizeContent = '';
-            fontStyleArr.map((item) => {
-                selectStyleContent += `<option value=${item}>${item}</option>`;
-            })
-            fontSizeArr.map((item) => {
-                if(item == 'auto') selectSizeContent += `<option value='12'}>Default</option>`; 
-                else selectSizeContent += `<option value=${item}>${item}</option>`;
-            })
-            document.getElementById("text-font-style").innerHTML = selectStyleContent;
-            document.getElementById("text-font-size").innerHTML = selectSizeContent;
+            showOptionAndResizebar(TEXT_OPTION, textDiv, textWidth, textHeight, "text");
 
             document.getElementById("text-field-input-name").value = `Text Form Field ${textfieldCount++}`
 
@@ -852,7 +881,7 @@ const eventHandler = async function (e) {
             pg.appendChild(comboDiv);
 
             // Show Combobox OptionPane
-            showOptionAndResizebar(COMBO_OPTION, comboDiv, comboWidth, comboHeight);
+            showOptionAndResizebar(COMBO_OPTION, comboDiv, comboWidth, comboHeight, "combo");
             document.getElementById("combo-input-name").value = `Combobox Form Field ${comboCount++}`
 
             comboDiv.addEventListener("click", (e) => {
@@ -879,6 +908,9 @@ const eventHandler = async function (e) {
                                 document.getElementById("combo-input-name").value = element.form_field_name;
                                 isOptionPane = true;
                                 option = showOption(COMBO_OPTION, element.xPage / 2 - 180, element.yPage + 15);
+                                document.getElementById("combo-font-style").value = element.fontStyle;
+                                document.getElementById("combo-font-size").value = element.fontSize;
+                                document.getElementById("combo-font-color").value = element.textColor;
                                 element.optionArray.map((elementItem) => {
                                     const optionContent = document.createElement("div");
                                     const deleteDivId = `delete-span-${comboboxOptionCount}`;
@@ -980,7 +1012,7 @@ const eventHandler = async function (e) {
 
             pg.appendChild(listDiv);
 
-            showOptionAndResizebar(LIST_OPTION, listDiv, listWidth, listHeight);
+            showOptionAndResizebar(LIST_OPTION, listDiv, listWidth, listHeight, "list");
             document.getElementById("list-input-name").value = `Listbox Form Field ${listCount++}`
 
             listDiv.addEventListener("click", (e) => {
@@ -1008,6 +1040,9 @@ const eventHandler = async function (e) {
                                 document.getElementById("list-input-name").value = element.form_field_name;
                                 isOptionPane = true;
                                 option = showOption(LIST_OPTION, element.xPage / 2 - 180, element.yPage + 15);
+                                document.getElementById("list-font-style").value = element.fontStyle;
+                                document.getElementById("list-font-size").value = element.fontSize;
+                                document.getElementById("list-font-color").value = element.textColor;
                                 element.optionArray.map((elementItem) => {
                                     const optionContent = document.createElement("div");
                                     const deleteDivId = `delete-span-${listboxOptionCount}`;
@@ -1110,7 +1145,7 @@ const eventHandler = async function (e) {
 
             pg.appendChild(buttonDiv);
 
-            showOptionAndResizebar(BUTTON_OPTION, buttonDiv, buttonWidth, buttonHeight);
+            showOptionAndResizebar(BUTTON_OPTION, buttonDiv, buttonWidth, buttonHeight, "button");
             document.getElementById("button-field-input-name").value = `Button Form Field ${buttonCount++}`;
 
             buttonDiv.addEventListener("click", () => {
@@ -1136,6 +1171,9 @@ const eventHandler = async function (e) {
                                 document.getElementById("button-field-input-name").value = element.form_field_name;
                                 isOptionPane = true;
                                 option = showOption(BUTTON_OPTION, element.xPage / 2 - 180, element.yPage + 15);
+                                document.getElementById("button-font-style").value = element.fontStyle;
+                                document.getElementById("button-font-size").value = element.fontSize;
+                                document.getElementById("button-font-color").value = element.textColor;
                                 const selectedValue = document.getElementById("button-field-input-action");
                                 if (element.action == SUBMIT) {
                                     selectedValue.value = "submit";
@@ -1555,15 +1593,15 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
     }
     if (offsetX != 0 || offsetY != 0) {
         if (DrawType === RADIO) {
-    
+
             form_storage.map(function (item) {
-                    if (item.id === parseInt(currentId)) {
+                if (item.id === parseInt(currentId)) {
                     item.data.x = item.data.x + offsetX * 0.75 * 0.75;
                     item.data.y = item.data.y - offsetY * 0.75 * 0.75;
                 }
 
             });
-    
+
         } else {
             form_storage.map(function (item) {
                 if (item.id === parseInt(currentId)) {
@@ -1632,7 +1670,7 @@ function add_txt_comment() {
 const hexToRgb = function (hex) {
     // Remove the '#' at the beginning if present
     hex = hex.replace('#', '');
-    
+
     // Parse the hexadecimal color components
     const r = parseInt(hex.substring(0, 2), 16) / 255;
     const g = parseInt(hex.substring(2, 4), 16) / 255;
@@ -1666,7 +1704,7 @@ async function addFormElements() {
     let page;
     let checkboxForm, radioForm, textfieldForm, comboboxForm;
     let radioOption;
-    let customFont = '';
+    let customFont = '', selectedFont = '';
     if (form_storage.length != 0) {
         form_storage.forEach(async (form_item) => {
             page = pdfDoc.getPage(form_item.page_number - 1);
@@ -1675,6 +1713,11 @@ async function addFormElements() {
                     radioOption = form_item.data.option;
                     radioForm = form.createRadioGroup(radioOption);
                 }
+            }
+            if(form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
+                selectedFont = fontStyles[form_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
+                customFont = await pdfDoc.embedFont(selectedFont);
+                var { r, g, b } = hexToRgb(form_item.textColor);
             }
             switch (form_item.form_type) {
                 case CHECKBOX:
@@ -1697,7 +1740,6 @@ async function addFormElements() {
                     break;
                 case TEXTFIELD:
                     textfieldForm = form.createTextField(form_item.form_field_name);
-                    const {r, g, b} = hexToRgb(form_item.textColor);
                     textfieldForm.addToPage(page, {
                         x: form_item.x,
                         y: form_item.y - form_item.height,
@@ -1705,8 +1747,6 @@ async function addFormElements() {
                         height: form_item.height,
                         textColor: PDFLib.rgb(r, g, b)
                     });
-                    const selectedFont = fontStyles[form_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
-                    customFont = await pdfDoc.embedFont(selectedFont);
                     textfieldForm.updateAppearances(customFont);
                     textfieldForm.defaultUpdateAppearances(customFont);
                     textfieldForm.setFontSize(form_item.fontSize);
@@ -1718,8 +1758,12 @@ async function addFormElements() {
                         x: form_item.x,
                         y: form_item.y - form_item.height,
                         width: form_item.width,
-                        height: form_item.height
+                        height: form_item.height,
+                        textColor: PDFLib.rgb(r, g, b)
                     });
+                    comboboxForm.updateAppearances(customFont);
+                    comboboxForm.defaultUpdateAppearances(customFont);
+                    comboboxForm.setFontSize(form_item.fontSize);
                     break;
                 case LIST:
                     listboxForm = form.createOptionList(form_item.form_field_name);
@@ -1728,8 +1772,12 @@ async function addFormElements() {
                         x: form_item.x,
                         y: form_item.y - form_item.height,
                         width: form_item.width,
-                        height: form_item.height
+                        height: form_item.height,
+                        textColor: PDFLib.rgb(r, g, b)
                     });
+                    listboxForm.updateAppearances(customFont);
+                    listboxForm.defaultUpdateAppearances(customFont);
+                    listboxForm.setFontSize(form_item.fontSize);
                     break;
                 case BUTTON:
                     buttonfieldForm = form.createButton(form_item.form_field_name);
@@ -1737,8 +1785,12 @@ async function addFormElements() {
                         x: form_item.x,
                         y: form_item.y - form_item.height,
                         width: form_item.width,
-                        height: form_item.height
+                        height: form_item.height,
+                        textColor: PDFLib.rgb(r, g, b)
                     });
+                    buttonfieldForm.updateAppearances(customFont);
+                    buttonfieldForm.defaultUpdateAppearances(customFont);
+                    buttonfieldForm.setFontSize(form_item.fontSize);
                     if (form_item.action == RESET) {
                         const resetFormScript = `
                             var fields = this.getFields();

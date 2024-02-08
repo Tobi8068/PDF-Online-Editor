@@ -1725,7 +1725,7 @@ dialog :link {
   width: 360px;
   height: 320px;
   position: relative;
-  z-index: 99999;
+  z-index: 1000;
 }
 
 .checkbox-option-header {
@@ -1744,6 +1744,8 @@ dialog :link {
 }
 
 .checkbox-option-content {
+  display: flex;
+  flex-direction: column;
   overflow: auto;
   padding: 5px;
 }
