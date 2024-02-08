@@ -1714,7 +1714,7 @@ async function addFormElements() {
                     radioForm = form.createRadioGroup(radioOption);
                 }
             }
-            if(form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
+            if (form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
                 selectedFont = fontStyles[form_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
                 customFont = await pdfDoc.embedFont(selectedFont);
                 var { r, g, b } = hexToRgb(form_item.textColor);
@@ -1791,29 +1791,40 @@ async function addFormElements() {
                     buttonfieldForm.updateAppearances(customFont);
                     buttonfieldForm.defaultUpdateAppearances(customFont);
                     buttonfieldForm.setFontSize(form_item.fontSize);
-                    if (form_item.action == RESET) {
-                        const resetFormScript = `
-                            var fields = this.getFields();
-                            for (var key in fields) {
-                                var field = fields[key];
-                                if (field.type !== 'button') {
-                                    field.value = '';
+                    let formScript = ''
+                    if (form_item.action == SUBMIT) {
+                        formScript = `
+                            console.show();
+                            this.flattenPages();
+                        `;
+                    } else if (form_item.action == RESET) {
+                        formScript = `
+                            for (var i = 0; i < this.numFields; i++) {
+                                var fieldName = this.getNthFieldName(i);
+                                var fieldType = this.getField(fieldName).type;
+                        
+                                // Check if the field is not a button
+                                if (fieldType !== "button") {
+                                    // Reset the value of the field
+                                    this.getField(fieldName).value = "";
                                 }
                             }
                         `;
-                        buttonfieldForm.acroField.getWidgets().forEach((widget) => {
-                            widget.dict.set(
-                                PDFLib.PDFName.of('AA'),
-                                pdfDoc.context.obj({
-                                    U: {
-                                        Type: 'Action',
-                                        S: 'JavaScript',
-                                        JS: PDFLib.PDFHexString.fromText(resetFormScript),
-                                    },
-                                }),
-                            );
-                        });
+                        // formScript = 'console.show(); console.println("Hello World!");';
                     }
+                    console.log(formScript);
+                    buttonfieldForm.acroField.getWidgets().forEach((widget) => {
+                        widget.dict.set(
+                            PDFLib.PDFName.of('AA'),
+                            pdfDoc.context.obj({
+                                U: {
+                                    Type: 'Action',
+                                    S: 'JavaScript',
+                                    JS: PDFLib.PDFHexString.fromText(formScript),
+                                },
+                            }),
+                        );
+                    });
                     break;
                 default:
                     break;
