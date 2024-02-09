@@ -188,7 +188,9 @@ const handleText = function (e) {
     textColor = document.getElementById('text-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-
+            form_storage[i].fontStyle = fontStyle;
+            form_storage[i].fontSize = fontSize;
+            form_storage[i].textColor = textColor;
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
@@ -241,7 +243,10 @@ const handleCombo = function (e) {
     textColor = document.getElementById('combo-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            form_storage.optionArray = comboboxOptionArray;
+            form_storage[i].optionArray = comboboxOptionArray;
+            form_storage[i].fontStyle = fontStyle;
+            form_storage[i].fontSize = fontSize;
+            form_storage[i].textColor = textColor;
             comboboxOptionArray = [];
             break;
         }
@@ -294,7 +299,10 @@ const handleList = function (e) {
     textColor = document.getElementById('list-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
-            form_storage.optionArray = listboxOptionArray;
+            form_storage[i].optionArray = listboxOptionArray;
+            form_storage[i].fontStyle = fontStyle;
+            form_storage[i].fontSize = fontSize;
+            form_storage[i].textColor = textColor;
             listboxOptionArray = [];
             break;
         }
@@ -366,13 +374,17 @@ const handleButton = function (e) {
     e.stopPropagation();
 
     const formFieldName = document.getElementById("button-field-input-name").value;
-    const initialValue = document.getElementById("button-text").value;
+    let initialValue = document.getElementById("button-text").value;
     fontStyle = document.getElementById('button-font-style').value;
     fontSize = parseInt(document.getElementById('button-font-size').value);
     textColor = document.getElementById('button-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
             form_storage[i].action = form_action;
+            form_storage[i].fontStyle = fontStyle;
+            form_storage[i].fontSize = fontSize;
+            form_storage[i].textColor = textColor;
+            form_storage[i].text = initialValue;
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
@@ -527,7 +539,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
 
                 // minimum size
                 interact.modifiers.restrictSize({
-                    min: { width: 25, height: 25 }
+                    min: { width: 15, height: 15 }
                 })
             ],
 
@@ -1149,7 +1161,7 @@ const eventHandler = async function (e) {
 
             showOptionAndResizebar(BUTTON_OPTION, buttonDiv, buttonWidth, buttonHeight, "button");
             document.getElementById("button-field-input-name").value = `Button Form Field ${buttonCount++}`;
-
+            document.getElementById("button-text").value = "Button";
             buttonDiv.addEventListener("click", () => {
 
                 current_button_id = buttonId;
@@ -1728,7 +1740,9 @@ async function addFormElements() {
                         x: form_item.x,
                         y: form_item.y - form_item.height,
                         width: form_item.width,
-                        height: form_item.height
+                        height: form_item.height,
+                        backgroundColor: PDFLib.rgb(1, 1, 1),
+                        borderColor: PDFLib.rgb(1, 1, 1)
                     });
                     break;
                 case RADIO:
@@ -1736,7 +1750,8 @@ async function addFormElements() {
                         x: form_item.data.x,
                         y: form_item.data.y - form_item.data.height,
                         width: form_item.data.width,
-                        height: form_item.data.height
+                        height: form_item.data.height,
+                        backgroundColor: PDFLib.rgb(1, 1, 1)
                     });
                     radioCount++;
                     break;
@@ -1747,7 +1762,9 @@ async function addFormElements() {
                         y: form_item.y - form_item.height,
                         width: form_item.width,
                         height: form_item.height,
-                        textColor: PDFLib.rgb(r, g, b)
+                        textColor: PDFLib.rgb(r, g, b),
+                        backgroundColor: PDFLib.rgb(1, 1, 1),
+                        borderColor: PDFLib.rgb(1, 1, 1)
                     });
                     textfieldForm.updateAppearances(customFont);
                     textfieldForm.defaultUpdateAppearances(customFont);
@@ -1761,7 +1778,10 @@ async function addFormElements() {
                         y: form_item.y - form_item.height,
                         width: form_item.width,
                         height: form_item.height,
-                        textColor: PDFLib.rgb(r, g, b)
+                        textColor: PDFLib.rgb(r, g, b),
+                        backgroundColor: PDFLib.rgb(1, 1, 1),
+                        borderSize: 1,
+                        borderColor: PDFLib.rgb(0.23, 0.23, 0.23)
                     });
                     comboboxForm.updateAppearances(customFont);
                     comboboxForm.defaultUpdateAppearances(customFont);
@@ -1775,7 +1795,9 @@ async function addFormElements() {
                         y: form_item.y - form_item.height,
                         width: form_item.width,
                         height: form_item.height,
-                        textColor: PDFLib.rgb(r, g, b)
+                        textColor: PDFLib.rgb(r, g, b),
+                        backgroundColor: PDFLib.rgb(1, 1, 1),
+                        borderColor: PDFLib.rgb(1, 1, 1)
                     });
                     listboxForm.updateAppearances(customFont);
                     listboxForm.defaultUpdateAppearances(customFont);
@@ -1788,7 +1810,8 @@ async function addFormElements() {
                         y: form_item.y - form_item.height,
                         width: form_item.width,
                         height: form_item.height,
-                        textColor: PDFLib.rgb(r, g, b)
+                        textColor: PDFLib.rgb(r, g, b),
+                        backgroundColor: PDFLib.rgb(0.24, 0.59, 0.99)
                     });
                     buttonfieldForm.updateAppearances(customFont);
                     buttonfieldForm.defaultUpdateAppearances(customFont);
@@ -1821,7 +1844,11 @@ async function addFormElements() {
                     } else if (form_item.action == NOACTION) {
                         formScript = `
                             console.show();
-                            this.getField("Signature").signatureSign({bUI:true});
+                            app.trustedFunction(function() {
+                                app.beginPriv();
+                                this.getField("Signature").signatureSign({bUI:true});
+                                app.endPriv();
+                            });
                         `
                     }
 
