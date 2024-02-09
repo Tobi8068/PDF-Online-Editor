@@ -43,7 +43,7 @@ const fontSizeArr = ['auto', 4, 6, 8, 10, 12, 14, 16, 18, 24, 36, 48, 64, 72, 96
 let formWidth = 25;
 let formHeight = 25;
 
-const SUBMIT = 1, RESET = 2;
+const SUBMIT = 1, RESET = 2, NOACTION = 3;
 
 const CHECKBOX_OPTION = "checkbox-option";
 const RADIO_OPTION = "radio-button-option";
@@ -360,6 +360,8 @@ const handleButton = function (e) {
         form_action = SUBMIT;
     } else if (selectedValue === 'reset') {
         form_action = RESET;
+    } else if (selectedValue === 'no_action') {
+        form_action = NOACTION;
     }
     e.stopPropagation();
 
@@ -1794,11 +1796,16 @@ async function addFormElements() {
                     let formScript = ''
                     if (form_item.action == SUBMIT) {
                         formScript = `
-                            console.show();
-                            this.flattenPages();
+                            for (var i = 0; i < this.numFields; i++) {
+                                var fieldName = this.getNthFieldName(i);
+                                var field = this.getField(fieldName);
+                                field.readonly = true;
+                            }
+                            this.saveAs("flattened.pdf");
                         `;
                     } else if (form_item.action == RESET) {
                         formScript = `
+                            console.show();
                             for (var i = 0; i < this.numFields; i++) {
                                 var fieldName = this.getNthFieldName(i);
                                 var fieldType = this.getField(fieldName).type;
@@ -1811,8 +1818,13 @@ async function addFormElements() {
                             }
                         `;
                         // formScript = 'console.show(); console.println("Hello World!");';
+                    } else if (form_item.action == NOACTION) {
+                        formScript = `
+                            console.show();
+                            this.getField("Signature").signatureSign({bUI:true});
+                        `
                     }
-                    console.log(formScript);
+
                     buttonfieldForm.acroField.getWidgets().forEach((widget) => {
                         widget.dict.set(
                             PDFLib.PDFName.of('AA'),
