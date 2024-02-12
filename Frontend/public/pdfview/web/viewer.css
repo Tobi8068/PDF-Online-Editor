@@ -1687,7 +1687,7 @@ dialog :link {
   align-items: center;
   justify-content: center;
   outline: none;
-  margin: 2px;
+  margin: 2px 0px;
   color: #0C0C0D;
 }
 

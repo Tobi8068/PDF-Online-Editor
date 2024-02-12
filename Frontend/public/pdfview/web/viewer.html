@@ -378,7 +378,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                   data-l10n-id="pdfjs-editor-highlight-button">
                   <span data-l10n-id="pdfjs-editor-highlight-button-label">Highlight</span>
                 </button>
-                <button id="editorFreeText" class="toolbarButton" disabled="disabled" title="Text" role="radio"
+                <button id="editorFreeText" class="toolbarButton" style="display: none;" disabled="disabled" title="Text" role="radio"
                   aria-checked="false" aria-controls="editorFreeTextParamsToolbar" tabindex="32"
                   data-l10n-id="pdfjs-editor-free-text-button">
                   <span data-l10n-id="pdfjs-editor-free-text-button-label">Text</span>
@@ -394,10 +394,13 @@ See https://github.com/adobe-type-tools/cmap-resources
                   <span data-l10n-id="pdfjs-editor-stamp-button-label">Add or edit images</span>
                 </button>
               </div>
-
+              <button class="second_toolbar_button" id="add_text" title="Add Text">
+                <i class="far fa-i"></i>
+              </button>
               <button class="second_toolbar_button" id="add_comment_mode" title="Add Comment">
                 <i class="far fa-comment"></i>
               </button>
+
               <div id="editorModeSeparator" class="verticalToolbarSeparator"></div>
               <button class="second_toolbar_button" id="add_form_check" title="Add checkbox"
                 onclick="addForm(CHECKBOX)">
@@ -699,7 +702,8 @@ See https://github.com/adobe-type-tools/cmap-resources
 
   <!--#if GENERIC-->
   <input type="file" id="fileInput" class="hidden">
-  <script src="addcomment.js"></script>
+  <script src="addComment.js"></script>
+  <script src="addForm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.16.0/dist/pdf-lib.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
