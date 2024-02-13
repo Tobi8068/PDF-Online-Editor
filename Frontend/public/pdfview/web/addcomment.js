@@ -220,7 +220,7 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         newText.textContent = "Your text is here.";
         newText.style.height = "100%"
         newText.style.position = "relative";
-        
+
         newText.classList.add('textfield-content');
         const container = document.createElement('div');
         container.id = "textfield" + count_text++;
@@ -234,8 +234,42 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         current_text_content_id = newText.id;
         current_text_content_id_copy = newText.id;
         resizeCanvas(container.id, TEXT_CONTENT, null, null);
-        
-        console.log(current_text_content_id);
+
+        container.addEventListener("click", (e) => {
+
+            current_text_content_id = container.id;
+            let istooltipshow = false;
+            if (document.getElementById("tooltipbar" + current_text_content_id)) {
+                istooltipshow = true;
+            }
+            if (isDragging) {
+                isDragging = false;
+            }
+            else {
+                if (!istooltipshow) {
+
+                    let tooltipbar = document.createElement("div")
+                    tooltipbar.id = "tooltipbar" + current_text_content_id;
+                    tooltipbar.style.position = "absolute";
+                    tooltipbar.style.zIndex = 100;
+                    tooltipbar.style.top = ((parseInt(container.style.height) / 2) - 12.5) + 'px';
+                    tooltipbar.style.left = parseInt(container.style.width) + 10 + 'px';
+                    let deleteBtn = document.createElement("button");
+                    deleteBtn.style.padding = "5px";
+                    deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
+                    deleteBtn.addEventListener("click", () => {
+                        current_text_content_id = tooltipbar.id.replace("tooltipbar", "")
+                        document.getElementById(current_text_content_id).remove();
+                    })
+                    tooltipbar.appendChild(deleteBtn)
+                    container.appendChild(tooltipbar)
+                }
+                else {
+                    document.getElementById("tooltipbar" + current_text_content_id).remove();
+                }
+            }
+        })
+
         isTextModeOn = false;
         document.getElementById("add_text").innerHTML = '<i class="far fa-i"></i>';
     }
