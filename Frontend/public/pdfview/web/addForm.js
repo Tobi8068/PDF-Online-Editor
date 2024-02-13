@@ -45,6 +45,9 @@ const fontSizeArr = ['auto', 4, 6, 8, 10, 12, 14, 16, 18, 24, 36, 48, 64, 72, 96
 
 let formWidth = 25;
 let formHeight = 25;
+
+let selectedAlign = '', groupNameAlign = '';
+
 // Check the same form field name and modify field name
 const checkFormField = function (id) {
     const formFieldName = document.getElementById(id).value;
@@ -79,6 +82,21 @@ const removeParentEvent = function (id) {
             }
         }
     })
+}
+
+function handleRadioSelection(event) {
+    const selectedRadioButton = event.target;
+    if (selectedRadioButton.checked) {
+        selectedAlign = selectedRadioButton.value;
+        groupNameAlign = selectedRadioButton.name;
+        if (selectedAlign == 'left') {
+            alignValue = ALIGN_LEFT;
+        } else if (selectedAlign == 'center') {
+            alignValue = ALIGN_CENTER;
+        } else if (selectedAlign == 'right') {
+            alignValue = ALIGN_RIGHT;
+        }
+    }
 }
 
 // When click "Save" button, save the information of Checkbox element.
@@ -171,11 +189,13 @@ const handleText = function (e) {
     fontStyle = document.getElementById('text-font-style').value;
     fontSize = parseInt(document.getElementById('text-font-size').value);
     textColor = document.getElementById('text-font-color').value;
+
     for (let i = 0; i < form_storage.length; i++) {
         if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
             form_storage[i].fontStyle = fontStyle;
             form_storage[i].fontSize = fontSize;
             form_storage[i].textColor = textColor;
+            form_storage[i].align = alignValue;
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
@@ -211,6 +231,7 @@ const handleText = function (e) {
         fontStyle = '';
         fontSize = 12;
         textColor = '';
+        alignValue = 0;
     }
     document.getElementById("text-save-button").removeEventListener("click", handleText);
 }
@@ -489,7 +510,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
                     DrawType = type;
-                    if(DrawType != TEXT_CONTENT) {
+                    if (DrawType != TEXT_CONTENT) {
                         resizeHandler(event.rect.width, event.rect.height, currentId);
                         showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
                     }
@@ -503,7 +524,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.style.height = event.rect.height + 'px'
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
-                    if(DrawType != TEXT_CONTENT) {
+                    if (DrawType != TEXT_CONTENT) {
                         moveEventHandler(event, x, y, currentId);
                     }
                 }
@@ -536,7 +557,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
                     DrawType = type;
-                    if(DrawType == TEXT_CONTENT) {
+                    if (DrawType == TEXT_CONTENT) {
                         const currentText = document.getElementById(current_text_content_id);
                         currentText.addEventListener('focus', function () {
                             interactInstance.draggable(false);
@@ -554,7 +575,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     const target = event.target;
                     var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
                     var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-                    if(DrawType != TEXT_CONTENT) {
+                    if (DrawType != TEXT_CONTENT) {
                         moveEventHandler(event, x, y, currentId);
                     }
                 }
@@ -848,7 +869,10 @@ const eventHandler = async function (e) {
 
             // Show TextField OptionPane
             showOptionAndResizebar(TEXT_OPTION, textDiv, textWidth, textHeight, "text");
-
+            const textfieldAlign = document.querySelectorAll('input[type=radio][name="text-field"]');
+            textfieldAlign.forEach(function (radio) {
+                radio.addEventListener('change', handleRadioSelection);
+            });
             document.getElementById("text-field-input-name").value = `Text Form Field ${textfieldCount++}`
 
             textDiv.addEventListener("click", () => {
@@ -878,6 +902,10 @@ const eventHandler = async function (e) {
                                 document.getElementById("text-font-style").value = element.fontStyle;
                                 document.getElementById("text-font-size").value = element.fontSize;
                                 document.getElementById("text-font-color").value = element.textColor;
+                                let selected = element.align;
+                                if(selected == ALIGN_LEFT) document.getElementById('text-left').checked = true;
+                                if(selected == ALIGN_CENTER) document.getElementById('text-center').checked = true;
+                                if(selected == ALIGN_RIGHT) document.getElementById('text-right').checked = true;
                                 textDiv.append(option);
                             }
                         })
@@ -1469,6 +1497,9 @@ const flatten = async function () {
     }
 }
 
+textfieldAlign.forEach(function (radio) {
+    radio.addEventListener('change', handleRadioSelection);
+});
 
 
 async function addFormElements() {
@@ -1546,7 +1577,7 @@ async function addFormElements() {
                     textfieldForm.updateAppearances(customFont);
                     textfieldForm.defaultUpdateAppearances(customFont);
                     textfieldForm.setFontSize(form_item.fontSize);
-                    textfieldForm.setAlignment(PDFLib.TextAlignment.Right);
+                    textfieldForm.setAlignment(form_item.align);
                     break;
                 case COMBOBOX:
                     comboboxForm = form.createDropdown(form_item.form_field_name);
@@ -1632,12 +1663,12 @@ async function addFormElements() {
                         // app.trustedFunction(myFunc);
                         // myFunc(this);
                         // var sign = this.getField("Signature");
-                            // var run = app.trustedFunction(function() {
-                            //     app.beginPriv();
-                            //     sign.signatureSign({bUI:true});
-                            //     app.endPriv();
-                            // });
-                            // run();
+                        // var run = app.trustedFunction(function() {
+                        //     app.beginPriv();
+                        //     sign.signatureSign({bUI:true});
+                        //     app.endPriv();
+                        // });
+                        // run();
                     }
 
                     buttonfieldForm.acroField.getWidgets().forEach((widget) => {
