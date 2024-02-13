@@ -79,6 +79,6 @@ fontSizeBtn.addEventListener("input",() =>{
 	document.execCommand("fontSize",false,fontSizeBtn.value);
 })
 hideBtn.addEventListener('click', () => {
-	// document.getElementById('text-edit-controller').style.display = 'none';
-	Convert_HTML_To_PDF();
+	document.getElementById('text-edit-controller').style.display = 'none';
+	// Convert_HTML_To_PDF();
 })
