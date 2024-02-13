@@ -1839,7 +1839,19 @@ dialog :link {
 .option-delete {
   cursor: pointer;
 }
-
+.align-button {
+  cursor: pointer;
+  border: 1px black solid;
+  border-radius: 3px;
+  padding: 3px 5px;
+}
+.align-button input:checked + i:before {
+  color: blue; /* Change the icon when selected */
+}
+.align-container {
+  display: flex;
+  gap: 20px;
+}
 /* Resize Point */
 .top-left {
   top: -5px;
@@ -1899,3 +1911,53 @@ dialog :link {
 .resize-b {}
 .resize-l {}
 .resize-r {}
+
+/* Text Editor */
+.control-btn-container
+{
+	display: none;
+  position: absolute;
+  height: 30px;
+}
+.main-controls
+{
+	display:flex;
+}
+.control-btn
+{
+	margin-left: 4px;
+	width: 40px;
+  padding: 3px;
+  height: auto;
+}
+#input-font-btn
+{
+	margin-left: 6px;
+	width: 160px;
+	border-radius: 5px;
+}
+#font-size-btn
+{
+	width: 40px;
+	margin-left: 6px;
+	border-radius: 5px;
+}
+#filename-input
+{
+	margin-left: 10px;
+}
+#color-btn
+{
+	border-radius: 5px;
+}
+.textfield-content 
+{
+  border: 1px #3c97fe solid;
+	box-shadow: 0 0 5px 0 rgba(0,0,0,0.5);
+	outline: none;
+}
+.controller-hide {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}

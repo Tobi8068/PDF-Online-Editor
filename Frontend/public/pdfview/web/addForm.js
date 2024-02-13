@@ -2,7 +2,7 @@ let baseId = 0;
 let form_storage = [];
 let current_form_id = 0;
 let currentMode = null;
-const CHECKBOX = 1, RADIO = 2, TEXTFIELD = 3, COMBOBOX = 4, LIST = 5, BUTTON = 6;
+const CHECKBOX = 1, RADIO = 2, TEXTFIELD = 3, COMBOBOX = 4, LIST = 5, BUTTON = 6, TEXT_CONTENT = 7;
 let checkboxCount = 1; radioCount = 1, textfieldCount = 1, comboCount = 1, listCount = 1, buttonCount = 1;
 let isCheckbox = false, isRadioButton = false, isTextField = false, isCombo = false, isList = false, isButton = false;
 
@@ -23,6 +23,9 @@ const TEXT_OPTION = "text-field-option";
 const COMBO_OPTION = "combo-option";
 const LIST_OPTION = "list-option";
 const BUTTON_OPTION = "button-field-option";
+
+const ALIGN_LEFT = 0, ALIGN_RIGHT = 2, ALIGN_CENTER = 1;
+let alignValue = 0;
 
 let isOptionPane = false;
 
@@ -201,6 +204,7 @@ const handleText = function (e) {
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
+            align: alignValue,
             xPage: formWidth,
             yPage: formHeight
         });
@@ -461,7 +465,7 @@ const handleButton = function (e) {
 
 // Resize and move canvas using Interact.js library.
 const resizeCanvas = function (id, type, currentId, optionId) {
-    interact(`#${id}`)
+    const interactInstance = interact(`#${id}`)
         .resizable({
             // resize from all edges and corners
             edges: { left: '.resize-l', right: '.resize-r', bottom: '.resize-b', top: '.resize-t' },
@@ -485,8 +489,10 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
                     DrawType = type;
-                    resizeHandler(event.rect.width, event.rect.height, currentId);
-                    showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
+                    if(DrawType != TEXT_CONTENT) {
+                        resizeHandler(event.rect.width, event.rect.height, currentId);
+                        showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
+                    }
                 },
                 end(event) {
                     let target = event.target
@@ -497,8 +503,9 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.style.height = event.rect.height + 'px'
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
-
-                    moveEventHandler(event, x, y, currentId);
+                    if(DrawType != TEXT_CONTENT) {
+                        moveEventHandler(event, x, y, currentId);
+                    }
                 }
             },
             modifiers: [
@@ -529,16 +536,33 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
                     DrawType = type;
+                    if(DrawType == TEXT_CONTENT) {
+                        const currentText = document.getElementById(current_text_content_id);
+                        currentText.addEventListener('focus', function () {
+                            interactInstance.draggable(false);
+                            current_text_content_id = current_text_content_id_copy;
+                            console.log('focus');
+                        })
+                        currentText.addEventListener('blur', function () {
+                            interactInstance.draggable(true);
+                            current_text_content_id = '';
+                            console.log('blur');
+                        })
+                    }
                 },
                 end(event) {
                     const target = event.target;
                     var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
                     var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-                    moveEventHandler(event, x, y, currentId);
+                    if(DrawType != TEXT_CONTENT) {
+                        moveEventHandler(event, x, y, currentId);
+                    }
                 }
             }
         })
 }
+
+
 
 const resizeHandler = function (width, height, currentId) {
     if (DrawType == RADIO) {
@@ -1522,6 +1546,7 @@ async function addFormElements() {
                     textfieldForm.updateAppearances(customFont);
                     textfieldForm.defaultUpdateAppearances(customFont);
                     textfieldForm.setFontSize(form_item.fontSize);
+                    textfieldForm.setAlignment(PDFLib.TextAlignment.Right);
                     break;
                 case COMBOBOX:
                     comboboxForm = form.createDropdown(form_item.form_field_name);

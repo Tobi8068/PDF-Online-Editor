@@ -13,6 +13,9 @@ let mouse_x = 0;
 let mouse_y = 0;
 
 let current_comment_id = 0;
+let current_text_content_id = 0;
+let current_text_content_id_copy = 0;
+let count_text = 0;
 
 let isDragging = false;
 let DrawType = "nothing";
@@ -190,24 +193,44 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     mouse_x = evt.x;
     mouse_y = evt.y;
 
+    let ost = computePageOffset();
+
+    comment_x = evt.pageX - ost.left
+    comment_y = evt.pageY - ost.top
+    let x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(comment_x, comment_y)
+    comment_x = x_y[0]
+    comment_y = x_y[1]
+
     if (isAddCommentModeOn) {
-
-        let ost = computePageOffset()
-
-        comment_x = evt.pageX - ost.left
-        comment_y = evt.pageY - ost.top
-
         comment_control.style.left = evt.x + "px";
         comment_control.style.top = evt.y + "px";
         comment_control.style.display = "block";
-
-        let x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(comment_x, comment_y)
-
-        comment_x = x_y[0]
-        comment_y = x_y[1]
     }
     if (isTextModeOn) {
+        let pageId = String(PDFViewerApplication.page)
+        let pg = document.getElementById(pageId)
+        var rect = pg.getBoundingClientRect(), bodyElt = document.body;
+        var top = rect.top;
+        var left = rect.left;
 
+        const newText = document.createElement('div');
+        newText.id = "textfield" + count_text++;
+        newText.contentEditable = "true";
+        newText.spellcheck = "false";
+        newText.textContent = "Your text is here.";
+        newText.style.position = "absolute";
+        newText.style.zIndex = 101;
+        newText.style.top = (mouse_y - top) + "px";
+        newText.style.left = (mouse_x - left) + "px";
+        newText.classList.add('textfield-content');
+        pg.append(newText);
+        addResizebar(newText.id);
+        resizeCanvas(newText.id, TEXT_CONTENT);
+        current_text_content_id = newText.id;
+        current_text_content_id_copy = newText.id;
+        console.log(current_text_content_id);
+        isTextModeOn = false;
+        document.getElementById("add_text").innerHTML = '<i class="far fa-i"></i>';
     }
 })
 
@@ -227,9 +250,14 @@ document.getElementById("add_comment_mode").addEventListener("click", (e) => {
 document.getElementById("add_text").addEventListener("click", (e) => {
     if (isTextModeOn) {
         document.getElementById("add_text").innerHTML = '<i class="far fa-i"></i>';
+        document.getElementById('text-edit-controller').style.display = "none";
         isTextModeOn = false;
     } else {
         document.getElementById("add_text").innerHTML = '<i class="fa fa-i"></i>';
+        document.getElementById('text-edit-controller').style.display = "flex";
+        document.getElementById('text-edit-controller').style.top = "37px";
+        document.getElementById('text-edit-controller').style.right = "0px";
+        document.getElementById('text-edit-controller').style.zIndex = 150;
         isTextModeOn = true;
     }
 })

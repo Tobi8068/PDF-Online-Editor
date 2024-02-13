@@ -830,6 +830,31 @@ See https://github.com/adobe-type-tools/cmap-resources
             </div>
             <input type="color" id="text-font-color" name="colorPicker" class="form-field-input">
           </div>
+          <div class="form-style-container">
+            <div class="form-style-name">
+              <i class="fa fa-align-left"></i>
+              <span>Alignment</span>
+            </div>
+            <div>
+              <form class="align-container">
+                <label for="option1" class="align-button">
+                  <input type="radio" id="option1" name="radioGroup" value="option1" hidden>
+                  <i class="fa fa-align-left"></i>
+                </label>
+                <label for="option2" class="align-button">
+                  <input type="radio" id="option2" name="radioGroup" value="option2" hidden>
+                  <i class="fa fa-align-center"></i>
+                </label>
+                <label for="option3" class="align-button">
+                  <input type="radio" id="option3" name="radioGroup" value="option3" hidden>
+                  <i class="fa fa-align-right"></i>
+                </label>
+              </form>
+              <!-- <div class="align-button"><i class="fa fa-align-left"></i></div>
+              <div class="align-button"><i class="fa fa-align-center"></i></div>
+              <div class="align-button"><i class="fa fa-align-right"></i></div> -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1039,6 +1064,88 @@ See https://github.com/adobe-type-tools/cmap-resources
     </div>
   </div>
   <!--#endif-->
+
+  <!-- Text Editor -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+  <!-- Linking Bootstrap for effective styling of buttons -->
+  <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous"> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <div id="text-edit-controller" class="control-btn-container">
+    <!-- All different types of Buttons that can be used on editing the Text-->
+    <!-- Bold button -->
+    <button id="bold-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
+       <span class="fa fa-bold fa-fw" aria-hidden="true"></span>
+     </button>
+
+     <!-- Underline button -->
+     <button id="underline-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
+       <span class="fa fa-underline fa-fw" aria-hidden="true"></span>
+     </button>
+
+    <!-- Italic button -->
+    <button id="italic-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
+       <span class="fa fa-italic fa-fw" aria-hidden="true"></span>
+     </button>
+
+     <!-- Left Align button -->
+    <button id="left-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
+       <span class="fa fa-align-left fa-fw" aria-hidden="true"></span>
+     </button>
+
+     <!-- Justify button -->
+     <button id="justify-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
+       <span class="fa fa-align-justify fa-fw" aria-hidden="true"></span>
+     </button>
+
+     <!-- Center Align button -->
+     <button id="center-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
+       <span class="fa fa-align-center fa-fw" aria-hidden="true"></span>
+     </button>
+
+     <!-- Right Align button -->
+     <button id="right-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
+       <span class="fa fa-align-right fa-fw" aria-hidden="true"></span>
+     </button>
+
+     <input id="color-btn" type="color" class="control-btn"/>
+
+     <select id="input-font-btn"  class="input">
+        <option value="Arial">Arial</option>
+        <option value="Helvetica">Helvetica</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Sans serif">Sans serif</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Palatino">Palatino</option>
+        <option value="Garamond">Garamond</option>
+        <option value="Comic Sans MS">Comic Sans MS</option>
+        <option value="Arial Black">Arial Black</option>
+        <option value="Tahoma">Tahoma</option>
+        <option value="Comic Sans MS">Comic Sans MS</option>
+    </select>
+
+    <select id="font-size-btn">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+    </select>
+    <div id="controller-hide" class="controller-hide control-btn">
+      <span><i class="fa-solid fa-chevron-up"></i></span>
+    </div>
+  </div>
+  <script src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+	<script src="addTextField.js"></script>
 </body>
 
 </html>
