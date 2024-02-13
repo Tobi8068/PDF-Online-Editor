@@ -214,20 +214,27 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         var left = rect.left;
 
         const newText = document.createElement('div');
-        newText.id = "textfield" + count_text++;
+        newText.id = "textcontent" + count_text++;
         newText.contentEditable = "true";
         newText.spellcheck = "false";
         newText.textContent = "Your text is here.";
-        newText.style.position = "absolute";
-        newText.style.zIndex = 101;
-        newText.style.top = (mouse_y - top) + "px";
-        newText.style.left = (mouse_x - left) + "px";
+        newText.style.height = "100%"
+        newText.style.position = "relative";
+        
         newText.classList.add('textfield-content');
-        pg.append(newText);
-        addResizebar(newText.id);
-        resizeCanvas(newText.id, TEXT_CONTENT);
+        const container = document.createElement('div');
+        container.id = "textfield" + count_text++;
+        container.style.position = "absolute";
+        container.style.top = (mouse_y - top) + "px";
+        container.style.left = (mouse_x - left) + "px";
+        container.style.zIndex = 101;
+        container.append(newText)
+        pg.append(container);
+        addResizebar(container.id);
         current_text_content_id = newText.id;
         current_text_content_id_copy = newText.id;
+        resizeCanvas(container.id, TEXT_CONTENT, null, null);
+        
         console.log(current_text_content_id);
         isTextModeOn = false;
         document.getElementById("add_text").innerHTML = '<i class="far fa-i"></i>';

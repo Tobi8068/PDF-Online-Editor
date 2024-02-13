@@ -254,6 +254,7 @@ const handleCombo = function (e) {
             form_storage[i].fontStyle = fontStyle;
             form_storage[i].fontSize = fontSize;
             form_storage[i].textColor = textColor;
+            form_storage[i].align = alignValue;
             comboboxOptionArray = [];
             break;
         }
@@ -283,12 +284,14 @@ const handleCombo = function (e) {
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
+            align: alignValue,
             xPage: formWidth,
             yPage: formHeight
         });
         fontStyle = '';
         fontSize = 12;
         textColor = '';
+        alignValue = 0;
         comboboxOptionArray = [];
     }
     document.getElementById("combo-save-button").removeEventListener("click", handleCombo);
@@ -310,6 +313,7 @@ const handleList = function (e) {
             form_storage[i].fontStyle = fontStyle;
             form_storage[i].fontSize = fontSize;
             form_storage[i].textColor = textColor;
+            form_storage[i].align = alignValue;
             listboxOptionArray = [];
             break;
         }
@@ -339,12 +343,14 @@ const handleList = function (e) {
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
+            align: alignValue,
             xPage: formWidth,
             yPage: formHeight
         });
         fontStyle = '';
         fontSize = 12;
         textColor = '';
+        alignValue = 0;
         listboxOptionArray = [];
     }
     document.getElementById("list-save-button").removeEventListener("click", handleCombo);
@@ -443,6 +449,7 @@ const handleButton = function (e) {
             form_storage[i].fontSize = fontSize;
             form_storage[i].textColor = textColor;
             form_storage[i].text = initialValue;
+            form_storage[i].align = alignValue;
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
@@ -473,12 +480,14 @@ const handleButton = function (e) {
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
+            align: alignValue,
             xPage: formWidth,
             yPage: formHeight
         });
         fontStyle = '';
         fontSize = 12;
         textColor = '';
+        alignValue = 0;
         form_action = 0;
     }
     document.getElementById("button-save-button").removeEventListener("click", handleButton);
@@ -486,6 +495,7 @@ const handleButton = function (e) {
 
 // Resize and move canvas using Interact.js library.
 const resizeCanvas = function (id, type, currentId, optionId) {
+    DrawType = type;
     const interactInstance = interact(`#${id}`)
         .resizable({
             // resize from all edges and corners
@@ -509,7 +519,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
 
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
-                    DrawType = type;
+
                     if (DrawType != TEXT_CONTENT) {
                         resizeHandler(event.rect.width, event.rect.height, currentId);
                         showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
@@ -556,20 +566,6 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     // update the position attributes
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
-                    DrawType = type;
-                    if (DrawType == TEXT_CONTENT) {
-                        const currentText = document.getElementById(current_text_content_id);
-                        currentText.addEventListener('focus', function () {
-                            interactInstance.draggable(false);
-                            current_text_content_id = current_text_content_id_copy;
-                            console.log('focus');
-                        })
-                        currentText.addEventListener('blur', function () {
-                            interactInstance.draggable(true);
-                            current_text_content_id = '';
-                            console.log('blur');
-                        })
-                    }
                 },
                 end(event) {
                     const target = event.target;
@@ -581,6 +577,19 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                 }
             }
         })
+    if (DrawType == TEXT_CONTENT) {
+        const currentText = document.getElementById(current_text_content_id);
+        currentText.addEventListener('dblclick', function () {
+            interactInstance.draggable(false);
+            current_text_content_id = current_text_content_id_copy;
+            console.log('focus');
+        })
+        currentText.addEventListener('blur', function () {
+            interactInstance.draggable(true);
+            current_text_content_id = '';
+            console.log('blur');
+        })
+    }
 }
 
 
@@ -903,9 +912,9 @@ const eventHandler = async function (e) {
                                 document.getElementById("text-font-size").value = element.fontSize;
                                 document.getElementById("text-font-color").value = element.textColor;
                                 let selected = element.align;
-                                if(selected == ALIGN_LEFT) document.getElementById('text-left').checked = true;
-                                if(selected == ALIGN_CENTER) document.getElementById('text-center').checked = true;
-                                if(selected == ALIGN_RIGHT) document.getElementById('text-right').checked = true;
+                                if (selected == ALIGN_LEFT) document.getElementById('text-left').checked = true;
+                                if (selected == ALIGN_CENTER) document.getElementById('text-center').checked = true;
+                                if (selected == ALIGN_RIGHT) document.getElementById('text-right').checked = true;
                                 textDiv.append(option);
                             }
                         })
@@ -954,6 +963,10 @@ const eventHandler = async function (e) {
 
             // Show Combobox OptionPane
             showOptionAndResizebar(COMBO_OPTION, comboDiv, comboWidth, comboHeight, "combo");
+            const comboAlign = document.querySelectorAll('input[type=radio][name="text-field"]');
+            comboAlign.forEach(function (radio) {
+                radio.addEventListener('change', handleRadioSelection);
+            });
             document.getElementById("combo-input-name").value = `Combobox Form Field ${comboCount++}`
 
             comboDiv.addEventListener("click", (e) => {
@@ -1085,6 +1098,10 @@ const eventHandler = async function (e) {
             pg.appendChild(listDiv);
 
             showOptionAndResizebar(LIST_OPTION, listDiv, listWidth, listHeight, "list");
+            const listAlign = document.querySelectorAll('input[type=radio][name="text-field"]');
+            listAlign.forEach(function (radio) {
+                radio.addEventListener('change', handleRadioSelection);
+            });
             document.getElementById("list-input-name").value = `Listbox Form Field ${listCount++}`
 
             listDiv.addEventListener("click", (e) => {
@@ -1218,6 +1235,10 @@ const eventHandler = async function (e) {
             pg.appendChild(buttonDiv);
 
             showOptionAndResizebar(BUTTON_OPTION, buttonDiv, buttonWidth, buttonHeight, "button");
+            const buttonAlign = document.querySelectorAll('input[type=radio][name="text-field"]');
+            buttonAlign.forEach(function (radio) {
+                radio.addEventListener('change', handleRadioSelection);
+            });
             document.getElementById("button-field-input-name").value = `Button Form Field ${buttonCount++}`;
             document.getElementById("button-text").value = "Button";
             buttonDiv.addEventListener("click", () => {
@@ -1595,6 +1616,7 @@ async function addFormElements() {
                     comboboxForm.updateAppearances(customFont);
                     comboboxForm.defaultUpdateAppearances(customFont);
                     comboboxForm.setFontSize(form_item.fontSize);
+                    // comboboxForm.setAlignment(form_item.align);
                     break;
                 case LIST:
                     listboxForm = form.createOptionList(form_item.form_field_name);
@@ -1611,6 +1633,7 @@ async function addFormElements() {
                     listboxForm.updateAppearances(customFont);
                     listboxForm.defaultUpdateAppearances(customFont);
                     listboxForm.setFontSize(form_item.fontSize);
+                    // listboxForm.setAlignment(form_item.align);
                     break;
                 case BUTTON:
                     buttonfieldForm = form.createButton(form_item.form_field_name);
@@ -1625,6 +1648,7 @@ async function addFormElements() {
                     buttonfieldForm.updateAppearances(customFont);
                     buttonfieldForm.defaultUpdateAppearances(customFont);
                     buttonfieldForm.setFontSize(form_item.fontSize);
+                    // buttonfieldForm.setAlignment(form_item.align);
                     let formScript = ''
                     if (form_item.action == SUBMIT) {
                         formScript = `
