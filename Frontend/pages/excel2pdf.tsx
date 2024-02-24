@@ -13,12 +13,11 @@ export default function Excel2PDF() {
       setFile(event.target.files[0]);
     }
   };
-  const handleFileUpload = async () => {8
+  const handleFileUpload = async () => {
     setIsLoading(true);
     if (file) {
       const formData = new FormData();
       formData.append('file', file);
-
       try {
         const response: AxiosResponse = await axios.post(`${BASE_URL}/upload_excel`, formData, {
           headers: {

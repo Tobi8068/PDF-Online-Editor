@@ -1956,6 +1956,14 @@ dialog :link {
 	box-shadow: 0 0 5px 0 rgba(0,0,0,0.5);
 	outline: none;
 }
+.textcontent {
+  border: none;
+  outline: none;
+}
+.textcontent:focus {
+  border: none;
+  outline: none;
+}
 .controller-hide {
   display: flex;
   align-items: center;

@@ -23,6 +23,7 @@ const TEXT_OPTION = "text-field-option";
 const COMBO_OPTION = "combo-option";
 const LIST_OPTION = "list-option";
 const BUTTON_OPTION = "button-field-option";
+const TEXT_CONTENT_OPTION = "text-content-option";
 
 const ALIGN_LEFT = 0, ALIGN_RIGHT = 2, ALIGN_CENTER = 1;
 let alignValue = 0;
@@ -120,6 +121,8 @@ const handleCheckbox = function (e) {
             page_number: PDFViewerApplication.page,
             x: pos_x_pdf,
             y: pos_y_pdf,
+            baseX: pos_x_pdf,
+            baseY: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
             xPage: formWidth,
@@ -166,6 +169,8 @@ const handleRadio = function (e) {
                 option: formFieldName,
                 x: pos_x_pdf,
                 y: pos_y_pdf,
+                baseX: pos_x_pdf,
+                baseY: pos_y_pdf,
                 width: formWidth * 0.75 * 0.75,
                 height: formHeight * 0.75 * 0.75,
                 xPage: formWidth,
@@ -219,6 +224,8 @@ const handleText = function (e) {
             page_number: PDFViewerApplication.page,
             x: pos_x_pdf,
             y: pos_y_pdf,
+            baseX: pos_x_pdf,
+            baseY: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
             fontStyle: fontStyle,
@@ -279,6 +286,8 @@ const handleCombo = function (e) {
             optionArray: comboboxOptionArray,
             x: pos_x_pdf,
             y: pos_y_pdf,
+            baseX: pos_x_pdf,
+            baseY: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
             fontStyle: fontStyle,
@@ -338,6 +347,8 @@ const handleList = function (e) {
             optionArray: listboxOptionArray,
             x: pos_x_pdf,
             y: pos_y_pdf,
+            baseX: pos_x_pdf,
+            baseY: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
             fontStyle: fontStyle,
@@ -475,6 +486,8 @@ const handleButton = function (e) {
             page_number: PDFViewerApplication.page,
             x: pos_x_pdf,
             y: pos_y_pdf,
+            baseX: pos_x_pdf,
+            baseY: pos_y_pdf,
             width: formWidth * 0.75 * 0.75,
             height: formHeight * 0.75 * 0.75,
             fontStyle: fontStyle,
@@ -520,10 +533,8 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
 
-                    if (DrawType != TEXT_CONTENT) {
-                        resizeHandler(event.rect.width, event.rect.height, currentId);
-                        showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
-                    }
+                    resizeHandler(event.rect.width, event.rect.height, currentId);
+                    showOption(optionId, event.rect.width / 2 - 180, event.rect.height + 15)
                 },
                 end(event) {
                     let target = event.target
@@ -534,9 +545,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     target.style.height = event.rect.height + 'px'
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
-                    if (DrawType != TEXT_CONTENT) {
-                        moveEventHandler(event, x, y, currentId);
-                    }
+                    moveEventHandler(event, x, y, currentId);
                 }
             },
             modifiers: [
@@ -571,9 +580,7 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     const target = event.target;
                     var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
                     var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-                    if (DrawType != TEXT_CONTENT) {
-                        moveEventHandler(event, x, y, currentId);
-                    }
+                    moveEventHandler(event, x, y, currentId);
                 }
             }
         })
@@ -602,6 +609,16 @@ const resizeHandler = function (width, height, currentId) {
                 item.data.height = height * 0.75 * 0.75;
                 item.data.xPage = width;
                 item.data.yPage = height;
+            }
+        });
+    }
+    else if (DrawType == TEXT_CONTENT) {
+        text_storage.map(function (item) {
+            if (item.id === currentId) {
+                item.width = width * 0.75 * 0.75;
+                item.height = height * 0.75 * 0.75;
+                item.xPage = width;
+                item.yPage = height;
             }
         });
     }
@@ -668,9 +685,16 @@ const addDeleteButton = function (currentId, container, object, type) {
         e.stopPropagation();
         currentId = container.id.replace(`${type}_tooltipbar`, "")
         document.getElementById(`${type}` + currentId).style.display = "none";
-        form_storage = form_storage.filter(function (item) {
-            return item.id !== parseInt(currentId);
-        });
+        if (type == "text-content") {
+            text_storage = text_storage.filter(function (item) {
+                return item.id !== parseInt(currentId);
+            });
+        }
+        else {
+            form_storage = form_storage.filter(function (item) {
+                return item.id !== parseInt(currentId);
+            });
+        }
     })
     container.appendChild(deleteBtn);
     object.appendChild(container)
@@ -1518,11 +1542,6 @@ const flatten = async function () {
     }
 }
 
-textfieldAlign.forEach(function (radio) {
-    radio.addEventListener('change', handleRadioSelection);
-});
-
-
 async function addFormElements() {
     const fontStyles = {
         'Courier': PDFLib.StandardFonts.Courier,
@@ -1543,6 +1562,9 @@ async function addFormElements() {
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
     pdfDoc.registerFontkit(fontkit);
+    const firstPage = pdfDoc.getPage(0);
+    const { width, height } = firstPage.getSize();
+    console.log("size: ", width, height);
     const form = pdfDoc.getForm();
     let page;
     let checkboxForm, radioForm, textfieldForm, comboboxForm;
@@ -1711,6 +1733,30 @@ async function addFormElements() {
                 default:
                     break;
             }
+        })
+    }
+    if (text_storage.length != 0) {
+        text_storage.forEach(async (text_item) => {
+            page = pdfDoc.getPage(text_item.page_number - 1);
+            selectedFont = fontStyles[text_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
+            customFont = await pdfDoc.embedFont(selectedFont);
+            var { r, g, b } = hexToRgb(text_item.textColor);
+            let content = ``;
+            text_item.text.map((item) => {
+                content += `${item}\n`;
+            })
+            console.log(content);
+            page.drawText(
+                content,
+                {
+                    x: text_item.x,
+                    y: text_item.y,
+                    font: customFont,
+                    size: text_item.fontSize,
+                    color: PDFLib.rgb(r, g, b),
+                    // wordBreaks: true,
+                }
+            )
         })
     }
     pdfBytes = await pdfDoc.save();

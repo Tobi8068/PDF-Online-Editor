@@ -1,6 +1,7 @@
 let comment_control = document.getElementById("comment_control_panel")
 
 let comment_storage = [];
+let text_storage = [];
 
 let comment_x = 0, comment_y = 0;
 
@@ -15,7 +16,7 @@ let mouse_y = 0;
 let current_comment_id = 0;
 let current_text_content_id = 0;
 let current_text_content_id_copy = 0;
-let count_text = 0;
+let current_text_num_id = 0;
 
 let isDragging = false;
 let DrawType = "nothing";
@@ -24,6 +25,65 @@ let initialX, initialY;
 let isEditing = false;
 
 //////////
+
+const handleTextContent = (e) => {
+    isOptionPane = false;
+    document.getElementById(TEXT_CONTENT_OPTION).style.display = 'none';
+    e.stopPropagation();
+    fontStyle = document.getElementById('text-content-font-style').value;
+    fontSize = parseInt(document.getElementById('text-content-font-size').value);
+    textColor = document.getElementById('text-content-color').value;
+    const text = document.getElementById(current_text_content_id_copy).innerText;
+    const lines = text.split('\n').map(line => line.trim().replace(/\n/g, ''));
+    const resultArray = [];
+    let prevElement = null;
+    
+    for (const element of lines) {
+        if (element !== "" || prevElement !== "") {
+            resultArray.push(element);
+        }
+        prevElement = element;
+    }
+    console.log(lines);
+
+    for (let i = 0; i < text_storage.length; i++) {
+        if (text_storage[i].id == current_form_id) {
+            text_storage[i].fontStyle = fontStyle;
+            text_storage[i].fontSize = fontSize;
+            text_storage[i].textColor = textColor;
+            text_storage[i].text = resultArray;
+            break;
+        }
+    }
+    let count = 0;
+    for (let j = 0; j < text_storage.length; j++) {
+        if (text_storage[j].id != current_form_id) count++;
+    }
+    if (count == text_storage.length || text_storage == null) {
+        text_storage.push({
+            id: baseId,
+            page_number: PDFViewerApplication.page,
+            text: resultArray,
+            x: pos_x_pdf,
+            y: pos_y_pdf,
+            baseX: pos_x_pdf,
+            baseY: pos_y_pdf,
+            fontStyle: fontStyle,
+            fontSize: fontSize * 0.75,
+            baseFontSize: fontSize,
+            textColor: textColor,
+            width: 150 * 0.75 * 0.75,
+            height: 20 * 0.75 * 0.75,
+            xPage: 150,
+            yPage: 20,
+        });
+        fontStyle = '';
+        fontSize = 12;
+        textColor = '';
+    }
+    console.log(text_storage);
+    document.getElementById("text-content-save-button").removeEventListener("click", handleTextContent);
+}
 
 document.getElementById("outerContainer").appendChild(comment_control)
 
@@ -171,17 +231,29 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
 
             form_storage.map(function (item) {
                 if (item.id === parseInt(currentId)) {
-                    item.data.x = item.data.x + offsetX * 0.75 * 0.75;
-                    item.data.y = item.data.y - offsetY * 0.75 * 0.75;
+                    item.data.x = item.data.baseX + offsetX * 0.75 * 0.75;
+                    item.data.y = item.data.baseY - offsetY * 0.75 * 0.75;
                 }
 
             });
 
-        } else {
-            form_storage.map(function (item) {
+        }
+        else if (DrawType === TEXT_CONTENT) {
+            text_storage.map(function (item) {
+                console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
                 if (item.id === parseInt(currentId)) {
-                    item.x = item.x + offsetX * 0.75 * 0.75;
-                    item.y = item.y - offsetY * 0.75 * 0.75;
+                    item.x = item.baseX + offsetX * 0.75 * 0.75;
+                    item.y = item.baseY - offsetY * 0.75 * 0.75;
+                }
+            });
+            console.log("moveEvent", text_storage);
+        }
+        else {
+            form_storage.map(function (item) {
+                console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
+                if (item.id === parseInt(currentId)) {
+                    item.x = item.baseX + offsetX * 0.75 * 0.75;
+                    item.y = item.baseY - offsetY * 0.75 * 0.75;
                 }
             });
         }
@@ -207,39 +279,80 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         comment_control.style.display = "block";
     }
     if (isTextModeOn) {
+        isTextModeOn = !isTextModeOn;
         let pageId = String(PDFViewerApplication.page)
         let pg = document.getElementById(pageId)
         var rect = pg.getBoundingClientRect(), bodyElt = document.body;
         var top = rect.top;
         var left = rect.left;
 
+        pos_x_pdf = x_y[0]
+        pos_y_pdf = x_y[1]
+
+        const textcontentWidth = 150;
+        const textcontentHeight = 20;
+        baseId++;
+        let textContentId = baseId;
+
+        current_form_id = textContentId;
+
         const newText = document.createElement('div');
-        newText.id = "textcontent" + count_text++;
+        newText.id = "textcontent" + textContentId;
         newText.contentEditable = "true";
         newText.spellcheck = "false";
         newText.textContent = "Your text is here.";
-        newText.style.height = "100%"
         newText.style.position = "relative";
+        newText.classList.add('textcontent');
 
-        newText.classList.add('textfield-content');
         const container = document.createElement('div');
-        container.id = "textfield" + count_text++;
+        container.id = "text-content" + textContentId;
         container.style.position = "absolute";
         container.style.top = (mouse_y - top) + "px";
         container.style.left = (mouse_x - left) + "px";
+        container.style.width = textcontentWidth + "px";
+        container.style.height = textcontentHeight + "px";
         container.style.zIndex = 101;
-        container.append(newText)
+        container.classList.add('textfield-content');
+        container.append(newText);
+
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                container.style.width = width + "px";
+                container.style.height = height + "px";
+            }
+        });
+        
+        observer.observe(newText);
+        
         pg.append(container);
-        addResizebar(container.id);
+
+        showOptionAndResizebar(TEXT_CONTENT_OPTION, container, textcontentWidth, textcontentHeight, "text-content");
+
+        newText.style.fontFamily = document.getElementById('text-content-font-style').value;
+        newText.style.fontSize = document.getElementById('text-content-font-size').value + "px";
+        newText.style.color = document.getElementById('text-content-color').value;
+
+        document.getElementById('text-content-font-style').addEventListener('change', () => {
+            newText.style.fontFamily = document.getElementById('text-content-font-style').value;
+        })
+        document.getElementById('text-content-font-size').addEventListener('change', () => {
+            newText.style.fontSize = document.getElementById('text-content-font-size').value + 'px';
+        })
+        document.getElementById('text-content-color').addEventListener('change', () => {
+            newText.style.color = document.getElementById('text-content-color').value;
+        })
+
+        // addResizebar(container.id);
         current_text_content_id = newText.id;
         current_text_content_id_copy = newText.id;
-        resizeCanvas(container.id, TEXT_CONTENT, null, null);
 
-        container.addEventListener("click", (e) => {
+        current_text_num_id = textContentId;
+        container.addEventListener("click", () => {
 
-            current_text_content_id = container.id;
             let istooltipshow = false;
-            if (document.getElementById("tooltipbar" + current_text_content_id)) {
+            console.log("textContentID", textContentId);
+            if (document.getElementById("text-content_tooltipbar" + current_text_num_id)) {
                 istooltipshow = true;
             }
             if (isDragging) {
@@ -248,30 +361,30 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
             else {
                 if (!istooltipshow) {
 
-                    let tooltipbar = document.createElement("div")
-                    tooltipbar.id = "tooltipbar" + current_text_content_id;
-                    tooltipbar.style.position = "absolute";
-                    tooltipbar.style.zIndex = 100;
-                    tooltipbar.style.top = ((parseInt(container.style.height) / 2) - 12.5) + 'px';
-                    tooltipbar.style.left = parseInt(container.style.width) + 10 + 'px';
-                    let deleteBtn = document.createElement("button");
-                    deleteBtn.style.padding = "5px";
-                    deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`
-                    deleteBtn.addEventListener("click", () => {
-                        current_text_content_id = tooltipbar.id.replace("tooltipbar", "")
-                        document.getElementById(current_text_content_id).remove();
+                    let tooltipbar = document.createElement("div");
+                    addDeleteButton(current_text_num_id, tooltipbar, container, "text-content")
+                    text_storage.map((element) => {
+                        if (element.id == textContentId) {
+                            isOptionPane = true;
+                            option = showOption(TEXT_CONTENT_OPTION, element.xPage / 2 - 180, element.yPage + 15);
+                            document.getElementById("text-content-font-style").value = element.fontStyle;
+                            document.getElementById("text-content-font-size").value = element.baseFontSize;
+                            document.getElementById("text-content-color").value = element.textColor;
+                            container.append(option);
+                        }
                     })
-                    tooltipbar.appendChild(deleteBtn)
-                    container.appendChild(tooltipbar)
+                    document.getElementById("text-content-save-button").addEventListener("click", handleTextContent);
                 }
                 else {
-                    document.getElementById("tooltipbar" + current_text_content_id).remove();
+                    document.getElementById("text-content_tooltipbar" + current_text_num_id).remove();
                 }
             }
         })
+        console.log("current_num_id", current_text_num_id);
+        resizeCanvas(container.id, TEXT_CONTENT, current_text_num_id, TEXT_CONTENT_OPTION);
 
-        isTextModeOn = false;
         document.getElementById("add_text").innerHTML = '<i class="far fa-i"></i>';
+        document.getElementById("text-content-save-button").addEventListener("click", handleTextContent);
     }
 })
 
@@ -291,14 +404,9 @@ document.getElementById("add_comment_mode").addEventListener("click", (e) => {
 document.getElementById("add_text").addEventListener("click", (e) => {
     if (isTextModeOn) {
         document.getElementById("add_text").innerHTML = '<i class="far fa-i"></i>';
-        document.getElementById('text-edit-controller').style.display = "none";
         isTextModeOn = false;
     } else {
         document.getElementById("add_text").innerHTML = '<i class="fa fa-i"></i>';
-        document.getElementById('text-edit-controller').style.display = "flex";
-        document.getElementById('text-edit-controller').style.top = "37px";
-        document.getElementById('text-edit-controller').style.right = "0px";
-        document.getElementById('text-edit-controller').style.zIndex = 150;
         isTextModeOn = true;
     }
 })
@@ -324,7 +432,7 @@ const setDocument = async function () {
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
     pdfBytes = await pdfDoc.save();
-    if (form_storage.length != 0) addFormElements()
+    if (form_storage.length != 0 || text_storage.length != 0) addFormElements()
         .then(() => {
             add_txt_comment();
         });

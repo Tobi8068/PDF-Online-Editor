@@ -378,7 +378,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                   data-l10n-id="pdfjs-editor-highlight-button">
                   <span data-l10n-id="pdfjs-editor-highlight-button-label">Highlight</span>
                 </button>
-                <button id="editorFreeText" class="toolbarButton" style="display: none;" disabled="disabled" title="Text" role="radio"
+                <button id="editorFreeText" class="toolbarButton" style="display: block;" disabled="disabled" title="Text" role="radio"
                   aria-checked="false" aria-controls="editorFreeTextParamsToolbar" tabindex="32"
                   data-l10n-id="pdfjs-editor-free-text-button">
                   <span data-l10n-id="pdfjs-editor-free-text-button-label">Text</span>
@@ -704,7 +704,7 @@ See https://github.com/adobe-type-tools/cmap-resources
   <input type="file" id="fileInput" class="hidden">
   <script src="addComment.js"></script>
   <script src="addForm.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.16.0/dist/pdf-lib.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <!-- Checkbox Option -->
@@ -1117,7 +1117,7 @@ See https://github.com/adobe-type-tools/cmap-resources
           <select id="button-field-input-action" class="form-field-input">
             <option value="submit">Submit</option>
             <option value="reset">Reset</option>
-            <!-- <option value="no_action">No Action</option> -->
+            <option value="no_action">No Action</option>
           </select>
         </div>
       </div>
@@ -1126,89 +1126,47 @@ See https://github.com/adobe-type-tools/cmap-resources
       <div class="form-save-button">Save</div>
     </div>
   </div>
-  <!--#endif-->
-
-  <!-- Text Editor -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
-
-  <!-- Linking Bootstrap for effective styling of buttons -->
-  <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous"> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <div id="text-edit-controller" class="control-btn-container">
-    <!-- All different types of Buttons that can be used on editing the Text-->
-    <!-- Bold button -->
-    <button id="bold-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
-       <span class="fa fa-bold fa-fw" aria-hidden="true"></span>
-     </button>
-
-     <!-- Underline button -->
-     <button id="underline-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
-       <span class="fa fa-underline fa-fw" aria-hidden="true"></span>
-     </button>
-
-    <!-- Italic button -->
-    <button id="italic-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
-       <span class="fa fa-italic fa-fw" aria-hidden="true"></span>
-     </button>
-
-     <!-- Left Align button -->
-    <button id="left-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
-       <span class="fa fa-align-left fa-fw" aria-hidden="true"></span>
-     </button>
-
-     <!-- Justify button -->
-     <button id="justify-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
-       <span class="fa fa-align-justify fa-fw" aria-hidden="true"></span>
-     </button>
-
-     <!-- Center Align button -->
-     <button id="center-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
-       <span class="fa fa-align-center fa-fw" aria-hidden="true"></span>
-     </button>
-
-     <!-- Right Align button -->
-     <button id="right-align-btn" type="button" class="btn btn-light control-btn" aria-label="Left Align">
-       <span class="fa fa-align-right fa-fw" aria-hidden="true"></span>
-     </button>
-
-     <input id="color-btn" type="color" class="control-btn"/>
-
-     <select id="input-font-btn"  class="input">
-        <option value="Arial">Arial</option>
-        <option value="Helvetica">Helvetica</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Sans serif">Sans serif</option>
-        <option value="Courier New">Courier New</option>
-        <option value="Verdana">Verdana</option>
-        <option value="Georgia">Georgia</option>
-        <option value="Palatino">Palatino</option>
-        <option value="Garamond">Garamond</option>
-        <option value="Comic Sans MS">Comic Sans MS</option>
-        <option value="Arial Black">Arial Black</option>
-        <option value="Tahoma">Tahoma</option>
-        <option value="Comic Sans MS">Comic Sans MS</option>
-    </select>
-
-    <select id="font-size-btn">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-    </select>
-    <div id="controller-hide" class="controller-hide control-btn">
-      <span><i class="fa-solid fa-chevron-up"></i></span>
+  <!-- Text Content -->
+  <div id="text-content-option" class="checkbox-option" style="height: auto;">
+    <div class="checkbox-option-header">
+      <div class="checkbox-option-header-text">
+        <h4>Text Properties</h4>
+      </div>
+    </div>
+    <div class="checkbox-option-content">
+      <div class="form-input">
+        <div class="form-field-input-container">
+          <div class="form-style-container">
+            <div class="form-style-name">
+              <i class="fa fa-font"></i>
+              <span>Font</span>
+            </div>
+            <select id="text-content-font-style" class="form-field-input">
+            </select>
+          </div>
+          <div class="form-style-container">
+            <div class="form-style-name">
+              <i class="fa fa-text-height"></i>
+              <span>Font Size</span>
+            </div>
+            <select id="text-content-font-size" class="form-field-input">
+            </select>
+          </div>
+          <div class="form-style-container">
+            <div class="form-style-name">
+              <i class="fa fa-fill"></i>
+              <span>Color</span>
+            </div>
+            <input type="color" id="text-content-color" name="colorPicker" class="form-field-input">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="text-content-save-button" class="checkbox-option-footer">
+      <div class="form-save-button">Save</div>
     </div>
   </div>
-  <script src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
-	<script src="addTextField.js"></script>
+  <!--#endif-->
 </body>
 
 </html>
