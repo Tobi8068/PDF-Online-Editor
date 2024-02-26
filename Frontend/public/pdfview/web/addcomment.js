@@ -49,7 +49,7 @@ const handleTextContent = (e) => {
     for (let i = 0; i < text_storage.length; i++) {
         if (text_storage[i].id == current_form_id) {
             text_storage[i].fontStyle = fontStyle;
-            text_storage[i].fontSize = fontSize;
+            text_storage[i].fontSize = fontSize * 0.75;
             text_storage[i].textColor = textColor;
             text_storage[i].text = resultArray;
             break;
@@ -231,10 +231,9 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
 
             form_storage.map(function (item) {
                 if (item.id === parseInt(currentId)) {
-                    item.data.x = item.data.baseX + offsetX * 0.75 * 0.75;
-                    item.data.y = item.data.baseY - offsetY * 0.75 * 0.75;
+                    item.data.x = item.data.baseX + offsetX * 0.75;
+                    item.data.y = item.data.baseY - offsetY * 0.75;
                 }
-
             });
 
         }
@@ -242,8 +241,8 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
             text_storage.map(function (item) {
                 console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
                 if (item.id === parseInt(currentId)) {
-                    item.x = item.baseX + offsetX * 0.75 * 0.75;
-                    item.y = item.baseY - offsetY * 0.75 * 0.75;
+                    item.x = item.baseX + offsetX * 0.75;
+                    item.y = item.baseY - offsetY * 0.75;
                 }
             });
             console.log("moveEvent", text_storage);
@@ -252,8 +251,8 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
             form_storage.map(function (item) {
                 console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
                 if (item.id === parseInt(currentId)) {
-                    item.x = item.baseX + offsetX * 0.75 * 0.75;
-                    item.y = item.baseY - offsetY * 0.75 * 0.75;
+                    item.x = item.baseX + offsetX * 0.75;
+                    item.y = item.baseY - offsetY * 0.75;
                 }
             });
         }
@@ -307,8 +306,8 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         const container = document.createElement('div');
         container.id = "text-content" + textContentId;
         container.style.position = "absolute";
-        container.style.top = (mouse_y - top) + "px";
-        container.style.left = (mouse_x - left) + "px";
+        container.style.top = (mouse_y - top) - 15 + "px";
+        container.style.left = (mouse_x - left) - 10 + "px";
         container.style.width = textcontentWidth + "px";
         container.style.height = textcontentHeight + "px";
         container.style.zIndex = 101;
@@ -427,6 +426,27 @@ function add_txt_comment() {
     }
     pdfFactory.download();
 }
+
+// Function to split the text into lines based on the maximum width
+function splitTextIntoLines(text, maxWidth, font, fontSize) {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+  
+    words.forEach((word) => {
+      const width = font.widthOfTextAtSize(word, fontSize);
+      if (font.widthOfTextAtSize(currentLine + ' ' + word, fontSize) < maxWidth) {
+        currentLine += ' ' + word;
+      } else {
+        lines.push(currentLine.trim());
+        currentLine = word;
+      }
+    });
+  
+    lines.push(currentLine.trim());
+  
+    return lines;
+  }
 
 const setDocument = async function () {
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
