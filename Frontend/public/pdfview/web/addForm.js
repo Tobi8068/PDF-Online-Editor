@@ -1754,6 +1754,7 @@ async function addFormElements() {
                     font: customFont,
                     size: text_item.fontSize,
                     color: PDFLib.rgb(r, g, b),
+                    lineHeight: 10,
                     // wordBreaks: true,
                 }
             )
