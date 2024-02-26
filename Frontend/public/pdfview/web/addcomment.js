@@ -333,13 +333,13 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         newText.style.color = document.getElementById('text-content-color').value;
 
         document.getElementById('text-content-font-style').addEventListener('change', () => {
-            newText.style.fontFamily = document.getElementById('text-content-font-style').value;
+            document.getElementById(current_text_content_id_copy).style.fontFamily = document.getElementById('text-content-font-style').value;
         })
         document.getElementById('text-content-font-size').addEventListener('change', () => {
-            newText.style.fontSize = document.getElementById('text-content-font-size').value + 'px';
+            document.getElementById(current_text_content_id_copy).style.fontSize = document.getElementById('text-content-font-size').value + 'px';
         })
         document.getElementById('text-content-color').addEventListener('change', () => {
-            newText.style.color = document.getElementById('text-content-color').value;
+            document.getElementById(current_text_content_id_copy).style.color = document.getElementById('text-content-color').value;
         })
 
         // addResizebar(container.id);
