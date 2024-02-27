@@ -226,8 +226,8 @@ const handleText = function (e) {
             y: pos_y_pdf,
             baseX: pos_x_pdf,
             baseY: pos_y_pdf,
-            width: formWidth * 0.75,
-            height: formHeight * 0.75,
+            width: formWidth * 0.75 * 0.75,
+            height: formHeight * 0.75 * 0.75,
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
@@ -417,6 +417,23 @@ const addResizebar = function (objectId) {
     container.append(top, left, right, bottom, topLeft, topRight, bottomLeft, bottomRight);
 }
 
+const removeResizebar = function (objectId) {
+    const container = document.getElementById(objectId);
+    const resizePoints = ['topLeft', 'top', 'topRight', 'left', 'right', 'bottomLeft', 'bottom', 'bottomRight'];
+    if (container) {
+        resizePoints.forEach((item) => {
+            let childElement = document.getElementById(item);
+            if (childElement) {
+                container.removeChild(childElement);
+            } else {
+                console.log('Child element with id ' + item + 'not found');
+            }
+        })
+    } else {
+        console.log('Parent element not found');
+    }
+}
+
 // Show the OptionPane to edit the properties of elements.
 
 const showOption = function (id, x, y) {
@@ -585,21 +602,54 @@ const resizeCanvas = function (id, type, currentId, optionId) {
             }
         })
     if (DrawType == TEXT_CONTENT) {
-        const currentText = document.getElementById(current_text_content_id);
-        currentText.addEventListener('dblclick', function () {
+        let currentText = document.getElementById(current_text_content_id);
+        let container = document.getElementById(`text-content${current_text_num_id}`);
+        // currentText.addEventListener('click', function () {
+        //     interactInstance.draggable(true);
+            // addResizebar(`text-content${current_text_num_id}`);
+        //     console.log('focus click')
+        // });
+        console.log(container);
+        container.addEventListener('dblclick', function () {
             interactInstance.draggable(false);
-            current_text_content_id = current_text_content_id_copy;
-            console.log('focus');
         })
-        currentText.addEventListener('blur', function () {
+        container.addEventListener('focus', function () {
+            interactInstance.draggable(true);
+            current_text_content_id = current_text_content_id_copy;
+            addResizebar(`text-content${current_text_num_id}`);
+            console.log('focus dblclick');
+        })
+        container.addEventListener('blur', function () {
             interactInstance.draggable(true);
             current_text_content_id = '';
+            removeResizebar(`text-content${current_text_num_id}`);
             console.log('blur');
         })
+        document.addEventListener('click', function(event) {
+            if (event.target === container) {
+                container.focus();
+            }
+        });
+    } else {
+        let object = document.getElementById(id);
+
+        console.log(id, object)
+
+        object.addEventListener('focus', function() {
+            addResizebar(id);
+        });
+    
+        object.addEventListener('blur', function() {
+            removeResizebar(id);
+        });
+    
+        document.addEventListener('click', function(event) {
+            if (event.target === object) {
+                object.focus();
+            }
+        });
     }
 }
-
-
 
 const resizeHandler = function (width, height, currentId) {
     if (DrawType == RADIO) {
@@ -651,7 +701,7 @@ const showOptionAndResizebar = function (optionId, object, objectWidth, objectHe
     isOptionPane = true;
     let option = showOption(optionId, objectWidth / 2 - 180, objectHeight + 15);
     removeParentEvent(optionId);
-    addResizebar(object.id);
+    // addResizebar(object.id);
     object.append(option);
     if (optionId != CHECKBOX_OPTION && optionId != RADIO_OPTION) {
         let selectStyleContent = '';
@@ -739,6 +789,7 @@ const eventHandler = async function (e) {
             checkbox.style.height = checkboxHeight + "px";
             checkbox.style.background = "#3C97FE80";
             checkbox.style.zIndex = 100;
+            checkbox.tabIndex = 0;
 
             pg.appendChild(checkbox);
 
@@ -817,6 +868,7 @@ const eventHandler = async function (e) {
             radio.style.height = "25px";
             radio.style.background = "#3C97FE80";
             radio.style.zIndex = 100;
+            radio.tabIndex = 0;
 
             pg.appendChild(radio);
 
@@ -898,6 +950,8 @@ const eventHandler = async function (e) {
             textDiv.style.height = textHeight + "px";
             textDiv.style.background = "#3C97FE80";
             textDiv.style.zIndex = 100;
+            textDiv.tabIndex = 0;
+
             pg.appendChild(textDiv);
 
             // Show TextField OptionPane
@@ -982,6 +1036,7 @@ const eventHandler = async function (e) {
             comboDiv.style.height = comboHeight + "px";
             comboDiv.style.background = "#3C97FE80";
             comboDiv.style.zIndex = 100;
+            comboDiv.tabIndex = 0;
 
             pg.appendChild(comboDiv);
 
@@ -1118,6 +1173,7 @@ const eventHandler = async function (e) {
             listDiv.style.height = listHeight + "px";
             listDiv.style.background = "#3C97FE80";
             listDiv.style.zIndex = 100;
+            listDiv.tabIndex = 0;
 
             pg.appendChild(listDiv);
 
@@ -1255,6 +1311,7 @@ const eventHandler = async function (e) {
             buttonDiv.style.background = "#3C97FE80";
             buttonDiv.style.color = "white";
             buttonDiv.style.zIndex = 100;
+            buttonDiv.tabIndex = 0;
 
             pg.appendChild(buttonDiv);
 
@@ -1564,7 +1621,7 @@ async function addFormElements() {
     pdfDoc.registerFontkit(fontkit);
     const firstPage = pdfDoc.getPage(0);
     const { width, height } = firstPage.getSize();
-    console.log("size: ", width, height);
+    // console.log("size: ", width, height);
     const form = pdfDoc.getForm();
     let page;
     let checkboxForm, radioForm, textfieldForm, comboboxForm;
@@ -1745,7 +1802,6 @@ async function addFormElements() {
             text_item.text.map((item) => {
                 content += `${item}\n`;
             })
-            console.log(text_item);
             page.drawText(
                 content,
                 {

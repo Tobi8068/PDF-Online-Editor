@@ -44,7 +44,6 @@ const handleTextContent = (e) => {
         }
         prevElement = element;
     }
-    console.log(lines);
 
     for (let i = 0; i < text_storage.length; i++) {
         if (text_storage[i].id == current_form_id) {
@@ -81,7 +80,7 @@ const handleTextContent = (e) => {
         fontSize = 12;
         textColor = '';
     }
-    console.log(text_storage);
+    // console.log(text_storage);
     document.getElementById("text-content-save-button").removeEventListener("click", handleTextContent);
 }
 
@@ -239,17 +238,17 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
         }
         else if (DrawType === TEXT_CONTENT) {
             text_storage.map(function (item) {
-                console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
+                // console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
                 if (item.id === parseInt(currentId)) {
                     item.x = item.baseX + offsetX * 0.75;
                     item.y = item.baseY - offsetY * 0.75;
                 }
             });
-            console.log("moveEvent", text_storage);
+            // console.log("moveEvent", text_storage);
         }
         else {
             form_storage.map(function (item) {
-                console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
+                // console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
                 if (item.id === parseInt(currentId)) {
                     item.x = item.baseX + offsetX * 0.75;
                     item.y = item.baseY - offsetY * 0.75;
@@ -311,6 +310,7 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         container.style.width = textcontentWidth + "px";
         container.style.height = textcontentHeight + "px";
         container.style.zIndex = 101;
+        container.tabIndex = 0;
         container.classList.add('textfield-content');
         container.append(newText);
 
@@ -346,11 +346,12 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         current_text_content_id = newText.id;
         current_text_content_id_copy = newText.id;
 
+
         current_text_num_id = textContentId;
         container.addEventListener("click", () => {
 
             let istooltipshow = false;
-            console.log("textContentID", textContentId);
+            // console.log("textContentID", textContentId);
             if (document.getElementById("text-content_tooltipbar" + current_text_num_id)) {
                 istooltipshow = true;
             }
@@ -379,7 +380,7 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
                 }
             }
         })
-        console.log("current_num_id", current_text_num_id);
+        // console.log("current_num_id", current_text_num_id);
         resizeCanvas(container.id, TEXT_CONTENT, current_text_num_id, TEXT_CONTENT_OPTION);
 
         document.getElementById("add_text").innerHTML = '<i class="far fa-i"></i>';
