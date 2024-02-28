@@ -38,9 +38,8 @@ let current_list_id = 0;
 let current_button_id = 0;
 
 
-const fontStyleArr = ['Courier', 'CourierBold', 'CourierBoldOblique', 'CourierOblique', 'Helvetica',
-    'HelveticaBold', 'HelveticaBoldOblique', 'HelveticaOblique', 'Symbol', 'TimesRoman',
-    'TimesRomanBold', 'TimesRomanBoldItalic', 'TimesRomanItalic', 'ZapfDingbats'];
+const fontStyleArr = ['Courier', 'Helvetica', 'TimesRoman',
+    'Arial', 'Calibri', 'Consolas', 'Georgia', 'Tahoma', 'Verdana'];
 
 const fontSizeArr = ['auto', 4, 6, 8, 10, 12, 14, 16, 18, 24, 36, 48, 64, 72, 96, 144, 192];
 
@@ -48,6 +47,11 @@ let formWidth = 25;
 let formHeight = 25;
 
 let selectedAlign = '', groupNameAlign = '';
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('first');
+    loadFontFiles();
+});
 
 // Check the same form field name and modify field name
 const checkFormField = function (id) {
@@ -602,48 +606,48 @@ const resizeCanvas = function (id, type, currentId, optionId) {
             }
         })
     if (DrawType == TEXT_CONTENT) {
-        let currentText = document.getElementById(current_text_content_id);
+        // let currentText = document.getElementById(id);
         let container = document.getElementById(`text-content${current_text_num_id}`);
         // currentText.addEventListener('click', function () {
         //     interactInstance.draggable(true);
-            // addResizebar(`text-content${current_text_num_id}`);
+        // addResizebar(`text-content${current_text_num_id}`);
         //     console.log('focus click')
         // });
-        console.log(container);
+        // console.log(container);
         container.addEventListener('dblclick', function () {
             interactInstance.draggable(false);
         })
         container.addEventListener('focus', function () {
             interactInstance.draggable(true);
-            current_text_content_id = current_text_content_id_copy;
+            // current_text_content_id = current_text_content_id_copy;
             addResizebar(`text-content${current_text_num_id}`);
             console.log('focus dblclick');
         })
         container.addEventListener('blur', function () {
             interactInstance.draggable(true);
-            current_text_content_id = '';
+            // current_text_content_id = '';
             removeResizebar(`text-content${current_text_num_id}`);
             console.log('blur');
         })
-        document.addEventListener('click', function(event) {
-            if (event.target === container) {
-                container.focus();
-            }
-        });
+        // document.addEventListener('click', function (event) {
+        //     if (event.target === container) {
+        //         container.focus();
+        //     }
+        // });
     } else {
         let object = document.getElementById(id);
 
         console.log(id, object)
 
-        object.addEventListener('focus', function() {
+        object.addEventListener('focus', function () {
             addResizebar(id);
         });
-    
-        object.addEventListener('blur', function() {
+
+        object.addEventListener('blur', function () {
             removeResizebar(id);
         });
-    
-        document.addEventListener('click', function(event) {
+
+        document.addEventListener('click', function (event) {
             if (event.target === object) {
                 object.focus();
             }
@@ -707,7 +711,7 @@ const showOptionAndResizebar = function (optionId, object, objectWidth, objectHe
         let selectStyleContent = '';
         let selectSizeContent = '';
         fontStyleArr.map((item) => {
-            selectStyleContent += `<option value=${item}>${item}</option>`;
+            selectStyleContent += `<option value=${item} style="font-family: ${item}">${item}</option>`;
         })
         fontSizeArr.map((item) => {
             if (item == 'auto') selectSizeContent += `<option value='12'}>Default</option>`;
@@ -1609,16 +1613,15 @@ async function addFormElements() {
         'HelveticaBold': PDFLib.StandardFonts.HelveticaBold,
         'HelveticaBoldOblique': PDFLib.StandardFonts.HelveticaBoldOblique,
         'HelveticaOblique': PDFLib.StandardFonts.HelveticaOblique,
-        'Symbol': PDFLib.StandardFonts.Symbol,
         'TimesRoman': PDFLib.StandardFonts.TimesRoman,
         'TimesRomanBold': PDFLib.StandardFonts.TimesRomanBold,
         'TimesRomanBoldItalic': PDFLib.StandardFonts.TimesRomanBoldItalic,
         'TimesRomanItalic': PDFLib.StandardFonts.TimesRomanItalic,
-        'ZapfDingbats': PDFLib.StandardFonts.ZapfDingbats,
     };
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
     pdfDoc.registerFontkit(fontkit);
+
     const firstPage = pdfDoc.getPage(0);
     const { width, height } = firstPage.getSize();
     // console.log("size: ", width, height);
@@ -1626,7 +1629,7 @@ async function addFormElements() {
     let page;
     let checkboxForm, radioForm, textfieldForm, comboboxForm;
     let radioOption;
-    let customFont = '', selectedFont = '';
+    let selectedFont = '';
     if (form_storage.length != 0) {
         form_storage.forEach(async (form_item) => {
             page = pdfDoc.getPage(form_item.page_number - 1);
@@ -1793,11 +1796,19 @@ async function addFormElements() {
         })
     }
     if (text_storage.length != 0) {
-        text_storage.forEach(async (text_item) => {
+        await Promise.all(text_storage.map(async (text_item) => {
+            const fontName = text_item.fontStyle;
+            if(fontStyles.hasOwnProperty(fontName)) {
+                selectedFont = fontStyles[text_item.fontStyle];
+            } else {
+                const fontByte = font_storage.find(font => font.fontName === fontName);
+                selectedFont = fontByte.fontArrayBuffer;
+            }
+            const customFont = await pdfDoc.embedFont(selectedFont);
             page = pdfDoc.getPage(text_item.page_number - 1);
-            selectedFont = fontStyles[text_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
-            customFont = await pdfDoc.embedFont(selectedFont);
-            var { r, g, b } = hexToRgb(text_item.textColor);
+            // selectedFont = fontStyles[text_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
+
+            let { r, g, b } = hexToRgb(text_item.textColor);
             let content = ``;
             text_item.text.map((item) => {
                 content += `${item}\n`;
@@ -1814,7 +1825,7 @@ async function addFormElements() {
                     // wordBreaks: true,
                 }
             )
-        })
+        }));
     }
     pdfBytes = await pdfDoc.save();
 }

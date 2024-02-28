@@ -702,6 +702,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 
   <!--#if GENERIC-->
   <input type="file" id="fileInput" class="hidden">
+  <script src="font.js"></script>
   <script src="addComment.js"></script>
   <script src="addForm.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.js"></script>
@@ -1141,7 +1142,7 @@ See https://github.com/adobe-type-tools/cmap-resources
               <i class="fa fa-font"></i>
               <span>Font</span>
             </div>
-            <select id="text-content-font-style" class="form-field-input">
+            <select id="text-content-font-style" class="form-field-input" style="width: 50%;">
             </select>
           </div>
           <div class="form-style-container">
@@ -1149,8 +1150,14 @@ See https://github.com/adobe-type-tools/cmap-resources
               <i class="fa fa-text-height"></i>
               <span>Font Size</span>
             </div>
-            <select id="text-content-font-size" class="form-field-input">
-            </select>
+            <div style="display: flex; justify-content: space-between; width: 50%;">
+              <div class="form-style-weight">
+                <div id="text-bold" class="text-weight-button"><i class="fa-solid fa-bold"></i></div>
+                <div id="text-italic" class="text-weight-button"><i class="fa-solid fa-italic"></i></div>
+              </div>
+              <select id="text-content-font-size" class="form-field-input">
+              </select>
+            </div>
           </div>
           <div class="form-style-container">
             <div class="form-style-name">

@@ -1748,6 +1748,7 @@ dialog :link {
   flex-direction: column;
   overflow: auto;
   padding: 5px;
+  cursor: default;
 }
 
 .form-field-input-container {
@@ -1786,6 +1787,12 @@ dialog :link {
   display: flex;
   align-items: center;
   gap: 15px;
+}
+.form-style-weight {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
 }
 
 .checkbox-option-footer {
@@ -1968,4 +1975,21 @@ dialog :link {
   display: flex;
   align-items: center;
   cursor: pointer;
+}
+.text-weight-button {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  z-index: 102;
+}
+.text-weight-button-focused {
+  border: 1px solid #222;
+  border-radius: 2px;
+}
+.bold-text {
+  font-weight: bold;
+}
+.italic-text {
+  font-style: italic;
 }

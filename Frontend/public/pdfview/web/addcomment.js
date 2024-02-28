@@ -2,6 +2,7 @@ let comment_control = document.getElementById("comment_control_panel")
 
 let comment_storage = [];
 let text_storage = [];
+let font_storage = [];
 
 let comment_x = 0, comment_y = 0;
 
@@ -14,8 +15,8 @@ let mouse_x = 0;
 let mouse_y = 0;
 
 let current_comment_id = 0;
-let current_text_content_id = 0;
-let current_text_content_id_copy = 0;
+let current_text_content_id = '';
+let current_text_content_id_copy = '';
 let current_text_num_id = 0;
 
 let isDragging = false;
@@ -24,20 +25,118 @@ let initialX, initialY;
 
 let isEditing = false;
 
+let isBold = false;
+let isItalic = false;
 //////////
+
+const loadFontFiles = function () {
+    console.log('first', fontLists);
+    fontLists.forEach(item => {
+        console.log(`Font Name: ${item.fontName}, Font URL: ${item.fontURL}`);
+        fetch(`./fonts/${item.fontURL}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.arrayBuffer();
+            })
+            .then(arrayBuffer => {
+                font_storage.push({
+                    fontName: item.fontName,
+                    fontArrayBuffer: arrayBuffer
+                })
+                console.log('TTF file content:', arrayBuffer);
+            })
+            .catch(error => {
+                console.error('Error fetching TTF file:', error);
+            });
+    })
+}
+
+const generateFontName = function () {
+    console.log(isBold, isItalic);
+    let fontName = document.getElementById('text-content-font-style').value;
+    const fontStyles = {
+        'Bold': 'Bold',
+        'Oblique': 'Oblique',
+        'Italic': 'Italic',
+        'BoldOblique': 'BoldOblique',
+        'BoldItalic': 'BoldItalic'
+    };
+
+    let selectedStyle = '';
+    if (isBold && isItalic) {
+        selectedStyle = (fontName === fontStyleArr[2]) ? 'BoldItalic' : 'BoldOblique';
+    } else if (isBold) {
+        selectedStyle = 'Bold';
+    } else if (isItalic) {
+        selectedStyle = (fontName === fontStyleArr[2]) ? 'Italic' : 'Oblique';
+    }
+
+    if (isBold || isItalic) {
+        fontName += fontStyles[selectedStyle];
+    }
+    return fontName;
+}
+
+const handleBold = function () {
+    const boldBtn = document.getElementById('text-bold');
+    if (isBold) {
+        boldBtn.classList.remove('text-weight-button-focused');
+        document.getElementById(current_text_content_id_copy).classList.remove('bold-text');
+        isBold = false;
+    } else {
+        boldBtn.classList.add('text-weight-button-focused');
+        document.getElementById(current_text_content_id_copy).classList.add('bold-text');
+        isBold = true;
+    }
+}
+const handleItalic = function () {
+    const italicBtn = document.getElementById('text-italic');
+    if (isItalic) {
+        italicBtn.classList.remove('text-weight-button-focused');
+        document.getElementById(current_text_content_id_copy).classList.remove('italic-text');
+        isItalic = false;
+    } else {
+        italicBtn.classList.add('text-weight-button-focused');
+        document.getElementById(current_text_content_id_copy).classList.add('italic-text');
+        isItalic = true;
+    }
+}
+
+const addBoldItalicEvent = function () {
+    const boldBtn = document.getElementById('text-bold');
+    const italicBtn = document.getElementById('text-italic');
+    boldBtn.addEventListener('click', handleBold);
+    italicBtn.addEventListener('click', handleItalic);
+}
+const removeBoldItalicEvent = function () {
+    const boldBtn = document.getElementById('text-bold');
+    const italicBtn = document.getElementById('text-italic');
+    boldBtn.removeEventListener('click', handleBold);
+    italicBtn.removeEventListener('click', handleItalic);
+    if (isBold) {
+        boldBtn.classList.remove('text-weight-button-focused');
+    }
+    if (isItalic) {
+        italicBtn.classList.remove('text-weight-button-focused');
+    }
+    isBold = false, isItalic = false;
+}
 
 const handleTextContent = (e) => {
     isOptionPane = false;
     document.getElementById(TEXT_CONTENT_OPTION).style.display = 'none';
     e.stopPropagation();
-    fontStyle = document.getElementById('text-content-font-style').value;
+    fontStyle = generateFontName();
     fontSize = parseInt(document.getElementById('text-content-font-size').value);
     textColor = document.getElementById('text-content-color').value;
+    const regularFont = document.getElementById('text-content-font-style').value;
     const text = document.getElementById(current_text_content_id_copy).innerText;
     const lines = text.split('\n').map(line => line.trim().replace(/\n/g, ''));
     const resultArray = [];
     let prevElement = null;
-    
+
     for (const element of lines) {
         if (element !== "" || prevElement !== "") {
             resultArray.push(element);
@@ -46,17 +145,19 @@ const handleTextContent = (e) => {
     }
 
     for (let i = 0; i < text_storage.length; i++) {
-        if (text_storage[i].id == current_form_id) {
+        if (text_storage[i].id == current_text_num_id) {
             text_storage[i].fontStyle = fontStyle;
             text_storage[i].fontSize = fontSize * 0.75;
             text_storage[i].textColor = textColor;
             text_storage[i].text = resultArray;
+            text_storage[i].isBold = isBold;
+            text_storage[i].isItalic = isItalic;
             break;
         }
     }
     let count = 0;
     for (let j = 0; j < text_storage.length; j++) {
-        if (text_storage[j].id != current_form_id) count++;
+        if (text_storage[j].id != current_text_num_id) count++;
     }
     if (count == text_storage.length || text_storage == null) {
         text_storage.push({
@@ -68,6 +169,9 @@ const handleTextContent = (e) => {
             baseX: pos_x_pdf,
             baseY: pos_y_pdf,
             fontStyle: fontStyle,
+            regularFontStyle: regularFont,
+            isBold: isBold,
+            isItalic: isItalic,
             fontSize: fontSize * 0.75,
             baseFontSize: fontSize,
             textColor: textColor,
@@ -80,8 +184,9 @@ const handleTextContent = (e) => {
         fontSize = 12;
         textColor = '';
     }
-    // console.log(text_storage);
+    console.log(text_storage, isBold, isItalic);
     document.getElementById("text-content-save-button").removeEventListener("click", handleTextContent);
+    removeBoldItalicEvent();
 }
 
 document.getElementById("outerContainer").appendChild(comment_control)
@@ -277,6 +382,7 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         comment_control.style.display = "block";
     }
     if (isTextModeOn) {
+        console.log(font_storage);
         isTextModeOn = !isTextModeOn;
         let pageId = String(PDFViewerApplication.page)
         let pg = document.getElementById(pageId)
@@ -291,8 +397,6 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         const textcontentHeight = 20;
         baseId++;
         let textContentId = baseId;
-
-        current_form_id = textContentId;
 
         const newText = document.createElement('div');
         newText.id = "textcontent" + textContentId;
@@ -321,12 +425,14 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
                 container.style.height = height + "px";
             }
         });
-        
+
         observer.observe(newText);
-        
+
         pg.append(container);
 
         showOptionAndResizebar(TEXT_CONTENT_OPTION, container, textcontentWidth, textcontentHeight, "text-content");
+
+        addBoldItalicEvent();
 
         newText.style.fontFamily = document.getElementById('text-content-font-style').value;
         newText.style.fontSize = document.getElementById('text-content-font-size').value + "px";
@@ -350,6 +456,11 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         current_text_num_id = textContentId;
         container.addEventListener("click", () => {
 
+            current_text_content_id = newText.id;
+            current_text_content_id_copy = newText.id;
+            current_text_num_id = textContentId;
+            console.log(current_text_num_id);
+
             let istooltipshow = false;
             // console.log("textContentID", textContentId);
             if (document.getElementById("text-content_tooltipbar" + current_text_num_id)) {
@@ -367,7 +478,11 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
                         if (element.id == textContentId) {
                             isOptionPane = true;
                             option = showOption(TEXT_CONTENT_OPTION, element.xPage / 2 - 180, element.yPage + 15);
-                            document.getElementById("text-content-font-style").value = element.fontStyle;
+                            isBold = element.isBold, isItalic = element.isItalic;
+                            addBoldItalicEvent();
+                            if (isBold) document.getElementById('text-bold').classList.add('text-weight-button-focused');
+                            if (isItalic) document.getElementById('text-italic').classList.add('text-weight-button-focused');
+                            document.getElementById("text-content-font-style").value = element.regularFontStyle;
                             document.getElementById("text-content-font-size").value = element.baseFontSize;
                             document.getElementById("text-content-color").value = element.textColor;
                             container.append(option);
@@ -433,21 +548,21 @@ function splitTextIntoLines(text, maxWidth, font, fontSize) {
     const words = text.split(' ');
     const lines = [];
     let currentLine = '';
-  
+
     words.forEach((word) => {
-      const width = font.widthOfTextAtSize(word, fontSize);
-      if (font.widthOfTextAtSize(currentLine + ' ' + word, fontSize) < maxWidth) {
-        currentLine += ' ' + word;
-      } else {
-        lines.push(currentLine.trim());
-        currentLine = word;
-      }
+        const width = font.widthOfTextAtSize(word, fontSize);
+        if (font.widthOfTextAtSize(currentLine + ' ' + word, fontSize) < maxWidth) {
+            currentLine += ' ' + word;
+        } else {
+            lines.push(currentLine.trim());
+            currentLine = word;
+        }
     });
-  
+
     lines.push(currentLine.trim());
-  
+
     return lines;
-  }
+}
 
 const setDocument = async function () {
     pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
