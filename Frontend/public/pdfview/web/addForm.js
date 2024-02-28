@@ -28,6 +28,8 @@ const TEXT_CONTENT_OPTION = "text-content-option";
 const ALIGN_LEFT = 0, ALIGN_RIGHT = 2, ALIGN_CENTER = 1;
 let alignValue = 0;
 
+const absoluteOffset = {x: 10, y: 10};
+
 let isOptionPane = false;
 
 let current_checkbox_id = 0;
@@ -127,8 +129,8 @@ const handleCheckbox = function (e) {
             y: pos_y_pdf,
             baseX: pos_x_pdf,
             baseY: pos_y_pdf,
-            width: formWidth * 0.75,
-            height: formHeight * 0.75,
+            width: formWidth * 0.75 * 0.75,
+            height: formHeight * 0.75 * 0.75,
             xPage: formWidth,
             yPage: formHeight,
             label: label,
@@ -175,8 +177,8 @@ const handleRadio = function (e) {
                 y: pos_y_pdf,
                 baseX: pos_x_pdf,
                 baseY: pos_y_pdf,
-                width: formWidth * 0.75,
-                height: formHeight * 0.75,
+                width: formWidth * 0.75 * 0.75,
+                height: formHeight * 0.75 * 0.75,
                 xPage: formWidth,
                 yPage: formHeight,
                 label: label,
@@ -230,8 +232,8 @@ const handleText = function (e) {
             y: pos_y_pdf,
             baseX: pos_x_pdf,
             baseY: pos_y_pdf,
-            width: formWidth * 0.75 * 0.75,
-            height: formHeight * 0.75 * 0.75,
+            width: formWidth * 0.75 * 0.8,
+            height: formHeight * 0.75 * 0.8,
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
@@ -292,8 +294,8 @@ const handleCombo = function (e) {
             y: pos_y_pdf,
             baseX: pos_x_pdf,
             baseY: pos_y_pdf,
-            width: formWidth * 0.75,
-            height: formHeight * 0.75,
+            width: formWidth * 0.75 * 0.8,
+            height: formHeight * 0.75 * 0.8,
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
@@ -353,8 +355,8 @@ const handleList = function (e) {
             y: pos_y_pdf,
             baseX: pos_x_pdf,
             baseY: pos_y_pdf,
-            width: formWidth * 0.75,
-            height: formHeight * 0.75,
+            width: formWidth * 0.75 * 0.8,
+            height: formHeight * 0.75 * 0.8,
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
@@ -509,8 +511,8 @@ const handleButton = function (e) {
             y: pos_y_pdf,
             baseX: pos_x_pdf,
             baseY: pos_y_pdf,
-            width: formWidth * 0.75,
-            height: formHeight * 0.75,
+            width: formWidth * 0.75 * 0.8,
+            height: formHeight * 0.75 * 0.8,
             fontStyle: fontStyle,
             fontSize: fontSize,
             textColor: textColor,
@@ -679,8 +681,8 @@ const resizeHandler = function (width, height, currentId) {
     else {
         form_storage.map(function (item) {
             if (item.id === parseInt(currentId)) {
-                item.width = width * 0.75 * 0.75;
-                item.height = height * 0.75 * 0.75;
+                item.width = width * 0.75 * 0.8;
+                item.height = height * 0.75 * 0.8;
                 item.xPage = width;
                 item.yPage = height;
             }
@@ -787,8 +789,8 @@ const eventHandler = async function (e) {
             let checkbox = document.createElement("div");
             checkbox.id = "checkbox" + checkboxId;
             checkbox.style.position = "absolute";
-            checkbox.style.top = e.pageY - top + "px";
-            checkbox.style.left = e.pageX - left + "px";
+            checkbox.style.top = e.pageY - top - absoluteOffset.y + "px";
+            checkbox.style.left = e.pageX - left - absoluteOffset.x + "px";
             checkbox.style.width = checkboxWidth + "px";
             checkbox.style.height = checkboxHeight + "px";
             checkbox.style.background = "#3C97FE80";
@@ -865,8 +867,8 @@ const eventHandler = async function (e) {
             let radio = document.createElement("div");
             radio.id = "radio" + radioId;
             radio.style.position = "absolute";
-            radio.style.top = e.pageY - top + "px"
-            radio.style.left = e.pageX - left + "px"
+            radio.style.top = e.pageY - top - absoluteOffset.y + "px"
+            radio.style.left = e.pageX - left - absoluteOffset.x + "px"
             radio.style.borderRadius = "50%";
             radio.style.width = "25px";
             radio.style.height = "25px";
@@ -948,8 +950,8 @@ const eventHandler = async function (e) {
             let textDiv = document.createElement("div");
             textDiv.id = "text" + textId;
             textDiv.style.position = "absolute";
-            textDiv.style.top = e.pageY - top + "px"
-            textDiv.style.left = e.pageX - left + "px"
+            textDiv.style.top = e.pageY - top - absoluteOffset.y + "px"
+            textDiv.style.left = e.pageX - left - absoluteOffset.x + "px"
             textDiv.style.width = textWidth + "px";
             textDiv.style.height = textHeight + "px";
             textDiv.style.background = "#3C97FE80";
@@ -1034,8 +1036,8 @@ const eventHandler = async function (e) {
             let comboDiv = document.createElement("div");
             comboDiv.id = "combo" + comboId;
             comboDiv.style.position = "absolute";
-            comboDiv.style.top = e.pageY - top + "px"
-            comboDiv.style.left = e.pageX - left + "px"
+            comboDiv.style.top = e.pageY - top - absoluteOffset.y + "px"
+            comboDiv.style.left = e.pageX - left - absoluteOffset.x + "px"
             comboDiv.style.width = comboWidth + "px";
             comboDiv.style.height = comboHeight + "px";
             comboDiv.style.background = "#3C97FE80";
@@ -1171,8 +1173,8 @@ const eventHandler = async function (e) {
             let listDiv = document.createElement("div");
             listDiv.id = "list" + listId;
             listDiv.style.position = "absolute";
-            listDiv.style.top = e.pageY - top + "px"
-            listDiv.style.left = e.pageX - left + "px"
+            listDiv.style.top = e.pageY - top - absoluteOffset.y + "px"
+            listDiv.style.left = e.pageX - left - absoluteOffset.x + "px"
             listDiv.style.width = listWidth + "px";
             listDiv.style.height = listHeight + "px";
             listDiv.style.background = "#3C97FE80";
@@ -1307,8 +1309,8 @@ const eventHandler = async function (e) {
 
             let buttonDiv = document.createElement("div");
             buttonDiv.style.position = "absolute";
-            buttonDiv.style.top = e.pageY - top + "px"
-            buttonDiv.style.left = e.pageX - left + "px"
+            buttonDiv.style.top = e.pageY - top - absoluteOffset.y + "px"
+            buttonDiv.style.left = e.pageX - left - absoluteOffset.x + "px"
             buttonDiv.id = "button" + buttonId;
             buttonDiv.style.width = buttonWidth + "px";
             buttonDiv.style.height = buttonHeight + "px";

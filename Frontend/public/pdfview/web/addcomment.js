@@ -147,7 +147,7 @@ const handleTextContent = (e) => {
     for (let i = 0; i < text_storage.length; i++) {
         if (text_storage[i].id == current_text_num_id) {
             text_storage[i].fontStyle = fontStyle;
-            text_storage[i].fontSize = fontSize * 0.75;
+            text_storage[i].fontSize = fontSize * 0.75 * 0.8;
             text_storage[i].textColor = textColor;
             text_storage[i].text = resultArray;
             text_storage[i].isBold = isBold;
@@ -172,7 +172,7 @@ const handleTextContent = (e) => {
             regularFontStyle: regularFont,
             isBold: isBold,
             isItalic: isItalic,
-            fontSize: fontSize * 0.75,
+            fontSize: fontSize * 0.75 * 0.8 ,
             baseFontSize: fontSize,
             textColor: textColor,
             width: 150 * 0.75 * 0.75,
@@ -335,8 +335,8 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
 
             form_storage.map(function (item) {
                 if (item.id === parseInt(currentId)) {
-                    item.data.x = item.data.baseX + offsetX * 0.75;
-                    item.data.y = item.data.baseY - offsetY * 0.75;
+                    item.data.x = item.data.baseX + offsetX * 0.75 * 0.8;
+                    item.data.y = item.data.baseY - offsetY * 0.75 * 0.8;
                 }
             });
 
@@ -345,8 +345,8 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
             text_storage.map(function (item) {
                 // console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
                 if (item.id === parseInt(currentId)) {
-                    item.x = item.baseX + offsetX * 0.75;
-                    item.y = item.baseY - offsetY * 0.75;
+                    item.x = item.baseX + offsetX * 0.75 * 0.8;
+                    item.y = item.baseY - offsetY * 0.75 * 0.8;
                 }
             });
             // console.log("moveEvent", text_storage);
@@ -355,8 +355,8 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
             form_storage.map(function (item) {
                 // console.log("moveEvent", item.id, currentId, "offset", offsetX, offsetY);
                 if (item.id === parseInt(currentId)) {
-                    item.x = item.baseX + offsetX * 0.75;
-                    item.y = item.baseY - offsetY * 0.75;
+                    item.x = item.baseX + offsetX * 0.75 * 0.8;
+                    item.y = item.baseY - offsetY * 0.75 * 0.8;
                 }
             });
         }
@@ -409,8 +409,8 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         const container = document.createElement('div');
         container.id = "text-content" + textContentId;
         container.style.position = "absolute";
-        container.style.top = (mouse_y - top) - 15 + "px";
-        container.style.left = (mouse_x - left) - 10 + "px";
+        container.style.top = (mouse_y - top) - 21 + "px";
+        container.style.left = (mouse_x - left) - absoluteOffset.x + "px";
         container.style.width = textcontentWidth + "px";
         container.style.height = textcontentHeight + "px";
         container.style.zIndex = 101;
