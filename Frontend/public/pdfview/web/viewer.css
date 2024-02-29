@@ -1966,6 +1966,7 @@ dialog :link {
 .textcontent {
   border: none;
   outline: none;
+  background-color: transparent;
 }
 .textcontent:focus {
   border: none;

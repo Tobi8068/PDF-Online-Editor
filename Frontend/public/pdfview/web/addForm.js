@@ -2,9 +2,9 @@ let baseId = 0;
 let form_storage = [];
 let current_form_id = 0;
 let currentMode = null;
-const CHECKBOX = 1, RADIO = 2, TEXTFIELD = 3, COMBOBOX = 4, LIST = 5, BUTTON = 6, TEXT_CONTENT = 7;
-let checkboxCount = 1; radioCount = 1, textfieldCount = 1, comboCount = 1, listCount = 1, buttonCount = 1;
-let isCheckbox = false, isRadioButton = false, isTextField = false, isCombo = false, isList = false, isButton = false;
+const CHECKBOX = 1, RADIO = 2, TEXTFIELD = 3, COMBOBOX = 4, LIST = 5, BUTTON = 6, TEXT_CONTENT = 7, DATE = 8;
+let checkboxCount = 1; radioCount = 1, textfieldCount = 1, comboCount = 1, listCount = 1, buttonCount = 1, datefieldCount = 1;
+let isCheckbox = false, isRadioButton = false, isTextField = false, isCombo = false, isList = false, isButton = false, isDate = false;
 
 let comboboxOptionCount = 0;
 let listboxOptionCount = 0;
@@ -24,11 +24,12 @@ const COMBO_OPTION = "combo-option";
 const LIST_OPTION = "list-option";
 const BUTTON_OPTION = "button-field-option";
 const TEXT_CONTENT_OPTION = "text-content-option";
+const DATE_OPTION = "date-option";
 
 const ALIGN_LEFT = 0, ALIGN_RIGHT = 2, ALIGN_CENTER = 1;
 let alignValue = 0;
 
-const absoluteOffset = {x: 10, y: 10};
+const absoluteOffset = { x: 10, y: 10 };
 
 let isOptionPane = false;
 
@@ -38,6 +39,8 @@ let current_text_id = 0;
 let current_combo_id = 0;
 let current_list_id = 0;
 let current_button_id = 0;
+let current_date_id = 0;
+let current_date_content_id = 0;
 
 
 const fontStyleArr = ['Courier', 'Helvetica', 'TimesRoman',
@@ -197,8 +200,9 @@ const handleText = function (e) {
     document.getElementById("text-field-option").style.display = 'none';
     e.stopPropagation();
     const formFieldName = document.getElementById("text-field-input-name").value;
-    fontStyle = document.getElementById('text-font-style').value;
+    fontStyle = generateFontName('text-font-style');
     fontSize = parseInt(document.getElementById('text-font-size').value);
+    const regularFont = document.getElementById('text-font-style').value;
     textColor = document.getElementById('text-font-color').value;
 
     for (let i = 0; i < form_storage.length; i++) {
@@ -207,6 +211,8 @@ const handleText = function (e) {
             form_storage[i].fontSize = fontSize;
             form_storage[i].textColor = textColor;
             form_storage[i].align = alignValue;
+            form_storage[i].isBold = isBold;
+            form_storage[i].isItalic = isItalic;
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
@@ -235,6 +241,9 @@ const handleText = function (e) {
             width: formWidth * 0.75 * 0.8,
             height: formHeight * 0.75 * 0.8,
             fontStyle: fontStyle,
+            regularFontStyle: regularFont,
+            isBold: isBold,
+            isItalic: isItalic,
             fontSize: fontSize,
             textColor: textColor,
             align: alignValue,
@@ -247,6 +256,7 @@ const handleText = function (e) {
         alignValue = 0;
     }
     document.getElementById("text-save-button").removeEventListener("click", handleText);
+    removeBoldItalicEvent();
 }
 // When click "Save" button, save the information of Combobox element.
 
@@ -258,7 +268,7 @@ const handleCombo = function (e) {
     e.stopPropagation();
 
     const formFieldName = document.getElementById("combo-input-name").value;
-    fontStyle = document.getElementById('combo-font-style').value;
+    fontStyle = generateFontName('combo-font-style');
     fontSize = parseInt(document.getElementById('combo-font-size').value);
     textColor = document.getElementById('combo-font-color').value;
     for (let i = 0; i < form_storage.length; i++) {
@@ -529,6 +539,68 @@ const handleButton = function (e) {
     document.getElementById("button-save-button").removeEventListener("click", handleButton);
 }
 
+const handleDate = function (e) {
+    formWidth = 160;
+    formHeight = 40;
+    isOptionPane = false;
+    document.getElementById(DATE_OPTION).style.display = 'none';
+    e.stopPropagation();
+    const formFieldName = document.getElementById("date-input-name").value;
+    fontStyle = generateFontName('date-font-style');
+    fontSize = parseInt(document.getElementById('date-font-size').value);
+    textColor = document.getElementById('date-font-color').value;
+    const regularFont = document.getElementById('date-font-style').value;
+    const text = document.getElementById(current_date_content_id).value;
+
+    for (let i = 0; i < form_storage.length; i++) {
+        if (form_storage[i].form_field_name == formFieldName && form_storage[i].id == current_form_id) {
+            form_storage[i].fontStyle = fontStyle;
+            form_storage[i].fontSize = fontSize * 0.75 * 0.8;
+            form_storage[i].textColor = textColor;
+            form_storage[i].text = text;
+            break;
+        }
+        else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
+            break;
+        }
+        else if (form_storage[i].form_field_name != formFieldName && form_storage[i].id == current_form_id) {
+            form_storage[i].form_field_name = formFieldName;
+            break;
+        }
+    }
+    let count = 0;
+    for (let j = 0; j < form_storage.length; j++) {
+        if (form_storage[j].id != current_form_id) count++;
+    }
+    if (count == form_storage.length || form_storage == null) {
+        form_storage.push({
+            id: baseId,
+            form_type: DATE,
+            form_field_name: formFieldName,
+            page_number: PDFViewerApplication.page,
+            text: text,
+            x: pos_x_pdf,
+            y: pos_y_pdf,
+            baseX: pos_x_pdf,
+            baseY: pos_y_pdf,
+            fontStyle: fontStyle,
+            regularFontStyle: regularFont,
+            fontSize: fontSize * 0.75 * 0.8 ,
+            baseFontSize: fontSize,
+            textColor: textColor,
+            width: formWidth * 0.75 * 0.8,
+            height: formHeight * 0.75 * 0.8,
+            xPage: formWidth,
+            yPage: formHeight,
+        });
+        fontStyle = '';
+        fontSize = 12;
+        textColor = '';
+    }
+    console.log('date form field', form_storage);
+    document.getElementById("date-save-button").removeEventListener("click", handleDate);
+}
+
 // Resize and move canvas using Interact.js library.
 const resizeCanvas = function (id, type, currentId, optionId) {
     DrawType = type;
@@ -608,38 +680,22 @@ const resizeCanvas = function (id, type, currentId, optionId) {
             }
         })
     if (DrawType == TEXT_CONTENT) {
-        // let currentText = document.getElementById(id);
         let container = document.getElementById(`text-content${current_text_num_id}`);
-        // currentText.addEventListener('click', function () {
-        //     interactInstance.draggable(true);
-        // addResizebar(`text-content${current_text_num_id}`);
-        //     console.log('focus click')
-        // });
-        // console.log(container);
         container.addEventListener('dblclick', function () {
             interactInstance.draggable(false);
         })
         container.addEventListener('focus', function () {
             interactInstance.draggable(true);
-            // current_text_content_id = current_text_content_id_copy;
             addResizebar(`text-content${current_text_num_id}`);
             console.log('focus dblclick');
         })
         container.addEventListener('blur', function () {
             interactInstance.draggable(true);
-            // current_text_content_id = '';
             removeResizebar(`text-content${current_text_num_id}`);
             console.log('blur');
         })
-        // document.addEventListener('click', function (event) {
-        //     if (event.target === container) {
-        //         container.focus();
-        //     }
-        // });
     } else {
         let object = document.getElementById(id);
-
-        console.log(id, object)
 
         object.addEventListener('focus', function () {
             addResizebar(id);
@@ -747,6 +803,15 @@ const addDeleteButton = function (currentId, container, object, type) {
             });
         }
         else {
+            form_storage = form_storage.filter(function (item) {
+                return item.id !== parseInt(currentId);
+            });
+        }
+    })
+    document.addEventListener('keydown', (e) => {
+        if (type != "text-content" && e.key === 'Delete') {
+            currentId = container.id.replace(`${type}_tooltipbar`, "")
+            document.getElementById(`${type}` + currentId).style.display = "none";
             form_storage = form_storage.filter(function (item) {
                 return item.id !== parseInt(currentId);
             });
@@ -1381,6 +1446,118 @@ const eventHandler = async function (e) {
             document.getElementById("button-save-button").addEventListener("click", handleButton);
             resizeCanvas(buttonDiv.id, BUTTON, buttonId, BUTTON_OPTION);
             break;
+        case DATE:
+            removeDate();
+            isDate = !isDate;
+
+            let date_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(x, y)
+
+            pos_x_pdf = date_x_y[0]
+            pos_y_pdf = date_x_y[1]
+
+            let dateId = baseId;
+            current_form_id = dateId;
+
+            const dateWidth = 160;
+            const dateHeight = 40;
+
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+
+            const newDate = document.createElement('input');
+            newDate.id = "datecontent" + dateId;
+            newDate.style.position = "relative";
+            newDate.type = "date";
+            newDate.style.width = "100%";
+            newDate.style.height = "100%";
+            newDate.classList.add('textcontent');
+            newDate.value = formattedDate;
+
+            let dateDiv = document.createElement("div");
+            dateDiv.id = "date" + dateId;
+            dateDiv.style.position = "absolute";
+            dateDiv.style.top = e.pageY - top - absoluteOffset.y + "px"
+            dateDiv.style.left = e.pageX - left - absoluteOffset.x + "px"
+            dateDiv.style.width = dateWidth + "px";
+            dateDiv.style.height = dateHeight + "px";
+            dateDiv.style.zIndex = 100;
+            dateDiv.style.background = "#3C97FE80";
+            dateDiv.tabIndex = 0;
+            dateDiv.classList.add('textfield-content');
+            dateDiv.append(newDate);
+
+            pg.appendChild(dateDiv);
+
+            // Show TextField OptionPane
+            showOptionAndResizebar(DATE_OPTION, dateDiv, dateWidth, dateHeight, "date");
+
+            newDate.style.fontFamily = document.getElementById('date-font-style').value;
+            newDate.style.fontSize = document.getElementById('date-font-size').value + "px";
+            newDate.style.color = document.getElementById('date-font-color').value;
+
+            document.getElementById('date-font-style').addEventListener('change', () => {
+                document.getElementById(current_date_content_id).style.fontFamily = document.getElementById('date-font-style').value;
+            })
+            document.getElementById('date-font-size').addEventListener('change', () => {
+                document.getElementById(current_date_content_id).style.fontSize = document.getElementById('date-font-size').value + 'px';
+            })
+            document.getElementById('date-font-color').addEventListener('change', () => {
+                document.getElementById(current_date_content_id).style.color = document.getElementById('date-font-color').value;
+            })
+            document.getElementById("date-input-name").value = `Date Form Field ${datefieldCount++}`
+
+            current_date_id = dateId;
+            current_date_content_id = newDate.id;
+
+            dateDiv.addEventListener("click", () => {
+
+                current_date_id = dateId;
+                current_date_content_id = newDate.id;
+
+                let isdatetooltipshow = false;
+
+                if (document.getElementById("date_tooltipbar" + current_date_id)) {
+                    isdatetooltipshow = true;
+                }
+
+                if (isDragging) {
+                    isDragging = false;
+                }
+                else {
+                    if (!isdatetooltipshow) {
+
+                        let tooltipbar = document.createElement("div")
+                        current_form_id = dateId;
+
+                        form_storage.map((element) => {
+                            if (element.id == dateId) {
+                                document.getElementById("date-input-name").value = element.form_field_name;
+                                isOptionPane = true;
+                                option = showOption(DATE_OPTION, element.xPage / 2 - 180, element.yPage + 15);
+                                document.getElementById("date-font-style").value = element.fontStyle;
+                                document.getElementById("date-font-size").value = element.baseFontSize;
+                                document.getElementById("date-font-color").value = element.textColor;
+                                let selected = element.align;
+                                if (selected == ALIGN_LEFT) document.getElementById('date-left').checked = true;
+                                if (selected == ALIGN_CENTER) document.getElementById('date-center').checked = true;
+                                if (selected == ALIGN_RIGHT) document.getElementById('date-right').checked = true;
+                                dateDiv.append(option);
+                            }
+                        })
+
+                        document.getElementById("date-save-button").addEventListener("click", handleDate);
+
+                        addDeleteButton(current_date_id, tooltipbar, dateDiv, "date");
+                    }
+                    else {
+                        document.getElementById("date_tooltipbar" + current_date_id).remove();
+                    }
+                }
+            })
+
+            document.getElementById("date-save-button").addEventListener("click", handleDate);
+            resizeCanvas(dateDiv.id, DATE, dateId, DATE_OPTION);
+            break;
         default:
             break;
     }
@@ -1419,6 +1596,10 @@ const removeButton = function () {
     removeEventListener();
     document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
 }
+const removeDate = function () {
+    removeEventListener();
+    document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
+}
 
 const addForm = function (mode) {
     currentMode = mode;
@@ -1435,6 +1616,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             if (isCheckbox) {
                 removeEventListener();
@@ -1447,6 +1629,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             isCheckbox = !isCheckbox;
             break;
@@ -1462,6 +1645,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             if (isRadioButton) {
                 removeEventListener();
@@ -1474,6 +1658,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             isRadioButton = !isRadioButton;
             break;
@@ -1489,6 +1674,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             if (isTextField) {
                 removeEventListener();
@@ -1501,6 +1687,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             isTextField = !isTextField;
             break;
@@ -1516,6 +1703,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='far fa-caret-square-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             if (isCombo) {
                 removeEventListener();
@@ -1528,6 +1716,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='far fa-caret-square-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             isCombo = !isCombo;
             break;
@@ -1543,6 +1732,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list-check' aria-hidden='true'></i>";
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             if (isList) {
                 removeEventListener();
@@ -1555,6 +1745,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list-check' aria-hidden='true'></i>";
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             isList = !isList;
             break;
@@ -1570,6 +1761,7 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-on'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             if (isButton) {
                 removeEventListener();
@@ -1582,9 +1774,38 @@ const addForm = function (mode) {
                 document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
                 document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-on'></i>";
                 document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-regular fa-calendar-days'></i>"
             }
             isButton = !isButton;
             break;
+        case DATE:
+            if (isEditing) {
+                removeDate();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-solid fa-calendar-days'></i>"
+            }
+            if (isDate) {
+                removeEventListener();
+            }
+            else {
+                addEventListener();
+                document.getElementById("add_form_radio").innerHTML = "<i class='fa-regular fa-circle-dot'></i>";
+                document.getElementById("add_form_check").innerHTML = "<i class='fa-sharp fa-regular fa-square-check'></i>";
+                document.getElementById("add_form_text").innerHTML = "<i class='fa fa-font'></i>";
+                document.getElementById("add_form_combo").innerHTML = "<i class='fa fa-caret-down'></i>";
+                document.getElementById("add_form_button").innerHTML = "<i class='fa fa-toggle-off'></i>";
+                document.getElementById("add_form_list").innerHTML = "<i class='fa fa-list' aria-hidden='true'></i>"
+                document.getElementById("add_form_date").innerHTML = "<i class='fa-solid fa-calendar-days'></i>"
+            }
+            isDate = !isDate;
         default:
             break;
     }
@@ -1629,11 +1850,12 @@ async function addFormElements() {
     // console.log("size: ", width, height);
     const form = pdfDoc.getForm();
     let page;
-    let checkboxForm, radioForm, textfieldForm, comboboxForm;
+    let checkboxForm, radioForm, textfieldForm, comboboxForm, datefieldForm;
     let radioOption;
     let selectedFont = '';
     if (form_storage.length != 0) {
-        form_storage.forEach(async (form_item) => {
+        console.log(form_storage)
+        await Promise.all(form_storage.map(async (form_item) => {
             page = pdfDoc.getPage(form_item.page_number - 1);
             if (form_item.form_type == RADIO) {
                 if (radioOption != form_item.data.option) {
@@ -1641,11 +1863,19 @@ async function addFormElements() {
                     radioForm = form.createRadioGroup(radioOption);
                 }
             }
-            if (form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
-                selectedFont = fontStyles[form_item.fontStyle] || PDFLib.StandardFonts.Helvetica;
-                customFont = await pdfDoc.embedFont(selectedFont);
+            // let customFont = '';
+            // if (form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
+                const fontName = form_item.fontStyle;
+                if (fontStyles.hasOwnProperty(fontName)) {
+                    selectedFont = fontStyles[fontName];
+                } else {
+                    const fontByte = font_storage.find(font => font.fontName === fontName);
+                    selectedFont = fontByte.fontArrayBuffer;
+                }
+                console.log(selectedFont)
+                const customFont = await pdfDoc.embedFont(selectedFont);
                 var { r, g, b } = hexToRgb(form_item.textColor);
-            }
+            // }
             switch (form_item.form_type) {
                 case CHECKBOX:
                     checkboxForm = form.createCheckBox(form_item.form_field_name);
@@ -1667,6 +1897,22 @@ async function addFormElements() {
                         backgroundColor: PDFLib.rgb(1, 1, 1)
                     });
                     radioCount++;
+                    break;
+                case DATE:
+                    datefieldForm = form.createTextField(form_item.form_field_name);
+                    datefieldForm.addToPage(page, {
+                        x: form_item.x,
+                        y: form_item.y - form_item.height,
+                        width: form_item.width,
+                        height: form_item.height,
+                        textColor: PDFLib.rgb(r, g, b),
+                        backgroundColor: PDFLib.rgb(1, 1, 1),
+                        borderColor: PDFLib.rgb(1, 1, 1)
+                    });
+                    datefieldForm.updateAppearances(customFont);
+                    datefieldForm.defaultUpdateAppearances(customFont);
+                    datefieldForm.setFontSize(form_item.fontSize);
+                    datefieldForm.setText(form_item.text);
                     break;
                 case TEXTFIELD:
                     textfieldForm = form.createTextField(form_item.form_field_name);
@@ -1700,7 +1946,6 @@ async function addFormElements() {
                     comboboxForm.updateAppearances(customFont);
                     comboboxForm.defaultUpdateAppearances(customFont);
                     comboboxForm.setFontSize(form_item.fontSize);
-                    // comboboxForm.setAlignment(form_item.align);
                     break;
                 case LIST:
                     listboxForm = form.createOptionList(form_item.form_field_name);
@@ -1717,7 +1962,6 @@ async function addFormElements() {
                     listboxForm.updateAppearances(customFont);
                     listboxForm.defaultUpdateAppearances(customFont);
                     listboxForm.setFontSize(form_item.fontSize);
-                    // listboxForm.setAlignment(form_item.align);
                     break;
                 case BUTTON:
                     buttonfieldForm = form.createButton(form_item.form_field_name);
@@ -1732,7 +1976,6 @@ async function addFormElements() {
                     buttonfieldForm.updateAppearances(customFont);
                     buttonfieldForm.defaultUpdateAppearances(customFont);
                     buttonfieldForm.setFontSize(form_item.fontSize);
-                    // buttonfieldForm.setAlignment(form_item.align);
                     let formScript = ''
                     if (form_item.action == SUBMIT) {
                         formScript = `
@@ -1795,13 +2038,13 @@ async function addFormElements() {
                 default:
                     break;
             }
-        })
+        }))
     }
     if (text_storage.length != 0) {
         await Promise.all(text_storage.map(async (text_item) => {
             const fontName = text_item.fontStyle;
-            if(fontStyles.hasOwnProperty(fontName)) {
-                selectedFont = fontStyles[text_item.fontStyle];
+            if (fontStyles.hasOwnProperty(fontName)) {
+                selectedFont = fontStyles[fontName];
             } else {
                 const fontByte = font_storage.find(font => font.fontName === fontName);
                 selectedFont = fontByte.fontArrayBuffer;

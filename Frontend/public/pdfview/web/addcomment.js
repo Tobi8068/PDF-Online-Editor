@@ -16,7 +16,6 @@ let mouse_y = 0;
 
 let current_comment_id = 0;
 let current_text_content_id = '';
-let current_text_content_id_copy = '';
 let current_text_num_id = 0;
 
 let isDragging = false;
@@ -53,9 +52,8 @@ const loadFontFiles = function () {
     })
 }
 
-const generateFontName = function () {
-    console.log(isBold, isItalic);
-    let fontName = document.getElementById('text-content-font-style').value;
+const generateFontName = function (id) {
+    let fontName = document.getElementById(id).value;
     const fontStyles = {
         'Bold': 'Bold',
         'Oblique': 'Oblique',
@@ -83,11 +81,11 @@ const handleBold = function () {
     const boldBtn = document.getElementById('text-bold');
     if (isBold) {
         boldBtn.classList.remove('text-weight-button-focused');
-        document.getElementById(current_text_content_id_copy).classList.remove('bold-text');
+        document.getElementById(current_text_content_id).classList.remove('bold-text');
         isBold = false;
     } else {
         boldBtn.classList.add('text-weight-button-focused');
-        document.getElementById(current_text_content_id_copy).classList.add('bold-text');
+        document.getElementById(current_text_content_id).classList.add('bold-text');
         isBold = true;
     }
 }
@@ -95,11 +93,11 @@ const handleItalic = function () {
     const italicBtn = document.getElementById('text-italic');
     if (isItalic) {
         italicBtn.classList.remove('text-weight-button-focused');
-        document.getElementById(current_text_content_id_copy).classList.remove('italic-text');
+        document.getElementById(current_text_content_id).classList.remove('italic-text');
         isItalic = false;
     } else {
         italicBtn.classList.add('text-weight-button-focused');
-        document.getElementById(current_text_content_id_copy).classList.add('italic-text');
+        document.getElementById(current_text_content_id).classList.add('italic-text');
         isItalic = true;
     }
 }
@@ -128,11 +126,11 @@ const handleTextContent = (e) => {
     isOptionPane = false;
     document.getElementById(TEXT_CONTENT_OPTION).style.display = 'none';
     e.stopPropagation();
-    fontStyle = generateFontName();
+    fontStyle = generateFontName('text-content-font-style');
     fontSize = parseInt(document.getElementById('text-content-font-size').value);
     textColor = document.getElementById('text-content-color').value;
     const regularFont = document.getElementById('text-content-font-style').value;
-    const text = document.getElementById(current_text_content_id_copy).innerText;
+    const text = document.getElementById(current_text_content_id).innerText;
     const lines = text.split('\n').map(line => line.trim().replace(/\n/g, ''));
     const resultArray = [];
     let prevElement = null;
@@ -382,7 +380,6 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         comment_control.style.display = "block";
     }
     if (isTextModeOn) {
-        console.log(font_storage);
         isTextModeOn = !isTextModeOn;
         let pageId = String(PDFViewerApplication.page)
         let pg = document.getElementById(pageId)
@@ -439,25 +436,22 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         newText.style.color = document.getElementById('text-content-color').value;
 
         document.getElementById('text-content-font-style').addEventListener('change', () => {
-            document.getElementById(current_text_content_id_copy).style.fontFamily = document.getElementById('text-content-font-style').value;
+            document.getElementById(current_text_content_id).style.fontFamily = document.getElementById('text-content-font-style').value;
         })
         document.getElementById('text-content-font-size').addEventListener('change', () => {
-            document.getElementById(current_text_content_id_copy).style.fontSize = document.getElementById('text-content-font-size').value + 'px';
+            document.getElementById(current_text_content_id).style.fontSize = document.getElementById('text-content-font-size').value + 'px';
         })
         document.getElementById('text-content-color').addEventListener('change', () => {
-            document.getElementById(current_text_content_id_copy).style.color = document.getElementById('text-content-color').value;
+            document.getElementById(current_text_content_id).style.color = document.getElementById('text-content-color').value;
         })
 
         // addResizebar(container.id);
         current_text_content_id = newText.id;
-        current_text_content_id_copy = newText.id;
-
 
         current_text_num_id = textContentId;
         container.addEventListener("click", () => {
 
             current_text_content_id = newText.id;
-            current_text_content_id_copy = newText.id;
             current_text_num_id = textContentId;
             console.log(current_text_num_id);
 
