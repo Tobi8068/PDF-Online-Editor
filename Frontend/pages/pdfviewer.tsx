@@ -1,13 +1,48 @@
-import Header from "@/components/Header";
-
 export default function PDFViewer() {
-  
   return (
     <>
-      <Header text="PDF Viewer"/>
-      <div style={{overflow:"hidden"}}>
-        <iframe src="pdfview/web/viewer.html" style={{width:"100%", height:"99.6vh", border:"none", paddingBottom:"none", margin:"none",}}></iframe>
+      <div style={{ width: "100%", maxHeight: "100vh", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "10px", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "left",
+              paddingLeft: "10px",
+              paddingTop: "4px",
+            }}
+          >
+            <img src="images/pdf_viewer.png" alt="pdf_viewer" width={"100px"} />
+          </div>
+        </div>
+        <div
+          style={{
+            overflow: "hidden",
+            backgroundColor: "#e1dddd",
+            borderRadius: "10px",
+            margin: "5px",
+          }}
+        >
+          <div
+            style={{
+              marginLeft: "5px",
+              marginRight: "5px",
+              marginTop: "40px",
+              marginBottom: "5px",
+            }}
+          >
+            <iframe
+              src="pdfview/web/viewer.html"
+              style={{
+                width: "100%",
+                height: "calc(99vh - 45px)",
+                border: "none",
+                paddingBottom: "none",
+                margin: "none",
+              }}
+            ></iframe>
+          </div>
+        </div>
       </div>
     </>
-  )
+  );
 }

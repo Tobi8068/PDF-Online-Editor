@@ -28,10 +28,18 @@ let isBold = false;
 let isItalic = false;
 //////////
 
+const getPageWidth = async function () {
+    pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
+    const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+    const page = pdfDoc.getPage(0);
+    const {width, height} = page.getSize();
+    pageWidth = width
+    console.log("pageWidth", pageWidth);
+}
+
 const loadFontFiles = function () {
-    console.log('first', fontLists);
+    
     fontLists.forEach(item => {
-        console.log(`Font Name: ${item.fontName}, Font URL: ${item.fontURL}`);
         fetch(`./fonts/${item.fontURL}`)
             .then(response => {
                 if (!response.ok) {
@@ -44,7 +52,6 @@ const loadFontFiles = function () {
                     fontName: item.fontName,
                     fontArrayBuffer: arrayBuffer
                 })
-                console.log('TTF file content:', arrayBuffer);
             })
             .catch(error => {
                 console.error('Error fetching TTF file:', error);
@@ -125,7 +132,7 @@ const removeBoldItalicEvent = function () {
 const handleTextContent = (e) => {
     isOptionPane = false;
     document.getElementById(TEXT_CONTENT_OPTION).style.display = 'none';
-    e.stopPropagation();
+    if(e) e.stopPropagation();
     fontStyle = generateFontName('text-content-font-style');
     fontSize = parseInt(document.getElementById('text-content-font-size').value);
     textColor = document.getElementById('text-content-color').value;
@@ -182,7 +189,6 @@ const handleTextContent = (e) => {
         fontSize = 12;
         textColor = '';
     }
-    console.log(text_storage, isBold, isItalic);
     document.getElementById("text-content-save-button").removeEventListener("click", handleTextContent);
     removeBoldItalicEvent();
 }
@@ -313,7 +319,6 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
     let new_y = event.pageY - new_ost.top
 
     let new_x_y = PDFViewerApplication.pdfViewer._pages[PDFViewerApplication.page - 1].viewport.convertToPdfPoint(new_x, new_y)
-
     if (isDragging & DrawType === "comment") {
 
         document.getElementById("comment" + current_comment_id).style.left = (event.x - sleft - 30) + "px";
@@ -362,7 +367,7 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
 }
 
 document.getElementById("viewer").addEventListener("click", (evt) => {
-
+    if(pageWidth == 0) getPageWidth();
     mouse_x = evt.x;
     mouse_y = evt.y;
 
@@ -449,11 +454,10 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
         current_text_content_id = newText.id;
 
         current_text_num_id = textContentId;
-        container.addEventListener("click", () => {
+        container.addEventListener("dblclick", () => {
 
             current_text_content_id = newText.id;
             current_text_num_id = textContentId;
-            console.log(current_text_num_id);
 
             let istooltipshow = false;
             // console.log("textContentID", textContentId);

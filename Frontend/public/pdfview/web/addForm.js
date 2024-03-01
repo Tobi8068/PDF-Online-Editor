@@ -31,6 +31,8 @@ let alignValue = 0;
 
 const absoluteOffset = { x: 10, y: 10 };
 
+let pageWidth = 0;
+
 let isOptionPane = false;
 
 let current_checkbox_id = 0;
@@ -54,7 +56,6 @@ let formHeight = 25;
 let selectedAlign = '', groupNameAlign = '';
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('first');
     loadFontFiles();
 });
 
@@ -116,7 +117,7 @@ const handleCheckbox = function (e) {
     formHeight = 25;
     isOptionPane = false;
     document.getElementById("checkbox-option").style.display = 'none';
-    e.stopPropagation();
+    if (e) e.stopPropagation();
 
     const { count, formFieldName } = checkFormField("checkbox-field-input-name");
     const label = document.getElementById("checkbox-label").value;
@@ -152,7 +153,7 @@ const handleRadio = function (e) {
     const value = document.getElementById("radio-value").value;
     document.getElementById("radio-button-option").style.display = 'none';
     const formFieldName = document.getElementById("radio-field-input-name").value;
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     let count = 0, isData = 0;
     for (let j = 0; j < form_storage.length; j++) {
         if (form_storage[j].id != current_form_id) count++;
@@ -198,7 +199,7 @@ const handleText = function (e) {
     formHeight = 40;
     isOptionPane = false;
     document.getElementById("text-field-option").style.display = 'none';
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     const formFieldName = document.getElementById("text-field-input-name").value;
     fontStyle = generateFontName('text-font-style');
     fontSize = parseInt(document.getElementById('text-font-size').value);
@@ -255,6 +256,7 @@ const handleText = function (e) {
         textColor = '';
         alignValue = 0;
     }
+    console.log(form_storage);
     document.getElementById("text-save-button").removeEventListener("click", handleText);
     removeBoldItalicEvent();
 }
@@ -265,7 +267,7 @@ const handleCombo = function (e) {
     formHeight = 40;
     isOptionPane = false;
     document.getElementById("combo-option").style.display = 'none';
-    e.stopPropagation();
+    if (e) e.stopPropagation();
 
     const formFieldName = document.getElementById("combo-input-name").value;
     fontStyle = generateFontName('combo-font-style');
@@ -278,7 +280,6 @@ const handleCombo = function (e) {
             form_storage[i].fontSize = fontSize;
             form_storage[i].textColor = textColor;
             form_storage[i].align = alignValue;
-            comboboxOptionArray = [];
             break;
         }
         else if (form_storage[i].form_field_name == formFieldName && form_storage[i].id != current_form_id) {
@@ -327,7 +328,7 @@ const handleList = function (e) {
     formWidth = 300;
     formHeight = 120;
     document.getElementById("list-option").style.display = 'none';
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     const formFieldName = document.getElementById("list-input-name").value;
     fontStyle = document.getElementById('list-font-style').value;
     fontSize = parseInt(document.getElementById('list-font-size').value);
@@ -479,7 +480,7 @@ const handleButton = function (e) {
     } else if (selectedValue === 'no_action') {
         form_action = NOACTION;
     }
-    e.stopPropagation();
+    if (e) e.stopPropagation();
 
     const formFieldName = document.getElementById("button-field-input-name").value;
     let initialValue = document.getElementById("button-text").value;
@@ -585,7 +586,7 @@ const handleDate = function (e) {
             baseY: pos_y_pdf,
             fontStyle: fontStyle,
             regularFontStyle: regularFont,
-            fontSize: fontSize * 0.75 * 0.8 ,
+            fontSize: fontSize * 0.75 * 0.8,
             baseFontSize: fontSize,
             textColor: textColor,
             width: formWidth * 0.75 * 0.8,
@@ -597,12 +598,13 @@ const handleDate = function (e) {
         fontSize = 12;
         textColor = '';
     }
-    console.log('date form field', form_storage);
     document.getElementById("date-save-button").removeEventListener("click", handleDate);
 }
 
 // Resize and move canvas using Interact.js library.
 const resizeCanvas = function (id, type, currentId, optionId) {
+    let newX = 0;
+    
     DrawType = type;
     const interactInstance = interact(`#${id}`)
         .resizable({
@@ -664,18 +666,58 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     // keep the dragged position in the data-x/data-y attributes
                     var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
                     var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+                    if (DrawType == RADIO) {
+                        form_storage.map(function (item) {
+                            if(item.id === parseInt(currentId)) {
+                                let posXpdf = item.data.baseX + x * 0.75 * 0.8; 
+                                if(posXpdf < 0) {
+                                    newX = 0 - item.data.baseX / 0.75 / 0.8;
+                                }
+                                else if ((posXpdf + item.data.width) >= pageWidth ) {
+                                    newX = (pageWidth - item.data.width - item.data.baseX) / 0.75 / 0.8;
+                                }
+                                else newX = x;
+                            }
+                        })
+                    } else if (DrawType === TEXT_CONTENT) {
+                        text_storage.map(function (item) {
+                            if(item.id === parseInt(currentId)) {
+                                let posXpdf = item.baseX + x * 0.75 * 0.8; 
+                                if(posXpdf < 0) {
+                                    newX = 0 - item.baseX / 0.75 / 0.8;
+                                }
+                                else if ((posXpdf + item.width) >= pageWidth ) {
+                                    newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
+                                }
+                                else newX = x;
+                            }
+                        })
+                    } else {
+                        form_storage.map(function (item) {
+                            if(item.id === parseInt(currentId)) {
+                                let posXpdf = item.baseX + x * 0.75 * 0.8; 
+                                if(posXpdf < 0) {
+                                    newX = 0 - item.baseX / 0.75 / 0.8;
+                                }
+                                else if ((posXpdf + item.width) >= pageWidth ) {
+                                    newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
+                                }
+                                else newX = x;
+                            }
+                        })
+                    }
                     // translate the element
-                    target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+                    target.style.transform = 'translate(' + newX + 'px, ' + y + 'px)'
 
                     // update the position attributes
-                    target.setAttribute('data-x', x)
+                    target.setAttribute('data-x', newX)
                     target.setAttribute('data-y', y)
                 },
                 end(event) {
                     const target = event.target;
                     var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
                     var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-                    moveEventHandler(event, x, y, currentId);
+                    moveEventHandler(event, newX, y, currentId);
                 }
             }
         })
@@ -687,12 +729,17 @@ const resizeCanvas = function (id, type, currentId, optionId) {
         container.addEventListener('focus', function () {
             interactInstance.draggable(true);
             addResizebar(`text-content${current_text_num_id}`);
-            console.log('focus dblclick');
         })
-        container.addEventListener('blur', function () {
+        container.addEventListener('blur', function (event) {
             interactInstance.draggable(true);
             removeResizebar(`text-content${current_text_num_id}`);
-            console.log('blur');
+            const inputElements = container.querySelectorAll('input');
+            const selectElements = container.querySelectorAll('select');
+
+            if (!event.relatedTarget ||
+                ![...inputElements, ...selectElements].includes(event.relatedTarget)) {
+                handleTextContent();
+            }  
         })
     } else {
         let object = document.getElementById(id);
@@ -701,8 +748,39 @@ const resizeCanvas = function (id, type, currentId, optionId) {
             addResizebar(id);
         });
 
-        object.addEventListener('blur', function () {
+        object.addEventListener('blur', function (event) {
             removeResizebar(id);
+            const inputElements = object.querySelectorAll('input');
+            const selectElements = object.querySelectorAll('select');
+
+            if (!event.relatedTarget ||
+                ![...inputElements, ...selectElements].includes(event.relatedTarget)) {
+                switch (DrawType) {
+                    case CHECKBOX:
+                        handleCheckbox();
+                        break;
+                    case RADIO:
+                        handleRadio();
+                        break;
+                    case TEXTFIELD:
+                        handleText();
+                        break;
+                    case COMBOBOX:
+                        handleCombo();
+                        break;
+                    case LIST:
+                        handleList();
+                        break;
+                    case BUTTON:
+                        handleButton();
+                        break;
+                    case DATE:
+                        handleDate();
+                        break;
+                    default:
+                        break;
+                }
+            }   
         });
 
         document.addEventListener('click', function (event) {
@@ -823,7 +901,6 @@ const addDeleteButton = function (currentId, container, object, type) {
 // Handle the specified event.
 const eventHandler = async function (e) {
     baseId++;
-
     let ost = computePageOffset();
     let x = e.pageX - ost.left;
     let y = e.pageY - ost.top;
@@ -871,7 +948,7 @@ const eventHandler = async function (e) {
             document.getElementById("checkbox-label").value = `Label ${checkboxCount}`;
             document.getElementById("checkbox-value").value = `Value ${checkboxCount}`;
 
-            checkbox.addEventListener("click", () => {
+            checkbox.addEventListener("dblclick", () => {
 
                 current_checkbox_id = checkboxId;
 
@@ -950,7 +1027,7 @@ const eventHandler = async function (e) {
             document.getElementById("radio-label").value = `Label ${radioCount}`;
             document.getElementById("radio-value").value = `Value ${radioCount}`;
 
-            radio.addEventListener("click", () => {
+            radio.addEventListener("dblclick", () => {
 
                 current_radio_id = radioId;
 
@@ -1032,8 +1109,7 @@ const eventHandler = async function (e) {
                 radio.addEventListener('change', handleRadioSelection);
             });
             document.getElementById("text-field-input-name").value = `Text Form Field ${textfieldCount++}`
-
-            textDiv.addEventListener("click", () => {
+            textDiv.addEventListener("dblclick", () => {
 
                 current_text_id = textId;
 
@@ -1119,7 +1195,7 @@ const eventHandler = async function (e) {
             });
             document.getElementById("combo-input-name").value = `Combobox Form Field ${comboCount++}`
 
-            comboDiv.addEventListener("click", (e) => {
+            comboDiv.addEventListener("dblclick", (e) => {
 
                 current_combo_id = comboId;
 
@@ -1255,7 +1331,7 @@ const eventHandler = async function (e) {
             });
             document.getElementById("list-input-name").value = `Listbox Form Field ${listCount++}`
 
-            listDiv.addEventListener("click", (e) => {
+            listDiv.addEventListener("dblclick", (e) => {
 
                 current_list_id = listId;
 
@@ -1393,7 +1469,7 @@ const eventHandler = async function (e) {
             });
             document.getElementById("button-field-input-name").value = `Button Form Field ${buttonCount++}`;
             document.getElementById("button-text").value = "Button";
-            buttonDiv.addEventListener("click", () => {
+            buttonDiv.addEventListener("dblclick", () => {
 
                 current_button_id = buttonId;
 
@@ -1485,7 +1561,6 @@ const eventHandler = async function (e) {
             dateDiv.tabIndex = 0;
             dateDiv.classList.add('textfield-content');
             dateDiv.append(newDate);
-
             pg.appendChild(dateDiv);
 
             // Show TextField OptionPane
@@ -1509,7 +1584,7 @@ const eventHandler = async function (e) {
             current_date_id = dateId;
             current_date_content_id = newDate.id;
 
-            dateDiv.addEventListener("click", () => {
+            dateDiv.addEventListener("dblclick", () => {
 
                 current_date_id = dateId;
                 current_date_content_id = newDate.id;
@@ -1854,8 +1929,7 @@ async function addFormElements() {
     let radioOption;
     let selectedFont = '';
     if (form_storage.length != 0) {
-        console.log(form_storage)
-        await Promise.all(form_storage.map(async (form_item) => {
+        form_storage.map(async (form_item) => {
             page = pdfDoc.getPage(form_item.page_number - 1);
             if (form_item.form_type == RADIO) {
                 if (radioOption != form_item.data.option) {
@@ -1863,8 +1937,8 @@ async function addFormElements() {
                     radioForm = form.createRadioGroup(radioOption);
                 }
             }
-            // let customFont = '';
-            // if (form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
+            let customFont = '';
+            if (form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
                 const fontName = form_item.fontStyle;
                 if (fontStyles.hasOwnProperty(fontName)) {
                     selectedFont = fontStyles[fontName];
@@ -1872,10 +1946,9 @@ async function addFormElements() {
                     const fontByte = font_storage.find(font => font.fontName === fontName);
                     selectedFont = fontByte.fontArrayBuffer;
                 }
-                console.log(selectedFont)
-                const customFont = await pdfDoc.embedFont(selectedFont);
+                customFont = await pdfDoc.embedFont(selectedFont);
                 var { r, g, b } = hexToRgb(form_item.textColor);
-            // }
+            }
             switch (form_item.form_type) {
                 case CHECKBOX:
                     checkboxForm = form.createCheckBox(form_item.form_field_name);
@@ -1909,10 +1982,10 @@ async function addFormElements() {
                         backgroundColor: PDFLib.rgb(1, 1, 1),
                         borderColor: PDFLib.rgb(1, 1, 1)
                     });
-                    datefieldForm.updateAppearances(customFont);
-                    datefieldForm.defaultUpdateAppearances(customFont);
                     datefieldForm.setFontSize(form_item.fontSize);
                     datefieldForm.setText(form_item.text);
+                    datefieldForm.updateAppearances(customFont);
+                    datefieldForm.defaultUpdateAppearances(customFont);
                     break;
                 case TEXTFIELD:
                     textfieldForm = form.createTextField(form_item.form_field_name);
@@ -2038,7 +2111,7 @@ async function addFormElements() {
                 default:
                     break;
             }
-        }))
+        })
     }
     if (text_storage.length != 0) {
         await Promise.all(text_storage.map(async (text_item) => {
