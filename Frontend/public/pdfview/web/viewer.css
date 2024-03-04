@@ -31,7 +31,7 @@
    --editor-toolbar-base-offset: 105px;
  
    --main-color: rgb(12 12 13);
-   --body-bg-color: rgb(212 212 215);
+   --body-bg-color: rgb(241, 243, 245);
    --progressBar-color: rgb(10 132 255);
    --progressBar-bg-color: rgb(221 221 222);
    --progressBar-blend-color: rgb(116 177 239);
@@ -52,7 +52,7 @@
    --toolbarSidebar-border-bottom: none;
    --button-hover-color: rgb(221 222 223);
    --toggled-btn-color: rgb(0 0 0);
-   --toggled-btn-bg-color: rgb(0 0 0 / 0.3);
+   --toggled-btn-bg-color: #dde6ee;
    --toggled-hover-active-btn-color: rgb(0 0 0 / 0.4);
    --toggled-hover-btn-outline: none;
    --dropdown-btn-bg-color: rgb(241, 241, 241);
@@ -336,18 +336,17 @@
  }
  
  #toolbarSidebar {
-   width: 100%;
+   width: calc(100%-1px);
    height: 32px;
    background-color: var(--sidebar-toolbar-bg-color);
-   box-shadow: var(--toolbarSidebar-box-shadow);
-   border-bottom: var(--toolbarSidebar-border-bottom);
+   border-right: 1px solid #adb5bd;
  }
  
  #sidebarResizer {
    position: absolute;
    inset-block: 0;
-   inset-inline-end: -6px;
-   width: 6px;
+   inset-inline-end: -8px;
+   width: 10px;
    z-index: 200;
    cursor: ew-resize;
  }
@@ -356,7 +355,8 @@
  .findbar,
  .secondaryToolbar,
  .editorParamsToolbar {
-   position: relative;
+   position: absolute;
+ 
    height: 32px;
    background-color: var(--toolbar-bg-color);
    box-shadow: var(--toolbar-box-shadow);
@@ -440,9 +440,8 @@
  }
  
  .findbar,
- .secondaryToolbar,
- .editorParamsToolbar {
-   top: 32px;
+ .secondaryToolbar {
+   top: 42px;
    position: absolute;
    z-index: 30000;
    height: auto;
@@ -453,12 +452,29 @@
    line-height: 14px;
    text-align: left;
    cursor: default;
+   left: 10px;
+ }
+ 
+ .editorParamsToolbar {
+   top: 89px;
+   position: fixed;
+   z-index: 30000;
+   height: auto;
+   padding: 0 4px;
+   margin: 4px 2px;
+   font: message-box;
+   font-size: 12px;
+   line-height: 14px;
+   text-align: left;
+   cursor: default;
+   right: 225px;
  }
  
  .findbar {
    inset-inline-start: 64px;
    min-width: 300px;
    background-color: var(--toolbar-bg-color);
+   opacity: 0.9;
  }
  
  .findbar > div {
@@ -495,6 +511,7 @@
  .findbar .toolbarField[type="checkbox"]:checked + .toolbarLabel {
    background-color: var(--toggled-btn-bg-color) !important;
    color: var(--toggled-btn-color);
+   opacity: 0.9;
  }
  
  #findInput {
@@ -522,7 +539,6 @@
  .secondaryToolbar,
  .editorParamsToolbar {
    padding: 6px 0 10px;
-   inset-inline-end: 4px;
    height: auto;
    background-color: var(--doorhanger-bg-color);
  }
@@ -594,26 +610,6 @@
    /* Apply a smooth transition for the opacity change */
  }
  
- #editorStampParamsToolbar {
-   inset-inline-end: calc(var(--editor-toolbar-base-offset) + 0px + 165px);
- }
- 
- #editorInkParamsToolbar {
-   inset-inline-end: calc(var(--editor-toolbar-base-offset) + 28px + 165px);
- }
- 
- #editorFreeTextParamsToolbar {
-   inset-inline-end: calc(var(--editor-toolbar-base-offset) + 56px + 165px);
- }
- 
- #editorHighlightParamsToolbar {
-   inset-inline-end: calc(var(--editor-toolbar-base-offset) + 84px + 165px);
- }
- 
- #editorStampAddImage::before {
-   mask-image: var(--editorParams-stampAddImage-icon);
- }
- 
  .doorHanger,
  .doorHangerRight {
    border-radius: 2px;
@@ -632,6 +628,7 @@
    position: absolute;
    pointer-events: none;
    opacity: var(--doorhanger-triangle-opacity-whcm);
+   display: none;
  }
  
  .doorHanger::after {
@@ -734,6 +731,13 @@
    outline: none;
  }
  
+ .fileToolsBtn {
+   border: none;
+   background: none;
+   height: 28px;
+   outline: none;
+ }
+ 
  .dialogButton:is(:hover, :focus-visible) {
    background-color: var(--dialog-button-hover-bg-color);
  }
@@ -824,7 +828,7 @@
  .dropdownToolbarButton {
    display: flex;
    width: fit-content;
-   min-width: 140px;
+   min-width: 100px;
    padding: 0;
    background-color: var(--dropdown-btn-bg-color);
    border: var(--dropdown-btn-border);
@@ -862,7 +866,7 @@
  }
  
  .toolbarButtonSpacer {
-   width: 30px;
+   width: 10px;
    display: inline-block;
    height: 1px;
  }
@@ -969,6 +973,7 @@
  
  :is(#download, #secondaryDownload)::before {
    mask-image: var(--toolbarButton-download-icon);
+   display: none;
  }
  
  a.secondaryToolbarButton {
@@ -1237,8 +1242,8 @@
    height: var(--thumbnail-height);
    margin: 0 10px 5px;
    padding: 1px;
-   border: 7px solid transparent;
-   border-radius: 2px;
+   border: 2px solid transparent;
+   border-radius: 5px;
  }
  
  #thumbnailView > a:last-of-type > .thumbnail {
@@ -1251,7 +1256,8 @@
  }
  
  .thumbnail.selected {
-   border-color: var(--thumbnail-selected-color) !important;
+   /* border-color: var(--thumbnail-selected-color) !important; */
+   border-color: #3183c8 !important;
  }
  
  .thumbnailImage {
@@ -1603,7 +1609,7 @@
  
  .comment-control-header {
    height: 36px;
-   background-color: #bbb;
+   background-color: #dde6ee;
    font-size: 18px;
    border-top-right-radius: 5px;
    border-top-left-radius: 5px;
@@ -1639,7 +1645,7 @@
    justify-content: center;
    align-items: center;
    height: 36px;
-   background-color: #bbb;
+   background-color: #dde6ee;
    border-bottom-left-radius: 5px;
    border-bottom-right-radius: 5px;
    font-size: 18px;
@@ -1685,33 +1691,33 @@
    width: 28px;
    height: 28px;
    border: none;
+   border-radius: 10px;
    display: flex;
    background: none;
    align-items: center;
    justify-content: center;
    outline: none;
    margin: 2px 0px;
-   color: #0c0c0d;
+   color: #000000;
  }
  
  .second_toolbar_button:hover {
-   background-color: #dddedf;
+   background-color: #ebebeb;
  }
  
  ::-webkit-scrollbar {
-   width: 10px;
+   width: 8px;
    /* Width of the scrollbar */
    border-radius: 5px;
  }
  
  ::-webkit-scrollbar-track {
-   background: #f1f1f1;
+   background: transparent;
    /* Color of the track */
-   border-radius: 5px;
  }
  
  ::-webkit-scrollbar-thumb {
-   background: #888;
+   background: #adb5bd;
    /* Color of the handle */
    border-radius: 5px;
  }
@@ -1736,7 +1742,7 @@
    border-top-right-radius: 4px;
    border-top-left-radius: 4px;
    border-bottom: 1px #0c0c0d;
-   background-color: #bbb;
+   background-color: #dde6ee;
    color: #222;
    height: 40px;
  }
@@ -1803,19 +1809,45 @@
    justify-content: center;
    border-bottom-right-radius: 4px;
    border-bottom-left-radius: 4px;
-   border-bottom: 1px #0c0c0d;
-   background-color: #bbb;
    color: #222;
    width: 100%;
-   height: 40px;
+   height: 50px;
    cursor: pointer;
  }
  
  .form-save-button {
-   color: blue;
+   color: rgb(0, 0, 0);
+   background-color: rgb(255, 255, 255);
    display: flex;
    justify-content: center;
-   width: 100%;
+   align-items: center;
+   width: 95%;
+   height: 40px;
+   box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.2);
+   transition: all 0.3s ease-in-out;
+   cursor: pointer;
+   outline: none;
+   margin-top: 10px;
+   margin-bottom: 10px;
+   border-radius: 2px;
+   border: 1px solid #adb5bd;
+ }
+ 
+ .form-save-button:hover {
+   background-color: #f8f9fa;
+   color: rgb(0, 0, 0);
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 95%;
+   height: 40px;
+   box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.2);
+   transition: all 0.3s ease-in-out;
+   cursor: pointer;
+   outline: none;
+   margin-top: 10px;
+   margin-bottom: 10px;
+   border-radius: 2px;
  }
  
  .combobox-options {
@@ -1991,5 +2023,121 @@
  }
  .italic-text {
    font-style: italic;
+ }
+ 
+ .formToolsContainer {
+   display: flex;
+   flex-direction: row;
+   border-radius: 20px;
+   padding-left: 5px;
+   padding-right: 10px;
+   margin-right: 10px;
+   margin-left: 10px;
+   width: 32px;
+ }
+ 
+ .toolbarContainer {
+   position: absolute;
+   right: 0px;
+ }
+ 
+ .toolBtn {
+   color: #606060;
+ }
+ 
+ .toolbarTitle {
+   font-size: 12px;
+   margin-top: 15px;
+   margin-bottom: 10px;
+ }
+ 
+ .menuBtn {
+   background-color: transparent; /* Set background color */
+   color: #535353; /* Set text color */
+   border: none; /* Remove border */
+   padding: 5px 7px 3px 7px; /* Add padding */
+   border-radius: 2px; /* Add rounded corners */
+   margin-top: 3px;
+ }
+ 
+ .menuBtn:hover {
+   background-color: #dddedf; /* Change background color on hover */
+ }
+ 
+ .listMenu {
+   background-color: #ffffff;
+   box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.2);
+   transition: all 0.3s ease-in-out;
+   cursor: pointer;
+   outline: none;
+   border-radius: 2px;
+   border: 1px solid #adb5bd;
+   width: 120px;
+   position: fixed;
+   left: 15px;
+   top: 45px;
+   z-index: 999999;
+   display: none;
+ }
+ 
+ .menu-button {
+   background-color: #ffffff;
+   color: var(--toggled-btn-color);
+   border: none;
+   width: 100%;
+   padding-top: 4px;
+   padding-bottom: 4px;
+   text-align: left;
+   padding-left: 5px;
+   display: flex;
+   flex-direction: row;
+   padding-left: 13px;
+   font-size: 17px;
+ }
+ 
+ .active_menu {
+   background-color: #dddedf;
+ }
+ 
+ .menu-button:hover {
+   background-color: #dde6ee;
+ }
+ 
+ .menu-button-item {
+   font-size: 12px;
+   margin-left: 8px;
+   font-weight: 400;
+   line-height: 1.5;
+ }
+ 
+ .right-sidebar {
+   position: fixed;
+   inset-block: 0;
+   width: var(--sidebar-width);
+   z-index: 99999999;
+   font: message-box;
+   margin-top: 42px;
+   right: -250px; /* Start off-screen */
+   background-color: #ffffff;
+   border-radius: 2px;
+   border-left: 1px solid #adb5bd;
+   box-shadow: 1px 3px 3px 0px rgba(0, 0, 0, 0.2);
+   padding: 10px;
+   opacity: 0.9;
+   transition: right 0.3s; /* Add transition for smooth slide animation */
+ }
+ 
+ .right-sidebar.active {
+   right: 0; /* Slide the sidebar into view */
+ }
+ 
+ #penIcon {
+   width: 17px;
+   color: #535353;
+   transition: transform 0.3s; /* Add transition for smooth rotation */
+ }
+ 
+ .rotate {
+   transform: rotate(360deg); /* Rotate the icon by 180 degrees */
  }
  

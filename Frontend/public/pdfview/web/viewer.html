@@ -92,9 +92,6 @@ See https://github.com/adobe-type-tools/cmap-resources
       }
     </script>
 
-    <script src="viewer.js" type="module"></script>
-    <script src="pdfAnnotate.js"></script>
-
     <!--#endif-->
   </head>
 
@@ -646,11 +643,47 @@ See https://github.com/adobe-type-tools/cmap-resources
           </div>
         </div>
         <!-- secondaryToolbar -->
+        <div class="listMenu" id="main-menu" tabindex="0">
+          <button
+            id="secondaryOpenFile"
+            class="secondaryToolbarButton"
+            title="Open File"
+            tabindex="51"
+            data-l10n-id="pdfjs-open-file-button"
+          >
+            <span data-l10n-id="pdfjs-print-button-label">Open File</span>
+          </button>
+          <button
+            id="secondaryPrint"
+            class="secondaryToolbarButton"
+            title="Print"
+            tabindex="52"
+            data-l10n-id="pdfjs-print-button"
+          >
+            <span data-l10n-id="pdfjs-print-button-label">Print</span>
+          </button>
+          <button
+            class="menu-button"
+            id="secondarySaveFile"
+            title="Save"
+            onclick="setDocument()"
+          >
+            <i class="far fa-floppy-disk"></i>
+            <p class="menu-button-item">Save</p>
+          </button>
+        </div>
 
         <div class="toolbar">
           <div id="toolbarContainer" style="height: 36px; padding-top: 5px">
             <div id="toolbarViewer">
               <div id="toolbarViewerLeft">
+                <div class="toolbarButtonSpacer"></div>
+                <button class="menuBtn" id="menubtn">
+                  <i class="fas fa-bars"></i>
+                </button>
+                <div class="toolbarButtonSpacer"></div>
+                <div class="splitToolbarButtonSeparator"></div>
+                <div class="toolbarButtonSpacer"></div>
                 <button
                   id="sidebarToggle"
                   class="toolbarButton"
@@ -664,6 +697,21 @@ See https://github.com/adobe-type-tools/cmap-resources
                     >Toggle Sidebar</span
                   >
                 </button>
+                <!-- <div class="toolbarButtonSpacer"></div> -->
+                <!-- <div class="splitToolbarButtonSeparator"></div> -->
+                <button
+                  id="secondaryToolbarToggle"
+                  class="toolbarButton"
+                  title="Tools"
+                  tabindex="43"
+                  data-l10n-id="pdfjs-tools-button"
+                  aria-expanded="false"
+                  aria-controls="secondaryToolbar"
+                >
+                  <span data-l10n-id="pdfjs-tools-button-label">Tools</span>
+                </button>
+                <div class="toolbarButtonSpacer"></div>
+                <div class="splitToolbarButtonSeparator"></div>
                 <div class="toolbarButtonSpacer"></div>
                 <button
                   id="viewFind"
@@ -676,29 +724,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                 >
                   <span data-l10n-id="pdfjs-findbar-button-label">Find</span>
                 </button>
-                <div class="splitToolbarButton hiddenSmallView">
-                  <button
-                    class="toolbarButton"
-                    title="Previous Page"
-                    id="previous"
-                    tabindex="13"
-                    data-l10n-id="pdfjs-previous-button"
-                  >
-                    <span data-l10n-id="pdfjs-previous-button-label"
-                      >Previous</span
-                    >
-                  </button>
-                  <div class="splitToolbarButtonSeparator"></div>
-                  <button
-                    class="toolbarButton"
-                    title="Next Page"
-                    id="next"
-                    tabindex="14"
-                    data-l10n-id="pdfjs-next-button"
-                  >
-                    <span data-l10n-id="pdfjs-next-button-label">Next</span>
-                  </button>
-                </div>
+                <div class="toolbarButtonSpacer"></div>
                 <span class="loadingInput start">
                   <input
                     type="number"
@@ -712,258 +738,44 @@ See https://github.com/adobe-type-tools/cmap-resources
                     autocomplete="off"
                   />
                 </span>
-                <span id="numPages" class="toolbarLabel"></span>
-              </div>
-              <div id="toolbarViewerRight">
-                <div
-                  id="editorModeButtons"
-                  class="splitToolbarButton toggled"
-                  role="radiogroup"
-                >
-                  <button
-                    id="editorHighlight"
-                    class="toolbarButton"
-                    disabled="disabled"
-                    title="Highlight"
-                    role="radio"
-                    aria-checked="false"
-                    aria-controls="editorHighlightParamsToolbar"
-                    tabindex="31"
-                    data-l10n-id="pdfjs-editor-highlight-button"
-                  >
-                    <span data-l10n-id="pdfjs-editor-highlight-button-label"
-                      >Highlight</span
-                    >
-                  </button>
-                  <button
-                    id="editorFreeText"
-                    class="toolbarButton"
-                    style="display: none"
-                    disabled="disabled"
-                    title="Text"
-                    role="radio"
-                    aria-checked="false"
-                    aria-controls="editorFreeTextParamsToolbar"
-                    tabindex="32"
-                    data-l10n-id="pdfjs-editor-free-text-button"
-                  >
-                    <span data-l10n-id="pdfjs-editor-free-text-button-label"
-                      >Text</span
-                    >
-                  </button>
-                  <button
-                    id="editorInk"
-                    class="toolbarButton"
-                    disabled="disabled"
-                    title="Draw"
-                    role="radio"
-                    aria-checked="false"
-                    aria-controls="editorInkParamsToolbar"
-                    tabindex="33"
-                    data-l10n-id="pdfjs-editor-ink-button"
-                  >
-                    <span data-l10n-id="pdfjs-editor-ink-button-label"
-                      >Draw</span
-                    >
-                  </button>
-                  <button
-                    id="editorStamp"
-                    class="toolbarButton"
-                    disabled="disabled"
-                    title="Add or edit images"
-                    role="radio"
-                    aria-checked="false"
-                    aria-controls="editorStampParamsToolbar"
-                    tabindex="34"
-                    data-l10n-id="pdfjs-editor-stamp-button"
-                  >
-                    <span data-l10n-id="pdfjs-editor-stamp-button-label"
-                      >Add or edit images</span
-                    >
-                  </button>
-                </div>
-                <button
-                  class="second_toolbar_button"
-                  id="add_text"
-                  title="Add Text"
-                >
-                  <i class="far fa-i"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_comment_mode"
-                  title="Add Comment"
-                >
-                  <i class="far fa-comment"></i>
-                </button>
-
-                <div
-                  id="editorModeSeparator"
-                  class="verticalToolbarSeparator"
-                ></div>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_check"
-                  title="Add checkbox"
-                  onclick="addForm(CHECKBOX)"
-                >
-                  <i class="fa-sharp fa-regular fa-square-check"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_radio"
-                  title="Add radio button"
-                  onclick="addForm(RADIO)"
-                >
-                  <i class="fa-regular fa-circle-dot"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_text"
-                  title="Add textfield"
-                  onclick="addForm(TEXTFIELD)"
-                >
-                  <i class="fa fa-font"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_combo"
-                  title="Add combobox"
-                  onclick="addForm(COMBOBOX)"
-                >
-                  <i class="fa fa-caret-down"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_list"
-                  title="Add list"
-                  onclick="addForm(LIST)"
-                >
-                  <i class="fa fa-list" aria-hidden="true"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_date"
-                  title="Add date"
-                  onclick="addForm(DATE)"
-                >
-                  <i class="fa-regular fa-calendar-days"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_button"
-                  title="Add button"
-                  onclick="addForm(BUTTON)"
-                >
-                  <i class="fa fa-toggle-off"></i>
-                </button>
-                <button
-                  class="second_toolbar_button"
-                  id="add_form_download"
-                  title="Flatten and Download PDF"
-                  onclick="flatten()"
-                >
-                  <i class="fa-sharp fa-solid fa-download"></i>
-                </button>
-
-                <div
-                  id="editorModeSeparator"
-                  class="verticalToolbarSeparator"
-                ></div>
-
-                <button
-                  id="secondaryOpenFile"
-                  class="toolbarButton"
-                  title="Open File"
-                  tabindex="51"
-                  data-l10n-id="pdfjs-open-file-button"
-                >
-                  <span data-l10n-id="pdfjs-print-button-label">Open File</span>
-                </button>
-
-                <button
-                  id="secondaryPrint"
-                  class="toolbarButton visibleMediumView"
-                  title="Print"
-                  tabindex="52"
-                  data-l10n-id="pdfjs-print-button"
-                >
-                  <span data-l10n-id="pdfjs-print-button-label">Print</span>
-                </button>
-
-                <button
-                  id="secondaryDownload"
-                  class="toolbarButton visibleMediumView"
-                  title="Save"
-                  tabindex="53"
-                  data-l10n-id="pdfjs-save-button"
-                >
-                  <span data-l10n-id="pdfjs-save-button-label">Save</span>
-                </button>
-
-                <button
-                  id="print"
-                  class="toolbarButton hiddenMediumView"
-                  title="Print"
-                  tabindex="41"
-                  data-l10n-id="pdfjs-print-button"
-                >
-                  <span data-l10n-id="pdfjs-print-button-label">Print</span>
-                </button>
-
-                <button
-                  id="download"
+                <span
+                  id="numPages"
+                  class="toolbarLabel"
                   style="display: none"
-                  class="toolbarButton hiddenMediumView"
-                  title="Save"
-                  tabindex="42"
-                  data-l10n-id="pdfjs-save-button"
-                >
-                  <span data-l10n-id="pdfjs-save-button-label">Save</span>
-                </button>
+                ></span>
 
-                <div class="verticalToolbarSeparator hiddenMediumView"></div>
-
-                <button
-                  class="second_toolbar_button"
-                  title="Save"
-                  onclick="setDocument()"
-                >
-                  <i class="far fa-floppy-disk"></i>
-                </button>
-
-                <button
-                  id="secondaryToolbarToggle"
-                  class="toolbarButton"
-                  title="Tools"
-                  tabindex="43"
-                  data-l10n-id="pdfjs-tools-button"
-                  aria-expanded="false"
-                  aria-controls="secondaryToolbar"
-                >
-                  <span data-l10n-id="pdfjs-tools-button-label">Tools</span>
-                </button>
-              </div>
-              <div id="toolbarViewerLeft">
-                <div class="splitToolbarButton">
+                <div class="splitToolbarButton hiddenSmallView">
                   <button
-                    id="zoomOut"
                     class="toolbarButton"
-                    title="Zoom Out"
-                    tabindex="21"
-                    data-l10n-id="pdfjs-zoom-out-button"
+                    title="Previous Page"
+                    id="previous"
+                    tabindex="13"
+                    data-l10n-id="pdfjs-previous-button"
                   >
-                    <span data-l10n-id="pdfjs-zoom-out-button-label"
-                      >Zoom Out</span
+                    <span data-l10n-id="pdfjs-previous-button-label"
+                      >Previous</span
                     >
                   </button>
+                  <button
+                    class="toolbarButton"
+                    title="Next Page"
+                    id="next"
+                    tabindex="14"
+                    data-l10n-id="pdfjs-next-button"
+                  >
+                    <span data-l10n-id="pdfjs-next-button-label">Next</span>
+                  </button>
                 </div>
+              </div>
+
+              <div id="toolbarViewerLeft">
                 <span id="scaleSelectContainer" class="dropdownToolbarButton">
                   <select
                     id="scaleSelect"
                     title="Zoom"
                     tabindex="23"
                     data-l10n-id="pdfjs-zoom-select"
+                    style="width: 100px"
                   >
                     <option
                       id="pageAutoOption"
@@ -972,7 +784,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                       selected="selected"
                       data-l10n-id="pdfjs-page-scale-auto"
                     >
-                      Automatic Zoom
+                      Auto
                     </option>
                     <option
                       id="pageActualOption"
@@ -980,7 +792,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                       value="page-actual"
                       data-l10n-id="pdfjs-page-scale-actual"
                     >
-                      Actual Size
+                      Actual
                     </option>
                     <option
                       id="pageFitOption"
@@ -988,7 +800,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                       value="page-fit"
                       data-l10n-id="pdfjs-page-scale-fit"
                     >
-                      Page Fit
+                      Fit
                     </option>
                     <option
                       id="pageWidthOption"
@@ -996,7 +808,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                       value="page-width"
                       data-l10n-id="pdfjs-page-scale-width"
                     >
-                      Page Width
+                      Width
                     </option>
                     <option
                       id="customScaleOption"
@@ -1077,6 +889,17 @@ See https://github.com/adobe-type-tools/cmap-resources
                 </span>
                 <div class="splitToolbarButton">
                   <button
+                    id="zoomOut"
+                    class="toolbarButton"
+                    title="Zoom Out"
+                    tabindex="21"
+                    data-l10n-id="pdfjs-zoom-out-button"
+                  >
+                    <span data-l10n-id="pdfjs-zoom-out-button-label"
+                      >Zoom Out</span
+                    >
+                  </button>
+                  <button
                     id="zoomIn"
                     class="toolbarButton"
                     title="Zoom In"
@@ -1088,6 +911,96 @@ See https://github.com/adobe-type-tools/cmap-resources
                     >
                   </button>
                 </div>
+              </div>
+
+              <div id="toolbarViewerRight">
+                <div
+                  id="editorModeButtons"
+                  class="splitToolbarButton toggled annotationToolsContainer"
+                  role="radiogroup"
+                >
+                  <!-- <button
+                    id="editorHighlight"
+                    class="toolbarButton"
+                    disabled="disabled"
+                    title="Highlight"
+                    role="radio"
+                    aria-checked="false"
+                    aria-controls="editorHighlightParamsToolbar"
+                    tabindex="31"
+                    data-l10n-id="pdfjs-editor-highlight-button"
+                  >
+                    <span data-l10n-id="pdfjs-editor-highlight-button-label"
+                      >Highlight</span
+                    >
+                  </button> -->
+                  <button
+                    id="editorFreeText"
+                    class="toolbarButton"
+                    style="display: none"
+                    disabled="disabled"
+                    title="Text"
+                    role="radio"
+                    aria-checked="false"
+                    aria-controls="editorFreeTextParamsToolbar"
+                    tabindex="32"
+                    data-l10n-id="pdfjs-editor-free-text-button"
+                  >
+                    <span data-l10n-id="pdfjs-editor-free-text-button-label"
+                      >Text</span
+                    >
+                  </button>
+                </div>
+                <div
+                  style="display: flex; flex-direction: row"
+                  id="toolbarViewerRight"
+                  class="formToolsContainer"
+                >
+                <button
+                class="second_toolbar_button"
+                title="Open Toolbar"
+                onclick="openToolbar()"
+              >
+                <i
+                  class="fas fa-pen-nib fa-lg"
+                  style="width: 17px; color: #535353"
+                  id="penIcon"
+                ></i>
+              </button>
+                </div>
+
+                <button
+                  id="secondaryDownload"
+                  class="toolbarButton visibleMediumView"
+                  title="Save"
+                  tabindex="53"
+                  data-l10n-id="pdfjs-save-button"
+                  style="display: none"
+                >
+                  <span data-l10n-id="pdfjs-save-button-label">Save</span>
+                </button>
+
+                <button
+                  id="print"
+                  class="toolbarButton hiddenMediumView"
+                  title="Print"
+                  tabindex="41"
+                  style="display: none"
+                  data-l10n-id="pdfjs-print-button"
+                >
+                  <span data-l10n-id="pdfjs-print-button-label">Print</span>
+                </button>
+
+                <button
+                  id="download"
+                  style="display: none"
+                  class="toolbarButton hiddenMediumView"
+                  title="Save"
+                  tabindex="42"
+                  data-l10n-id="pdfjs-save-button"
+                >
+                  <span data-l10n-id="pdfjs-save-button-label">Save</span>
+                </button>
               </div>
             </div>
             <div id="loadingBar">
@@ -1402,14 +1315,6 @@ See https://github.com/adobe-type-tools/cmap-resources
       <div id="add_comment" class="add-comment">OK</div>
     </div>
 
-    <!--#if GENERIC-->
-    <input type="file" id="fileInput" class="hidden" />
-    <script src="font.js"></script>
-    <script src="addComment.js"></script>
-    <script src="addForm.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
     <!-- Checkbox Option -->
     <div id="checkbox-option" class="checkbox-option">
       <div class="checkbox-option-header">
@@ -1993,6 +1898,158 @@ See https://github.com/adobe-type-tools/cmap-resources
         <div class="form-save-button">Save</div>
       </div>
     </div>
+    <div class="right-sidebar">
+      <p class="toolbarTitle">Annotations:</p>
+      <button
+        id="editorHighlight"
+        class="secondaryToolbarButton"
+        disabled="disabled"
+        title="Highlight"
+        role="radio"
+        aria-checked="false"
+        aria-controls="editorHighlightParamsToolbar"
+        tabindex="31"
+        data-l10n-id="pdfjs-editor-highlight-button"
+      >
+        <span data-l10n-id="pdfjs-editor-highlight-button-label"
+          >Highlight</span
+        >
+      </button>
+      <button
+        id="editorInk"
+        class="secondaryToolbarButton"
+        disabled="disabled"
+        title="Draw"
+        role="radio"
+        aria-checked="false"
+        aria-controls="editorInkParamsToolbar"
+        tabindex="33"
+        data-l10n-id="pdfjs-editor-ink-button"
+      >
+        <span data-l10n-id="pdfjs-editor-ink-button-label">Draw</span>
+      </button>
+      <button
+        id="editorStamp"
+        class="secondaryToolbarButton"
+        disabled="disabled"
+        title="Add or edit images"
+        role="radio"
+        aria-checked="false"
+        aria-controls="editorStampParamsToolbar"
+        tabindex="34"
+        data-l10n-id="pdfjs-editor-stamp-button"
+      >
+        <span data-l10n-id="pdfjs-editor-stamp-button-label"
+          >Add or edit images</span
+        >
+      </button>
+      <div id="viewBookmarkSeparator" class="horizontalToolbarSeparator"></div>
+      <p class="toolbarTitle">Comments:</p>
+      <button class="menu-button" id="add_text" title="Add Text">
+        <i class="far fa-i" style="width: 17px"></i>
+        <p class="menu-button-item">Add Text</p>
+      </button>
+      <button class="menu-button" id="add_comment_mode" title="Add Comment">
+        <i class="far fa-comment"></i>
+        <p class="menu-button-item">Add Comment</p>
+      </button>
+      <div id="viewBookmarkSeparator" class="horizontalToolbarSeparator"></div>
+      <p class="toolbarTitle">Form Fields:</p>
+      <button
+        class="menu-button"
+        id="add_form_check"
+        title="Add checkbox"
+        onclick="addForm(CHECKBOX)"
+      >
+        <i class="fa-sharp fa-regular fa-square-check" style="width: 17px"></i>
+        <p class="menu-button-item">CheckBox</p>
+      </button>
+      <button
+        class="menu-button"
+        id="add_form_radio"
+        title="Add radio button"
+        onclick="addForm(RADIO)"
+      >
+        <i class="fa-regular fa-circle-dot" style="width: 17px"></i>
+        <p class="menu-button-item">Radio</p>
+      </button>
+      <button
+        class="menu-button"
+        id="add_form_text"
+        title="Add textfield"
+        onclick="addForm(TEXTFIELD)"
+      >
+        <i class="fa fa-font" style="width: 17px"></i>
+        <p class="menu-button-item">TextField</p>
+      </button>
+      <button
+        class="menu-button"
+        id="add_form_combo"
+        title="Add combobox"
+        onclick="addForm(COMBOBOX)"
+      >
+        <i class="fa fa-caret-down" style="width: 17px"></i>
+        <p class="menu-button-item">Combobox</p>
+      </button>
+      <button
+        class="menu-button"
+        id="add_form_list"
+        title="Add list"
+        onclick="addForm(LIST)"
+      >
+        <i class="fa fa-list" aria-hidden="true" style="width: 17px"></i>
+        <p class="menu-button-item">List</p>
+      </button>
+      <button
+        class="menu-button"
+        id="add_form_date"
+        title="Add date"
+        onclick="addForm(DATE)"
+      >
+        <i class="fa-regular fa-calendar-days" style="width: 17px"></i>
+        <p class="menu-button-item">Date</p>
+      </button>
+      <button
+        class="menu-button"
+        id="add_form_button"
+        title="Add button"
+        onclick="addForm(BUTTON)"
+      >
+        <i class="fa fa-toggle-off" style="width: 17px"></i>
+        <p class="menu-button-item">Button</p>
+      </button>
+      <p class="toolbarTitle">Fluttern:</p>
+      <button
+        class="menu-button"
+        id="add_form_download"
+        title="Flatten and Download PDF"
+        onclick="flatten()"
+      >
+        <i class="fa-sharp fa-solid fa-download" style="width: 17px"></i>
+        <p class="menu-button-item">Fluttern</p>
+      </button>
+    </div>
+
+    <script>
+      const openToolbar = () => {
+        console.log("apple");
+        var icon = document.getElementById("penIcon");
+        icon.classList.toggle("rotate");
+        var sidebar = document.querySelector(".right-sidebar");
+        sidebar.classList.toggle("active");
+      };
+    </script>
+    <script src="viewer.js" type="module"></script>
+    <script src="pdfAnnotate.js"></script>
+    <!--#if GENERIC-->
+    <input type="file" id="fileInput" class="hidden" />
+    <script src="font.js"></script>
+    <script src="addComment.js"></script>
+    <script src="addForm.js"></script>
+    <script src="FormDOM.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
     <!--#endif-->
   </body>
 </html>

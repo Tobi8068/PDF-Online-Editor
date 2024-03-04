@@ -11,13 +11,13 @@ export default function PDFViewer() {
               paddingTop: "4px",
             }}
           >
-            <img src="images/pdf_viewer.png" alt="pdf_viewer" width={"100px"} />
+            {/* <img src="images/pdf_viewer.png" alt="pdf_viewer" width={"100px"} /> */}
           </div>
         </div>
         <div
           style={{
             overflow: "hidden",
-            backgroundColor: "#e1dddd",
+            backgroundColor: "#5AB9C1",
             borderRadius: "10px",
             margin: "5px",
           }}
@@ -46,3 +46,9 @@ export default function PDFViewer() {
     </>
   );
 }
+
+
+
+
+
+
