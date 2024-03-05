@@ -111,6 +111,7 @@ let selectedAlign = "",
   groupNameAlign = "";
 
 document.addEventListener("DOMContentLoaded", function () {
+  console.log('load')
   loadFontFiles();
 });
 

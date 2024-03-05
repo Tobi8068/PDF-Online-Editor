@@ -16,6 +16,7 @@ let mouse_x = 0;
 let mouse_y = 0;
 
 let current_comment_id = 0;
+let current_text_container_id = "";
 let current_text_content_id = "";
 let current_text_num_id = 0;
 
@@ -85,6 +86,7 @@ const generateFontName = function (id) {
 
 const handleBold = function () {
   const boldBtn = document.getElementById("text-bold");
+
   if (isBold) {
     boldBtn.classList.remove("text-weight-button-focused");
     document
@@ -119,6 +121,17 @@ const addBoldItalicEvent = function () {
   const italicBtn = document.getElementById("text-italic");
   boldBtn.addEventListener("click", handleBold);
   italicBtn.addEventListener("click", handleItalic);
+  document
+    .getElementById(current_text_container_id)
+    .addEventListener("keydown", function (event) {
+      event.preventDefault();
+      if (event.ctrlKey && event.key === "b") {
+        handleBold();
+      }
+      if (event.ctrlKey && event.key === "i") {
+        handleItalic();
+      }
+    });
 };
 const removeBoldItalicEvent = function () {
   const boldBtn = document.getElementById("text-bold");
@@ -411,7 +424,9 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     observer.observe(newText);
 
     pg.append(container);
-
+    current_text_content_id = newText.id;
+    current_text_container_id = container.id;
+    current_text_num_id = textContentId;
     showOptionAndResizebar(
       TEXT_CONTENT_OPTION,
       container,
@@ -449,9 +464,7 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
       });
 
     // addResizebar(container.id);
-    current_text_content_id = newText.id;
 
-    current_text_num_id = textContentId;
     container.addEventListener("dblclick", () => {
       current_text_content_id = newText.id;
       current_text_num_id = textContentId;
@@ -619,9 +632,9 @@ document.getElementById("main-menu").addEventListener("click", function () {
 });
 document.getElementById("menubtn").addEventListener("click", function (event) {
   if (!menuBtnStatus) {
-      mainmenu.style.display = "block";
-      mainmenu.focus();
-      document.getElementById("menubtn").classList.add("active_menu");
+    mainmenu.style.display = "block";
+    mainmenu.focus();
+    document.getElementById("menubtn").classList.add("active_menu");
   } else {
     mainmenu.style.display = "none";
     document.getElementById("menubtn").classList.remove("active_menu");

@@ -49,7 +49,7 @@ import {
   PromiseCapability,
   shadow,
   UnexpectedResponseException,
-  version
+  version,
 } from "pdfjs-lib";
 import { AppOptions, OptionKind } from "./app_options.js";
 import { AutomationEventBus, EventBus } from "./event_utils.js";
@@ -642,6 +642,12 @@ const PDFViewerApplication = {
       fileInput.value = null;
 
       fileInput.addEventListener("change", function (evt) {
+        var modifiedContent = localStorage.getItem("modifiedContent");
+        if (modifiedContent) {
+          document.getElementById("id_form_options").innerHTML =
+            modifiedContent;
+        }
+
         const { files } = evt.target;
         if (!files || files.length === 0) {
           return;
@@ -675,7 +681,7 @@ const PDFViewerApplication = {
 
     if (!AppOptions.get("supportsDocumentFonts")) {
       AppOptions.set("disableFontFace", true);
-      this.l10n.get("pdfjs-web-fonts-disabled").then(msg => {
+      this.l10n.get("pdfjs-web-fonts-disabled").then((msg) => {
         console.warn(msg);
       });
     }
@@ -813,7 +819,7 @@ const PDFViewerApplication = {
     this.setTitleUsingUrl(file, /* downloadUrl = */ file);
 
     this.externalServices.initPassiveLoading({
-      onOpenWithTransport: range => {
+      onOpenWithTransport: (range) => {
         this.open({ range });
       },
       onOpenWithData: (data, contentDispositionFilename) => {
@@ -825,8 +831,8 @@ const PDFViewerApplication = {
       onOpenWithURL: (url, length, originalUrl) => {
         this.open({ url, length, originalUrl });
       },
-      onError: err => {
-        this.l10n.get("pdfjs-loading-error").then(msg => {
+      onError: (err) => {
+        this.l10n.get("pdfjs-loading-error").then((msg) => {
           this._documentError(msg, err);
         });
       },
@@ -1022,10 +1028,10 @@ const PDFViewerApplication = {
     };
 
     return loadingTask.promise.then(
-      pdfDocument => {
+      (pdfDocument) => {
         this.load(pdfDocument);
       },
-      reason => {
+      (reason) => {
         if (loadingTask !== this.pdfLoadingTask) {
           return undefined; // Ignore errors for previously opened PDF files.
         }
@@ -1038,7 +1044,7 @@ const PDFViewerApplication = {
         } else if (reason instanceof UnexpectedResponseException) {
           key = "pdfjs-unexpected-response-error";
         }
-        return this.l10n.get(key).then(msg => {
+        return this.l10n.get(key).then((msg) => {
           this._documentError(msg, { message: reason?.message });
           throw reason;
         });
@@ -1255,7 +1261,7 @@ const PDFViewerApplication = {
         /* Unable to read from storage; ignoring errors. */
       });
 
-    firstPagePromise.then(pdfPage => {
+    firstPagePromise.then((pdfPage) => {
       this.loadingBar?.setWidth(this.appConfig.viewerContainer);
       this._initializeAnnotationStorageCallbacks(pdfDocument);
 
@@ -1338,7 +1344,7 @@ const PDFViewerApplication = {
           //  with the viewer, wait for either `pagesPromise` or a timeout.)
           await Promise.race([
             pagesPromise,
-            new Promise(resolve => {
+            new Promise((resolve) => {
               setTimeout(resolve, FORCE_PAGES_LOADED_TIMEOUT);
             }),
           ]);
@@ -1375,21 +1381,21 @@ const PDFViewerApplication = {
 
         this._initializeAutoPrint(pdfDocument, openActionPromise);
       },
-      reason => {
-        this.l10n.get("pdfjs-loading-error").then(msg => {
+      (reason) => {
+        this.l10n.get("pdfjs-loading-error").then((msg) => {
           this._documentError(msg, { message: reason?.message });
         });
       }
     );
 
-    onePageRendered.then(data => {
+    onePageRendered.then((data) => {
       this.externalServices.reportTelemetry({
         type: "pageInfo",
         timestamp: data.timestamp,
       });
 
       if (this.pdfOutlineViewer) {
-        pdfDocument.getOutline().then(outline => {
+        pdfDocument.getOutline().then((outline) => {
           if (pdfDocument !== this.pdfDocument) {
             return; // The document was closed while the outline resolved.
           }
@@ -1397,7 +1403,7 @@ const PDFViewerApplication = {
         });
       }
       if (this.pdfAttachmentViewer) {
-        pdfDocument.getAttachments().then(attachments => {
+        pdfDocument.getAttachments().then((attachments) => {
           if (pdfDocument !== this.pdfDocument) {
             return; // The document was closed while the attachments resolved.
           }
@@ -1407,7 +1413,7 @@ const PDFViewerApplication = {
       if (this.pdfLayerViewer) {
         // Ensure that the layers accurately reflects the current state in the
         // viewer itself, rather than the default state provided by the API.
-        pdfViewer.optionalContentConfigPromise.then(optionalContentConfig => {
+        pdfViewer.optionalContentConfigPromise.then((optionalContentConfig) => {
           if (pdfDocument !== this.pdfDocument) {
             return; // The document was closed while the layers resolved.
           }
@@ -1427,7 +1433,7 @@ const PDFViewerApplication = {
     if (!this.documentInfo) {
       // It should be *extremely* rare for metadata to not have been resolved
       // when this code runs, but ensure that we handle that case here.
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         this.eventBus._on("metadataloaded", resolve, { once: true });
       });
       if (pdfDocument !== this.pdfDocument) {
@@ -1440,7 +1446,7 @@ const PDFViewerApplication = {
       // PDF documents which are not provided as binary data to the API.
       // Hence we'll simply have to trust that the `contentLength` (as provided
       // by the server), when it exists, is accurate enough here.
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         this.eventBus._on("documentloaded", resolve, { once: true });
       });
       if (pdfDocument !== this.pdfDocument) {
@@ -1490,7 +1496,9 @@ const PDFViewerApplication = {
           case "DidPrint":
             continue;
         }
-        triggerAutoPrint = jsActions[name].some(js => AutoPrintRegExp.test(js));
+        triggerAutoPrint = jsActions[name].some((js) =>
+          AutoPrintRegExp.test(js)
+        );
       }
     }
 
@@ -1674,7 +1682,7 @@ const PDFViewerApplication = {
         delete this._annotationStorageModified;
       }
     };
-    annotationStorage.onAnnotationEditor = typeStr => {
+    annotationStorage.onAnnotationEditor = (typeStr) => {
       this._hasAnnotationEditors = !!typeStr;
       this.setTitle();
 
@@ -1691,7 +1699,7 @@ const PDFViewerApplication = {
     storedHash,
     { rotation, sidebarView, scrollMode, spreadMode } = {}
   ) {
-    const setRotation = angle => {
+    const setRotation = (angle) => {
       if (isValidRotation(angle)) {
         this.pdfViewer.pagesRotation = angle;
       }
@@ -1776,7 +1784,7 @@ const PDFViewerApplication = {
     }
 
     if (!this.supportsPrinting) {
-      this.l10n.get("pdfjs-printing-not-supported").then(msg => {
+      this.l10n.get("pdfjs-printing-not-supported").then((msg) => {
         this._otherError(msg);
       });
       return;
@@ -1785,7 +1793,7 @@ const PDFViewerApplication = {
     // The beforePrint is a sync method and we need to know layout before
     // returning from this method. Ensure that we can get sizes of the pages.
     if (!this.pdfViewer.pageViewsReady) {
-      this.l10n.get("pdfjs-printing-not-ready").then(msg => {
+      this.l10n.get("pdfjs-printing-not-ready").then((msg) => {
         // eslint-disable-next-line no-alert
         window.alert(msg);
       });
@@ -1970,7 +1978,7 @@ const PDFViewerApplication = {
     _boundEvents.windowAfterPrint = () => {
       eventBus.dispatch("afterprint", { source: window });
     };
-    _boundEvents.windowUpdateFromSandbox = event => {
+    _boundEvents.windowUpdateFromSandbox = (event) => {
       eventBus.dispatch("updatefromsandbox", {
         source: window,
         detail: event.detail,
@@ -2182,7 +2190,7 @@ if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
         throw new Error("file origin does not match viewer's");
       }
     } catch (ex) {
-      PDFViewerApplication.l10n.get("pdfjs-loading-error").then(msg => {
+      PDFViewerApplication.l10n.get("pdfjs-loading-error").then((msg) => {
         PDFViewerApplication._documentError(msg, { message: ex?.message });
       });
       throw ex;
@@ -2249,7 +2257,7 @@ function webViewerPageRendered({ pageNumber, error }) {
   }
 
   if (error) {
-    PDFViewerApplication.l10n.get("pdfjs-rendering-error").then(msg => {
+    PDFViewerApplication.l10n.get("pdfjs-rendering-error").then((msg) => {
       PDFViewerApplication._otherError(msg, error);
     });
   }
