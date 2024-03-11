@@ -900,8 +900,6 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                 } else newX = x;
               }
             });
-          } else if (DrawType === SIGNATURE) {
-            newX = x;
           } else {
             form_storage.map(function (item) {
               if (item.id === parseInt(currentId)) {
@@ -1208,8 +1206,7 @@ const eventHandler = async function (e) {
 
   let pageId = String(PDFViewerApplication.page);
   let pg = document.getElementById(pageId);
-  var rect = pg.getBoundingClientRect(),
-    bodyElt = document.body;
+  var rect = pg.getBoundingClientRect();
   var top = rect.top;
   var left = rect.left;
 
