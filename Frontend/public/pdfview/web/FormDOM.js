@@ -6,6 +6,7 @@ const handleFormModeChange = () => {
   let list = document.getElementById("add_form_list");
   let button = document.getElementById("add_form_button");
   let date = document.getElementById("add_form_date");
+  let sign = document.getElementById("add_form_signature");
   if (isCheckbox) {
     checkbox.classList.add("active_menu");
   } else {
@@ -41,20 +42,23 @@ const handleFormModeChange = () => {
   } else {
     date.classList.remove("active_menu");
   }
+  if (isSignature) {
+    sign.classList.add("active_menu");
+  } else {
+    sign.classList.remove("active_menu");
+  }
 };
 
 const addForm = function (mode) {
   currentMode = mode;
   switch (mode) {
     case CHECKBOX:
-      console.log("checkbox", isCheckbox);
       if (isCheckbox) {
         removeEventListener();
         isCheckbox = false;
         handleFormModeChange();
       } else {
         addEventListener();
-        console.log("add");
         Format();
         isCheckbox = true;
         handleFormModeChange();
@@ -131,6 +135,17 @@ const addForm = function (mode) {
         isDate = true;
         handleFormModeChange();
       }
+    case SIGNATURE:
+      if (isSignature) {
+        removeEventListener();
+        isSignature = false;
+        handleFormModeChange();
+      } else {
+        addEventListener();
+        Format();
+        isSignature = true;
+        handleFormModeChange();
+      }
     default:
       break;
   }
@@ -179,6 +194,11 @@ const removeDate = function () {
   removeEventListener();
   handleFormModeChange();
 };
+const removeSignature = function () {
+  isSignature = false;
+  removeEventListener();
+  handleFormModeChange();
+};
 
 const Format = () => {
   isCheckbox = false;
@@ -188,4 +208,5 @@ const Format = () => {
   isList = false;
   isButton = false;
   isDate = false;
+  isSignature = false;
 };

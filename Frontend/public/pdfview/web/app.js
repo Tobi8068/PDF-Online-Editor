@@ -642,7 +642,7 @@ const PDFViewerApplication = {
       fileInput.value = null;
 
       fileInput.addEventListener("change", function (evt) {
-        var modifiedContent = localStorage.getItem("modifiedContent");
+        let modifiedContent = localStorage.getItem("modifiedContent");
         if (modifiedContent) {
           document.getElementById("id_form_options").innerHTML =
             modifiedContent;

@@ -2140,4 +2140,6 @@
  .rotate {
    transform: rotate(360deg); /* Rotate the icon by 180 degrees */
  }
- 
+ .border-resizebar {
+  border: 1px solid #3c97fe;
+ }

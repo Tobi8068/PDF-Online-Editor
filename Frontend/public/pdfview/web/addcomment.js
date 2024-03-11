@@ -86,34 +86,37 @@ const generateFontName = function (id) {
 
 const handleBold = function () {
   const boldBtn = document.getElementById("text-bold");
-
   if (isBold) {
-    boldBtn.classList.remove("text-weight-button-focused");
-    document
-      .getElementById(current_text_content_id)
-      .classList.remove("bold-text");
+    if (boldBtn) {
+      boldBtn.classList.remove("text-weight-button-focused");
+    }
+    document.getElementById(current_text_content_id).classList.remove("bold-text");
     isBold = false;
   } else {
-    boldBtn.classList.add("text-weight-button-focused");
+    if (boldBtn) {
+      boldBtn.classList.add("text-weight-button-focused");
+    }
     document.getElementById(current_text_content_id).classList.add("bold-text");
     isBold = true;
   }
+  saveTextContent();
 };
 const handleItalic = function () {
   const italicBtn = document.getElementById("text-italic");
   if (isItalic) {
-    italicBtn.classList.remove("text-weight-button-focused");
-    document
-      .getElementById(current_text_content_id)
-      .classList.remove("italic-text");
+    if (italicBtn) {
+      italicBtn.classList.remove("text-weight-button-focused");
+    }
+    document.getElementById(current_text_content_id).classList.remove("italic-text");
     isItalic = false;
   } else {
-    italicBtn.classList.add("text-weight-button-focused");
-    document
-      .getElementById(current_text_content_id)
-      .classList.add("italic-text");
+    if (italicBtn) {
+      italicBtn.classList.add("text-weight-button-focused");
+    }
+    document.getElementById(current_text_content_id).classList.add("italic-text");
     isItalic = true;
   }
+  saveTextContent();
 };
 
 const addBoldItalicEvent = function () {
@@ -121,18 +124,18 @@ const addBoldItalicEvent = function () {
   const italicBtn = document.getElementById("text-italic");
   boldBtn.addEventListener("click", handleBold);
   italicBtn.addEventListener("click", handleItalic);
-  document
-    .getElementById(current_text_container_id)
-    .addEventListener("keydown", function (event) {
-      event.preventDefault();
-      if (event.ctrlKey && event.key === "b") {
-        handleBold();
-      }
-      if (event.ctrlKey && event.key === "i") {
-        handleItalic();
-      }
-    });
 };
+
+document.addEventListener("keydown", function (event) {
+  if (event.ctrlKey && event.key === "b") {
+    event.preventDefault();
+    handleBold();
+  }
+  if (event.ctrlKey && event.key === "i") {
+    event.preventDefault();
+    handleItalic();
+  }
+});
 const removeBoldItalicEvent = function () {
   const boldBtn = document.getElementById("text-bold");
   const italicBtn = document.getElementById("text-italic");
@@ -147,10 +150,7 @@ const removeBoldItalicEvent = function () {
   (isBold = false), (isItalic = false);
 };
 
-const handleTextContent = (e) => {
-  isOptionPane = false;
-  document.getElementById(TEXT_CONTENT_OPTION).style.display = "none";
-  if (e) e.stopPropagation();
+const saveTextContent = function () {
   fontStyle = generateFontName("text-content-font-style");
   fontSize = parseInt(document.getElementById("text-content-font-size").value);
   textColor = document.getElementById("text-content-color").value;
@@ -208,6 +208,13 @@ const handleTextContent = (e) => {
     fontSize = 12;
     textColor = "";
   }
+}
+
+const handleTextContent = (e) => {
+  isOptionPane = false;
+  document.getElementById(TEXT_CONTENT_OPTION).style.display = "none";
+  if (e) e.stopPropagation();
+  saveTextContent();
   document
     .getElementById("text-content-save-button")
     .removeEventListener("click", handleTextContent);
@@ -294,31 +301,15 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
 
   document.getElementById("comment_title").value = "";
   document.getElementById("comment_text").value = "";
-  document.getElementById("comment_control_panel").style.display = "none";
-  document.getElementById("add_comment_mode").innerHTML =
-    '<i class="far fa-comment"></i>';
+  // document.getElementById("comment_control_panel").style.display = "none";
+  // document.getElementById("add_comment_mode").innerHTML =
+  //   '<i class="far fa-comment"></i><p class="menu-button-item">Add Comment</p>';
   resizeCanvas(comment_icon.id, COMMENT, commentId);
   isAddCommentModeOn = false;
+  handleChange();
 });
 
 const moveEventHandler = (event, offsetX, offsetY, currentId) => {
-  let pageId = String(PDFViewerApplication.page);
-  let pg = document.getElementById(pageId);
-
-  let srect = pg.getBoundingClientRect(),
-    bodyElt = document.body;
-
-  let stop = srect.top;
-  let sleft = srect.left;
-
-  let new_ost = computePageOffset();
-
-  let new_x = event.pageX - new_ost.left;
-  let new_y = event.pageY - new_ost.top;
-
-  let new_x_y = PDFViewerApplication.pdfViewer._pages[
-    PDFViewerApplication.page - 1
-  ].viewport.convertToPdfPoint(new_x, new_y);
   if (DrawType === COMMENT) {
     // document.getElementById("comment" + current_comment_id).style.left = (event.x - sleft - 30) + "px";
     // document.getElementById("comment" + current_comment_id).style.top = (event.y - stop - 30) + "px";

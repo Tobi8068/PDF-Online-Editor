@@ -10,7 +10,8 @@ const CHECKBOX = 1,
   BUTTON = 6,
   TEXT_CONTENT = 7,
   DATE = 8,
-  COMMENT = 9;
+  COMMENT = 9,
+  SIGNATURE = 10;
 let checkboxCount = 1;
 (radioCount = 1),
   (textfieldCount = 1),
@@ -24,7 +25,8 @@ let isCheckbox = false,
   isCombo = false,
   isList = false,
   isButton = false,
-  isDate = false;
+  isDate = false,
+  isSignature = false;
 
 let comboboxOptionCount = 0;
 let listboxOptionCount = 0;
@@ -51,6 +53,7 @@ const LIST_OPTION = "list-option";
 const BUTTON_OPTION = "button-field-option";
 const TEXT_CONTENT_OPTION = "text-content-option";
 const DATE_OPTION = "date-option";
+const SIGNATURE_OPTION = "signature-creator";
 
 const ALIGN_LEFT = 0,
   ALIGN_RIGHT = 2,
@@ -71,6 +74,9 @@ let current_list_id = 0;
 let current_button_id = 0;
 let current_date_id = 0;
 let current_date_content_id = 0;
+let current_signature_id = 0;
+
+let signatureImgData;
 
 const fontStyleArr = [
   "Courier",
@@ -111,7 +117,7 @@ let selectedAlign = "",
   groupNameAlign = "";
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log('load')
+  console.log("load");
   loadFontFiles();
 });
 
@@ -421,7 +427,6 @@ const handleCombo = function (e) {
     alignValue = 0;
     comboboxOptionArray = [];
   }
-  console.log(form_storage);
   document
     .getElementById("combo-save-button")
     .removeEventListener("click", handleCombo);
@@ -592,13 +597,15 @@ const removeResizebar = function (objectId) {
 const showOption = function (id, x, y) {
   const fieldOption = document.getElementById(id);
 
-  if (isOptionPane) fieldOption.style.display = "flex";
-  else fieldOption.style.display = "none";
+  if (fieldOption) {
+    if (isOptionPane) fieldOption.style.display = "flex";
+    else fieldOption.style.display = "none";
 
-  fieldOption.style.top = y + "px";
-  fieldOption.style.left = x + "px";
+    fieldOption.style.top = y + "px";
+    fieldOption.style.left = x + "px";
 
-  return fieldOption;
+    return fieldOption;
+  } else return null;
 };
 
 // When click "Save" button, save the information of Button element.
@@ -763,6 +770,26 @@ const handleDate = function (e) {
     .removeEventListener("click", handleDate);
 };
 
+const handleSignature = function () {
+  formWidth = 160;
+  formHeight = 80;
+  form_storage.push({
+    id: baseId,
+    form_type: SIGNATURE,
+    page_number: PDFViewerApplication.page,
+    x: pos_x_pdf,
+    y: pos_y_pdf,
+    baseX: pos_x_pdf,
+    baseY: pos_y_pdf,
+    width: formWidth * 0.75 * 0.8,
+    height: formHeight * 0.75 * 0.8,
+    xPage: formWidth,
+    yPage: formHeight,
+    imgData: signatureImgData,
+  });
+  console.log(form_storage);
+};
+
 // Resize and move canvas using Interact.js library.
 const resizeCanvas = function (id, type, currentId, optionId) {
   let newX = 0;
@@ -873,6 +900,8 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                 } else newX = x;
               }
             });
+          } else if (DrawType === SIGNATURE) {
+            newX = x;
           } else {
             form_storage.map(function (item) {
               if (item.id === parseInt(currentId)) {
@@ -903,6 +932,12 @@ const resizeCanvas = function (id, type, currentId, optionId) {
   if (DrawType == TEXT_CONTENT) {
     let containerId = `text-content${current_text_num_id}`;
     let container = document.getElementById(containerId);
+    let currentText = document.getElementById(current_text_content_id);
+    currentText.addEventListener("focus", function () {
+      if (!container.classList.contains("textfield-content"))
+        container.classList.add("textfield-content");
+      if (!document.getElementById("topLeft")) addResizebar(containerId);
+    });
     container.addEventListener("dblclick", function (event) {
       event.stopPropagation();
       if (!container.classList.contains("textfield-content"))
@@ -938,9 +973,28 @@ const resizeCanvas = function (id, type, currentId, optionId) {
         document.getElementById(TEXT_CONTENT_OPTION).style.display = "none";
       }
     });
+  } else if (DrawType == SIGNATURE) {
+    let currentSignId = `signature${currentId}`;
+    let signatureImg = document.getElementById(`signatureImg${currentId}`);
+    document.addEventListener("click", function (event) {
+      if (event.target === signatureImg) {
+        if (!document.getElementById("topLeft")) {
+          document
+            .getElementById(currentSignId)
+            .classList.add("border-resizebar");
+          addResizebar(currentSignId);
+        }
+      } else {
+        if (document.getElementById("topLeft")) {
+          document
+            .getElementById(currentSignId)
+            .classList.remove("border-resizebar");
+          removeResizebar(currentSignId);
+        }
+      }
+    });
   } else {
     let object = document.getElementById(id);
-
     object.addEventListener("focus", function () {
       addResizebar(id);
     });
@@ -1118,7 +1172,7 @@ const addDeleteButton = function (currentId, container, object, type) {
       });
     } else {
       form_storage = form_storage.filter(function (item) {
-        return item.id !== parseInt(currentId);
+        return item.id !== parseInt(currentId);Z
       });
     }
   });
@@ -1134,6 +1188,17 @@ const addDeleteButton = function (currentId, container, object, type) {
   container.appendChild(deleteBtn);
   object.appendChild(container);
 };
+
+const resetCanvas = function () {
+  const canvas = document
+    .getElementById("signature-draw-body")
+    .querySelector("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
+
 // Handle the specified event.
 const eventHandler = async function (e) {
   baseId++;
@@ -2035,6 +2100,172 @@ const eventHandler = async function (e) {
         .addEventListener("click", handleDate);
       resizeCanvas(dateDiv.id, DATE, dateId, DATE_OPTION);
       break;
+    case SIGNATURE:
+      removeSignature();
+      let signature_x_y = PDFViewerApplication.pdfViewer._pages[
+        PDFViewerApplication.page - 1
+      ].viewport.convertToPdfPoint(x, y);
+
+      pos_x_pdf = signature_x_y[0];
+      pos_y_pdf = signature_x_y[1];
+
+      let signatureId = baseId;
+      current_form_id = signatureId;
+
+      const signatureWidth = 160;
+      const signatureHeight = 80;
+
+      const signature_creator = document.getElementById(SIGNATURE_OPTION);
+      signature_creator.style.display = "flex";
+      document.getElementById("signature-initial-tab").click();
+      resetCanvas();
+      document.getElementById("signature-close").onclick = function () {
+        signature_creator.style.display = "none";
+      };
+
+      document.getElementById("signature-create").onclick = function () {
+        let canvas;
+        if (currentSignType == DRAW) {
+          canvas = document
+            .getElementById("signature-draw-body")
+            .querySelector("canvas");
+          cropCanvas(canvas);
+          createAndAppendImage(signatureImgData);
+        } else if (currentSignType == TYPE) {
+          canvas = document.getElementById("signature-type-canvas");
+          cropCanvas(canvas);
+          createAndAppendImage(signatureImgData);
+        } else if (currentSignType == UPLOAD) {
+          const file = document.getElementById("signature-image-input")
+            .files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              signatureImgData = e.target.result;
+              handleSignature();
+              createAndAppendImage(signatureImgData);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            alert("Please select an image file.");
+          }
+        }
+        function cropCanvas(canvas) {
+          // Get the bounding box of the drawn content
+          let boundingBox = getBoundingBox(canvas);
+
+          // Create a new canvas with the dimensions of the bounding box
+          let newCanvas = document.createElement("canvas");
+          newCanvas.width = boundingBox.width;
+          newCanvas.height = boundingBox.height;
+          let newCtx = newCanvas.getContext("2d");
+
+          // Copy the drawn content to the new canvas
+          newCtx.drawImage(
+            canvas,
+            boundingBox.x,
+            boundingBox.y,
+            boundingBox.width,
+            boundingBox.height,
+            0,
+            0,
+            boundingBox.width,
+            boundingBox.height
+          );
+
+          // Convert the content of the new canvas to a data URL
+          signatureImgData = newCanvas.toDataURL();
+          handleSignature();
+        }
+
+        function getBoundingBox(canvas) {
+          let ctx = canvas.getContext("2d");
+          let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          let pixels = imageData.data;
+          let minX = canvas.width,
+            minY = canvas.height,
+            maxX = 0,
+            maxY = 0;
+
+          for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+              let i = (y * canvas.width + x) * 4;
+              if (pixels[i + 3] > 0) {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+              }
+            }
+          }
+
+          return {
+            x: minX,
+            y: minY,
+            width: maxX - minX + 1,
+            height: maxY - minY + 1,
+          };
+        }
+
+        function createAndAppendImage(imgData) {
+          signature_creator.style.display = "none";
+          const signatureImg = document.createElement("img");
+          signatureImg.id = "signatureImg" + signatureId;
+          signatureImg.style.width = "100%";
+          signatureImg.style.height = "100%";
+          signatureImg.src = imgData;
+          signatureImg.style.objectFit = "contain";
+
+          const signatureContainer = document.createElement("div");
+          signatureContainer.id = "signature" + signatureId;
+          signatureContainer.style.position = "absolute";
+          signatureContainer.style.top =
+            e.pageY - top - absoluteOffset.y + "px";
+          signatureContainer.style.left =
+            e.pageX - left - absoluteOffset.x + "px";
+          signatureContainer.style.width = signatureWidth + "px";
+          signatureContainer.style.height = signatureHeight + "px";
+          signatureContainer.style.zIndex = 100;
+
+          signatureContainer.append(signatureImg);
+
+          pg.appendChild(signatureContainer);
+          resizeCanvas(signatureContainer.id, SIGNATURE, signatureId);
+          signatureContainer.addEventListener("dblclick", () => {
+            current_signature_id = signatureId;
+
+            let istooltipshow = false;
+
+            if (
+              document.getElementById(
+                "signature_tooltipbar" + current_signature_id
+              )
+            ) {
+              istooltipshow = true;
+            }
+
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!istooltipshow) {
+                let tooltipbar = document.createElement("div");
+                current_form_id = signatureId;
+                addDeleteButton(
+                  current_signature_id,
+                  tooltipbar,
+                  signatureContainer,
+                  "signature"
+                );
+              } else {
+                document
+                  .getElementById("signature_tooltipbar" + current_signature_id)
+                  .remove();
+              }
+            }
+          });
+        }
+      };
+      break;
     default:
       break;
   }
@@ -2091,7 +2322,11 @@ async function addFormElements() {
         }
       }
       let customFont = "";
-      if (form_item.form_type != CHECKBOX && form_item.form_type != RADIO) {
+      if (
+        form_item.form_type != CHECKBOX &&
+        form_item.form_type != RADIO &&
+        form_item.form_type != SIGNATURE
+      ) {
         const fontName = form_item.fontStyle;
         if (fontStyles.hasOwnProperty(fontName)) {
           selectedFont = fontStyles[fontName];
@@ -2263,6 +2498,15 @@ async function addFormElements() {
                 },
               })
             );
+          });
+          break;
+        case SIGNATURE:
+          const pngImage = await pdfDoc.embedPng(form_item.imgData);
+          page.drawImage(pngImage, {
+            x: form_item.x,
+            y: form_item.y - form_item.height,
+            width: form_item.width,
+            height: form_item.height,
           });
           break;
         default:
