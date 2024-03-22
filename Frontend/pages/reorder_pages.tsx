@@ -20,14 +20,12 @@ export default function ReorderPages() {
     debounce((newScale: number) => {
       setScale(newScale);
     }, 200),
-    []
+    [setScale] // Include setScale if it's a state updater function
   );
 
   const pdfDocument = useRef<PDFDocument | null>(null);
 
   async function addNewPage(position: number) {
-    console.log(pdfDoc);
-    console.log(pageOrder);
 
     if (pdfDocument.current) {
       const firstPage = pdfDocument.current.getPages()[0];
@@ -39,7 +37,7 @@ export default function ReorderPages() {
         setPDFDoc(doc);
         console.log("doc is changed!", pdfDoc);
         setPageOrder([...Array(doc.numPages).keys()].map((i) => ({ id: i })));
-        console.log(pageOrder);
+        console.log("New Page added", pageOrder);
       });
     }
   }

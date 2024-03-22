@@ -4,8 +4,7 @@ let comment_storage = [];
 let text_storage = [];
 let font_storage = [];
 
-let comment_x = 0,
-  comment_y = 0;
+let comment_x = 0, comment_y = 0;
 
 let pdfBytes;
 
@@ -36,6 +35,7 @@ const getPageWidth = async function () {
   const page = pdfDoc.getPage(0);
   const { width, height } = page.getSize();
   pageWidth = width;
+  pageHeight = height;
 };
 
 const loadFontFiles = function () {

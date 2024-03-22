@@ -11,7 +11,6 @@ export default function PDFViewer() {
               paddingTop: "4px",
             }}
           >
-            {/* <img src="images/pdf_viewer.png" alt="pdf_viewer" width={"100px"} /> */}
           </div>
         </div>
         <div
@@ -31,7 +30,7 @@ export default function PDFViewer() {
             }}
           >
             <iframe
-              src="pdfview/web/viewer.html"
+              src="./pdfview/web/viewer.html"
               style={{
                 width: "100%",
                 height: "calc(99vh - 45px)",

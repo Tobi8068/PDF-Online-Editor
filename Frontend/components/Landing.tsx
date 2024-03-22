@@ -1,16 +1,18 @@
 import Head from "next/head";
+import Script from "next/script";
+import Image from "next/image";
 export default function Landing() {
   return (
     <div id="page-top">
       <Head>
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
-        <script src="/jquery-3.2.1.min.js"></script>
-        <script src="/all-plugins.js"></script>
-        <script src="/plugins-activate.js"></script>
+      <Script src="./jquery-3.2.1.min.js" />
+      <Script src="./all-plugins.js" />
+      <Script src="./plugins-activate.js" />
       </Head>
       {/* <!-- Navigation --> */}
       <div className="logo">
-        <img src="/images/logo.png" className="w-1/5" />
+        <Image src="/images/logo.png" alt="logo" width={200} height={200}/>
       </div>
       <a className="menu-toggle rounded" href="#">
         <i className="fa fa-bars"></i>

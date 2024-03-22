@@ -11,14 +11,15 @@ const CHECKBOX = 1,
   TEXT_CONTENT = 7,
   DATE = 8,
   COMMENT = 9,
-  SIGNATURE = 10;
-let checkboxCount = 1;
-(radioCount = 1),
-  (textfieldCount = 1),
-  (comboCount = 1),
-  (listCount = 1),
-  (buttonCount = 1),
-  (datefieldCount = 1);
+  SIGNATURE = 10,
+  SHAPE = 11;
+let checkboxCount = 1,
+  radioCount = 1,
+  textfieldCount = 1,
+  comboCount = 1,
+  listCount = 1,
+  buttonCount = 1,
+  datefieldCount = 1;
 let isCheckbox = false,
   isRadioButton = false,
   isTextField = false,
@@ -30,13 +31,13 @@ let isCheckbox = false,
 
 let comboboxOptionCount = 0;
 let listboxOptionCount = 0;
-let comboboxOptionArray = [];
-let listboxOptionArray = [];
+let comboboxOptionArray = ["Option 1"];
+let listboxOptionArray = ["List 1"];
 
 let pos_x_pdf = 0,
   pos_y_pdf = 0;
-let pos_x_page = 0;
-pos_y_page = 0;
+let pos_x_page = 0,
+  pos_y_page = 0;
 let fontStyle = "",
   fontSize = 0,
   textColor = "";
@@ -62,7 +63,8 @@ let alignValue = 0;
 
 const absoluteOffset = { x: 10, y: 10 };
 
-let pageWidth = 0;
+let pageWidth = 0,
+  pageHeight = 0;
 
 let isOptionPane = false;
 
@@ -75,8 +77,11 @@ let current_button_id = 0;
 let current_date_id = 0;
 let current_date_content_id = 0;
 let current_signature_id = 0;
+let current_shape_id = 0;
 
-let signatureImgData;
+let signatureImgData, shapeImgData;
+
+let boundingBox;
 
 const fontStyleArr = [
   "Courier",
@@ -581,7 +586,7 @@ const removeResizebar = function (objectId) {
   if (container) {
     resizePoints.forEach((item) => {
       let childElement = document.getElementById(item);
-      if (childElement) {
+      if (container && childElement) {
         container.removeChild(childElement);
       } else {
         console.log("Child element with id " + item + "not found");
@@ -787,12 +792,13 @@ const handleSignature = function () {
     yPage: formHeight,
     imgData: signatureImgData,
   });
-  console.log(form_storage);
+  console.log(form_storage)
 };
 
 // Resize and move canvas using Interact.js library.
 const resizeCanvas = function (id, type, currentId, optionId) {
-  let newX = 0;
+  let newX = 0,
+    newY = 0;
 
   DrawType = type;
   const interactInstance = interact(`#${id}`)
@@ -864,10 +870,12 @@ const resizeCanvas = function (id, type, currentId, optionId) {
           // keep the dragged position in the data-x/data-y attributes
           var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
           var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
-          if (DrawType == RADIO) {
+          if (DrawType === RADIO) {
             form_storage.map(function (item) {
               if (item.id === parseInt(currentId)) {
                 let posXpdf = item.data.baseX + x * 0.75 * 0.8;
+                let posYpdf =
+                  item.data.baseY - y * 0.75 * 0.8 - item.data.height;
                 if (posXpdf < 0) {
                   newX = 0 - item.data.baseX / 0.75 / 0.8;
                 } else if (posXpdf + item.data.width >= pageWidth) {
@@ -876,54 +884,77 @@ const resizeCanvas = function (id, type, currentId, optionId) {
                     0.75 /
                     0.8;
                 } else newX = x;
+                if (posYpdf < 0) {
+                  newY = (item.data.baseY - item.data.height) / 0.75 / 0.8;
+                } else if (posYpdf + item.data.height >= pageHeight) {
+                  newY = (item.data.baseY - pageHeight) / 0.75 / 0.8;
+                } else newY = y;
               }
             });
           } else if (DrawType === TEXT_CONTENT) {
             text_storage.map(function (item) {
               if (item.id === parseInt(currentId)) {
                 let posXpdf = item.baseX + x * 0.75 * 0.8;
+                let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
                 if (posXpdf < 0) {
                   newX = 0 - item.baseX / 0.75 / 0.8;
                 } else if (posXpdf + item.width >= pageWidth) {
                   newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
                 } else newX = x;
+                if (posYpdf < 0) {
+                  newY = (item.baseY - item.height) / 0.75 / 0.8;
+                } else if (posYpdf + item.height >= pageHeight) {
+                  newY = (item.baseY - pageHeight) / 0.75 / 0.8;
+                } else newY = y;
               }
             });
           } else if (DrawType === COMMENT) {
             comment_storage.map(function (item) {
               if (item.id === parseInt(currentId)) {
                 let posXpdf = item.baseX + x * 0.75 * 0.8;
+                let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
                 if (posXpdf < 0) {
                   newX = 0 - item.baseX / 0.75 / 0.8;
                 } else if (posXpdf + item.width >= pageWidth) {
                   newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
                 } else newX = x;
+                if (posYpdf < 0) {
+                  newY = (item.baseY - item.height) / 0.75 / 0.8;
+                } else if (posYpdf + item.height >= pageHeight) {
+                  newY = (item.baseY - pageHeight) / 0.75 / 0.8;
+                } else newY = y;
               }
             });
           } else {
             form_storage.map(function (item) {
               if (item.id === parseInt(currentId)) {
                 let posXpdf = item.baseX + x * 0.75 * 0.8;
+                let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
                 if (posXpdf < 0) {
                   newX = 0 - item.baseX / 0.75 / 0.8;
                 } else if (posXpdf + item.width >= pageWidth) {
                   newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
                 } else newX = x;
+                if (posYpdf < 0) {
+                  newY = (item.baseY - item.height) / 0.75 / 0.8;
+                } else if (posYpdf + item.height >= pageHeight) {
+                  newY = (item.baseY - pageHeight) / 0.75 / 0.8;
+                } else newY = y;
               }
             });
           }
           // translate the element
-          target.style.transform = "translate(" + newX + "px, " + y + "px)";
+          target.style.transform = "translate(" + newX + "px, " + newY + "px)";
 
           // update the position attributes
           target.setAttribute("data-x", newX);
-          target.setAttribute("data-y", y);
+          target.setAttribute("data-y", newY);
         },
         end(event) {
           const target = event.target;
           var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
           var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
-          moveEventHandler(event, newX, y, currentId);
+          moveEventHandler(event, newX, newY, currentId);
         },
       },
     });
@@ -988,6 +1019,26 @@ const resizeCanvas = function (id, type, currentId, optionId) {
             .getElementById(currentSignId)
             .classList.remove("border-resizebar");
           removeResizebar(currentSignId);
+        }
+      }
+    });
+  } else if (DrawType === SHAPE) {
+    let currentShapeId = `shape${currentId}`;
+    let shapeImg = document.getElementById(`shapeImg${currentId}`);
+    document.addEventListener("click", function (event) {
+      if (event.target === shapeImg) {
+        if (!document.getElementById("topLeft")) {
+          document
+            .getElementById(currentShapeId)
+            .classList.add("border-resizebar");
+          addResizebar(currentShapeId);
+        }
+      } else {
+        if (document.getElementById("topLeft")) {
+          document
+            .getElementById(currentShapeId)
+            .classList.remove("border-resizebar");
+          removeResizebar(currentShapeId);
         }
       }
     });
@@ -1150,8 +1201,13 @@ const addDeleteButton = function (currentId, container, object, type) {
   container.id = `${type}_tooltipbar` + currentId;
   container.style.position = "absolute";
   container.style.zIndex = 100;
-  container.style.top = parseInt(top) / 2 - 12.5 + "px";
+  container.style.top = "0px";
   container.style.left = parseInt(left) + 10 + "px";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.justifyContent = "center";
+  container.style.gap = "5px";
+  container.style.height = parseInt(top) + "px";
   let deleteBtn = document.createElement("button");
   deleteBtn.style.padding = "5px";
   deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`;
@@ -1170,7 +1226,7 @@ const addDeleteButton = function (currentId, container, object, type) {
       });
     } else {
       form_storage = form_storage.filter(function (item) {
-        return item.id !== parseInt(currentId);Z
+        return item.id !== parseInt(currentId);
       });
     }
   });
@@ -1206,9 +1262,9 @@ const eventHandler = async function (e) {
 
   let pageId = String(PDFViewerApplication.page);
   let pg = document.getElementById(pageId);
-  var rect = pg.getBoundingClientRect();
-  var top = rect.top;
-  var left = rect.left;
+  let rect = pg.getBoundingClientRect();
+  let top = rect.top;
+  let left = rect.left;
 
   switch (currentMode) {
     case CHECKBOX:
@@ -1309,6 +1365,8 @@ const eventHandler = async function (e) {
         }
       });
 
+      handleCheckbox();
+
       document
         .getElementById("checkbox-save-button")
         .addEventListener("click", handleCheckbox);
@@ -1402,6 +1460,8 @@ const eventHandler = async function (e) {
           }
         }
       });
+
+      handleRadio();
 
       document
         .getElementById("radio-save-button")
@@ -1510,6 +1570,8 @@ const eventHandler = async function (e) {
           }
         }
       });
+
+      handleText();
 
       document
         .getElementById("text-save-button")
@@ -1635,6 +1697,8 @@ const eventHandler = async function (e) {
           }
         }
       });
+
+      handleCombo();
 
       document.getElementById("add-option").addEventListener("click", () => {
         const optionName = document.getElementById("option-description").value;
@@ -1794,6 +1858,8 @@ const eventHandler = async function (e) {
         }
       });
 
+      handleList();
+
       document
         .getElementById("add-option-list")
         .addEventListener("click", () => {
@@ -1942,6 +2008,8 @@ const eventHandler = async function (e) {
           }
         }
       });
+
+      handleButton();
 
       // const buttonValue = document.getElementById("button-text");
       // buttonValue.addEventListener('change', () => {
@@ -2092,6 +2160,8 @@ const eventHandler = async function (e) {
         }
       });
 
+      handleDate();
+
       document
         .getElementById("date-save-button")
         .addEventListener("click", handleDate);
@@ -2126,11 +2196,13 @@ const eventHandler = async function (e) {
           canvas = document
             .getElementById("signature-draw-body")
             .querySelector("canvas");
-          cropCanvas(canvas);
+          signatureImgData = cropCanvas(canvas);
+          handleSignature();
           createAndAppendImage(signatureImgData);
         } else if (currentSignType == TYPE) {
           canvas = document.getElementById("signature-type-canvas");
-          cropCanvas(canvas);
+          signatureImgData = cropCanvas(canvas);
+          handleSignature();
           createAndAppendImage(signatureImgData);
         } else if (currentSignType == UPLOAD) {
           const file = document.getElementById("signature-image-input")
@@ -2146,62 +2218,6 @@ const eventHandler = async function (e) {
           } else {
             alert("Please select an image file.");
           }
-        }
-        function cropCanvas(canvas) {
-          // Get the bounding box of the drawn content
-          let boundingBox = getBoundingBox(canvas);
-
-          // Create a new canvas with the dimensions of the bounding box
-          let newCanvas = document.createElement("canvas");
-          newCanvas.width = boundingBox.width;
-          newCanvas.height = boundingBox.height;
-          let newCtx = newCanvas.getContext("2d");
-
-          // Copy the drawn content to the new canvas
-          newCtx.drawImage(
-            canvas,
-            boundingBox.x,
-            boundingBox.y,
-            boundingBox.width,
-            boundingBox.height,
-            0,
-            0,
-            boundingBox.width,
-            boundingBox.height
-          );
-
-          // Convert the content of the new canvas to a data URL
-          signatureImgData = newCanvas.toDataURL();
-          handleSignature();
-        }
-
-        function getBoundingBox(canvas) {
-          let ctx = canvas.getContext("2d");
-          let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          let pixels = imageData.data;
-          let minX = canvas.width,
-            minY = canvas.height,
-            maxX = 0,
-            maxY = 0;
-
-          for (let y = 0; y < canvas.height; y++) {
-            for (let x = 0; x < canvas.width; x++) {
-              let i = (y * canvas.width + x) * 4;
-              if (pixels[i + 3] > 0) {
-                minX = Math.min(minX, x);
-                minY = Math.min(minY, y);
-                maxX = Math.max(maxX, x);
-                maxY = Math.max(maxY, y);
-              }
-            }
-          }
-
-          return {
-            x: minX,
-            y: minY,
-            width: maxX - minX + 1,
-            height: maxY - minY + 1,
-          };
         }
 
         function createAndAppendImage(imgData) {
@@ -2268,6 +2284,62 @@ const eventHandler = async function (e) {
   }
 };
 
+function getBoundingBox(canvas) {
+  let ctx = canvas.getContext("2d");
+  let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let pixels = imageData.data;
+  let minX = canvas.width,
+    minY = canvas.height,
+    maxX = 0,
+    maxY = 0;
+
+  for (let y = 0; y < canvas.height; y++) {
+    for (let x = 0; x < canvas.width; x++) {
+      let i = (y * canvas.width + x) * 4;
+      if (pixels[i + 3] > 0) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  };
+}
+
+function cropCanvas(canvas) {
+  // Get the bounding box of the drawn content
+  boundingBox = getBoundingBox(canvas);
+
+  // Create a new canvas with the dimensions of the bounding box
+  let newCanvas = document.createElement("canvas");
+  newCanvas.width = boundingBox.width;
+  newCanvas.height = boundingBox.height;
+  let newCtx = newCanvas.getContext("2d");
+
+  // Copy the drawn content to the new canvas
+  newCtx.drawImage(
+    canvas,
+    boundingBox.x,
+    boundingBox.y,
+    boundingBox.width,
+    boundingBox.height,
+    0,
+    0,
+    boundingBox.width,
+    boundingBox.height
+  );
+
+  // Convert the content of the new canvas to a data URL
+  return newCanvas.toDataURL();
+}
+
 const flatten = async function () {
   pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
   const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
@@ -2322,7 +2394,8 @@ async function addFormElements() {
       if (
         form_item.form_type != CHECKBOX &&
         form_item.form_type != RADIO &&
-        form_item.form_type != SIGNATURE
+        form_item.form_type != SIGNATURE &&
+        form_item.form_type != SHAPE
       ) {
         const fontName = form_item.fontStyle;
         if (fontStyles.hasOwnProperty(fontName)) {
@@ -2505,6 +2578,16 @@ async function addFormElements() {
             width: form_item.width,
             height: form_item.height,
           });
+          break;
+        case SHAPE:
+          const shapeImage = await pdfDoc.embedPng(form_item.imgData);
+          page.drawImage(shapeImage, {
+            x: form_item.x,
+            y: form_item.y - form_item.height,
+            width: form_item.width,
+            height: form_item.height,
+          });
+          console.log('first')
           break;
         default:
           break;

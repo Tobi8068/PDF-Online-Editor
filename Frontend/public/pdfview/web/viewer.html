@@ -47,8 +47,8 @@ See https://github.com/adobe-type-tools/cmap-resources
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
 
-    <link rel="stylesheet" href="css/signature-pad.css">
-    <link rel="stylesheet" href="css/signature-font.css">
+    <link rel="stylesheet" href="css/signature-pad.css" />
+    <link rel="stylesheet" href="css/signature-font.css" />
 
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script> -->
     <!--#endif-->
@@ -1967,7 +1967,13 @@ See https://github.com/adobe-type-tools/cmap-resources
           >Add or edit images</span
         >
       </button>
-      <div id="viewBookmarkSeparator" class="horizontalToolbarSeparator"></div>
+      <div class="horizontalToolbarSeparator"></div>
+      <p class="toolbarTitle">Add Shapes:</p>
+      <button class="menu-button" id="add_shape" title="Add Shapes">
+        <i class="fa-solid fa-shapes" style="width: 17px"></i>
+        <p class="menu-button-item">Add Shapes</p>
+      </button>
+      <div class="horizontalToolbarSeparator"></div>
       <p class="toolbarTitle">Comments:</p>
       <button class="menu-button" id="add_text" title="Add Text">
         <i class="far fa-i" style="width: 17px"></i>
@@ -1977,7 +1983,7 @@ See https://github.com/adobe-type-tools/cmap-resources
         <i class="far fa-comment"></i>
         <p class="menu-button-item">Add Comment</p>
       </button>
-      <div id="viewBookmarkSeparator" class="horizontalToolbarSeparator"></div>
+      <div class="horizontalToolbarSeparator"></div>
       <p class="toolbarTitle">Form Fields:</p>
       <button
         class="menu-button"
@@ -2033,11 +2039,11 @@ See https://github.com/adobe-type-tools/cmap-resources
         <i class="fa-regular fa-calendar-days" style="width: 17px"></i>
         <p class="menu-button-item">Date</p>
       </button>
-      <button 
-        class="menu-button" 
+      <button
+        class="menu-button"
         id="add_form_signature"
         title="Add Signature"
-        onclick="addForm(SIGNATURE)" 
+        onclick="addForm(SIGNATURE)"
       >
         <i class="fa-solid fa-signature" style="width: 17px"></i>
         <p class="menu-button-item">Signature</p>
@@ -2063,60 +2069,116 @@ See https://github.com/adobe-type-tools/cmap-resources
       </button>
     </div>
 
-    <div id="signature-creator" onselectstart="return false" class="signature-container">
+    <div
+      id="signature-creator"
+      onselectstart="return false"
+      class="signature-container"
+    >
       <div id="signature-pad" class="signature-pad">
         <div class="signature-heading">
           <h4>Create New Signature</h4>
           <span id="signature-close" class="signature-close">&times;</span>
         </div>
         <div class="signature-option">
-          <button class="tablink tablink-active" onclick="switchSignMethod(event, DRAW)" id="signature-initial-tab">Draw</button>
-          <button class="tablink" onclick="switchSignMethod(event, TYPE)">Type</button>
-          <button class="tablink" onclick="switchSignMethod(event, UPLOAD)">Upload</button>
+          <button
+            class="tablink tablink-active"
+            onclick="switchSignMethod(event, DRAW)"
+            id="signature-initial-tab"
+          >
+            Draw
+          </button>
+          <button class="tablink" onclick="switchSignMethod(event, TYPE)">
+            Type
+          </button>
+          <button class="tablink" onclick="switchSignMethod(event, UPLOAD)">
+            Upload
+          </button>
         </div>
-        <hr class="signature-hr">
-        <div id="signature-draw-body" class="signature-pad--body signature-tab-content" style="display: flex;">
+        <hr class="signature-hr" />
+        <div
+          id="signature-draw-body"
+          class="signature-pad--body signature-tab-content"
+          style="display: flex"
+        >
           <canvas></canvas>
         </div>
-        <div id="signature-draw-footer" class="signature-pad--footer signature-tab-content" style="display: flex;">
+        <div
+          id="signature-draw-footer"
+          class="signature-pad--footer signature-tab-content"
+          style="display: flex"
+        >
           <div class="description">Please sign above</div>
-    
+
           <div class="signature-pad--actions">
-              <button type="button" class="button clear" data-action="clear">Clear</button>
-              <button type="button" class="button" data-action="undo">Undo</button>
-              <!-- <button type="button" class="button" data-action="change-color">Change color</button> -->
-              <div class="signature-color-picker">
-                <div>
-                  <span>Color</span>
-                </div>
-                <div>
-                  <input type="color" id="signature-draw-color" data-action="change-color" name="signature-color">
-                </div>
+            <button type="button" class="button clear" data-action="clear">
+              Clear
+            </button>
+            <button type="button" class="button" data-action="undo">
+              Undo
+            </button>
+            <!-- <button type="button" class="button" data-action="change-color">Change color</button> -->
+            <div class="signature-color-picker">
+              <div>
+                <span>Color</span>
               </div>
-              <button type="button" class="button" data-action="change-width">Change width</button>  
-              <button type="button" class="button save" data-action="save-png">Save as PNG</button>
-              <button type="button" class="button save" data-action="save-jpg">Save as JPG</button>
-              <button type="button" class="button save" data-action="save-svg">Save as SVG</button>
-              <button type="button" class="button save" data-action="save-svg-with-background">Save as SVG with background</button>
+              <div>
+                <input
+                  type="color"
+                  id="signature-draw-color"
+                  data-action="change-color"
+                  name="signature-color"
+                />
+              </div>
+            </div>
+            <button type="button" class="button" data-action="change-width">
+              Change width
+            </button>
+            <button type="button" class="button save" data-action="save-png">
+              Save as PNG
+            </button>
+            <button type="button" class="button save" data-action="save-jpg">
+              Save as JPG
+            </button>
+            <button type="button" class="button save" data-action="save-svg">
+              Save as SVG
+            </button>
+            <button
+              type="button"
+              class="button save"
+              data-action="save-svg-with-background"
+            >
+              Save as SVG with background
+            </button>
           </div>
         </div>
         <div id="signature-type-body" class="signature-tab-content">
-          <canvas id="signature-type-canvas" style="touch-action: none; user-select: none;"></canvas>
+          <canvas
+            id="signature-type-canvas"
+            style="touch-action: none; user-select: none"
+          ></canvas>
         </div>
         <div id="signature-type-footer" class="signature-tab-content">
           <div>
-            <select id="signature-type-font">
-            </select>
+            <select id="signature-type-font"></select>
           </div>
           <div class="signature-color-picker">
             <div>
               <span>Color</span>
             </div>
             <div>
-              <input type="color" id="signature-type-color" name="signature-color">
+              <input
+                type="color"
+                id="signature-type-color"
+                name="signature-color"
+              />
             </div>
           </div>
-          <input type="text" id="signature-type-text" class="signature-type-text" name="signature-type-text">
+          <input
+            type="text"
+            id="signature-type-text"
+            class="signature-type-text"
+            name="signature-type-text"
+          />
         </div>
         <div id="signature-upload-body" class="signature-tab-content">
           <div id="drop-area">
@@ -2131,27 +2193,147 @@ See https://github.com/adobe-type-tools/cmap-resources
           <div id="image-preview"></div>
         </div>
         <div id="signature-upload-footer" class="signature-tab-content"></div>
-        <hr class="signature-hr">
-        <div class="signature-footer signature-pad--actions" style="float: right;">
+        <hr class="signature-hr" />
+        <div
+          class="signature-footer signature-pad--actions"
+          style="float: right"
+        >
           <div></div>
           <button id="signature-create" class="button">Create</button>
         </div>
       </div>
     </div>
 
+    <div id="drawing-board-container" class="signature-container">
+      <div id="drawing-board-pad" class="signature-pad">
+        <div class="signature-heading">
+          <h4>Add New Shapes</h4>
+          <span id="drawing-board-close" class="signature-close">&times;</span>
+        </div>
+        <!-- top action bar -->
+        <div id="action-bar">
+          <!-- group 1: tools -->
+          <div class="action-group">
+            <div id="actions">
+              <div class="action">
+                <button id="clear-canvas">clear canvas</button>
+              </div>
+            </div>
+          </div>
+          <!-- group 2: tools -->
+          <div class="action-group">
+            <!-- tools -->
+            <div class="drawing-tools">
+              <!-- pencil -->
+              <div class="drawing-tool active" id="pencil">
+                <img src="./images/pencil.png" alt="pencil" />
+              </div>
+              <!-- brush -->
+              <div class="drawing-tool" id="brush">
+                <img src="./images/brush.png" alt="brush" />
+              </div>
+              <!-- eraser -->
+              <!-- TODO: https://github.com/GDSC-IIIT-Kalyani/Plot/issues/17 -->
+              <div class="drawing-tool" id="eraser">
+                <img src="./images/eraser.png" alt="eraser" />
+              </div>
+              <!-- bucket -->
+              <div class="drawing-tool" id="bucket">
+                <img src="./images/bucket.svg" alt="bucket" />
+              </div>
+            </div>
+            <!-- group title -->
+            <p class="title">tools</p>
+          </div>
+          <!-- group 3: shapes -->
+          <div class="action-group">
+            <!-- shapes -->
+            <div class="drawing-tools">
+              <!-- Straight -->
+              <div class="drawing-tool" id="straight">
+                <img src="./images/straight.svg" alt="straight" />
+              </div>
+              <!-- rectangle -->
+              <div class="drawing-tool" id="rectangle">
+                <img src="./images/rectangle.svg" alt="rectangle" />
+              </div>
+              <!-- circle -->
+              <div class="drawing-tool" id="circle">
+                <img src="./images/circle.svg" alt="circle" />
+              </div>
+            </div>
+            <!-- group title -->
+            <p class="title">shapes</p>
+          </div>
+          <!-- group 4: colors -->
+          <div class="action-group">
+            <!-- colors -->
+            <div id="colors-wrapper">
+              <div id="colors">
+                <div class="drawing-color"></div>
+                <div class="drawing-color selected"></div>
+                <div class="drawing-color"></div>
+                <div class="drawing-color"></div>
+              </div>
+              <div id="color-picker-wrapper">
+                <input type="color" id="color-picker" value="#04a9f7" />
+              </div>
+            </div>
+            <!-- group title -->
+            <p class="title">colors</p>
+          </div>
+          <div class="action-group">
+            <input
+              type="range"
+              id="brush-width-slider"
+              min="1"
+              max="30"
+              value="2"
+              disabled
+            />
+            <!-- group title -->
+            <p class="title">thickness</p>
+          </div>
+        </div>
+        <hr class="signature-hr" />
+        <!-- drawing-board -->
+        <div id="drawing-board" class="signature-pad--body" style="display: flex">
+          <canvas style="touch-action: none; user-select: none;"></canvas>
+        </div>
+        <hr class="signature-hr" />
+        <div
+          class="signature-footer signature-pad--actions"
+          style="float: right"
+        >
+          <div></div>
+          <button id="drawing-shape-create" class="button">Create</button>
+        </div>
+      </div>
+    </div>
+
     <script>
       const openToolbar = () => {
+        document.getElementById("scaleSelect").value = "auto";
+        PDFViewerApplication.pdfViewer.currentScaleValue = "auto";
         var icon = document.getElementById("penIcon");
         icon.classList.toggle("rotate");
         var sidebar = document.querySelector(".right-sidebar");
         sidebar.classList.toggle("active");
       };
-      localStorage.setItem('modifiedContent', document.getElementById('id_form_options').innerHTML);
+      localStorage.setItem(
+        "modifiedContent",
+        document.getElementById("id_form_options").innerHTML
+      );
+      localStorage.setItem(
+        "modifiedContentDrawingShape",
+        document.getElementById("drawing-board-container").innerHTML
+      );
     </script>
     <script src="viewer.js" type="module"></script>
     <script src="pdfAnnotate.js"></script>
     <!--#if GENERIC-->
     <input type="file" id="fileInput" class="hidden" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="font.js"></script>
     <script src="addComment.js"></script>
     <script src="addForm.js"></script>
@@ -2159,6 +2341,10 @@ See https://github.com/adobe-type-tools/cmap-resources
     <script src="addShape.js"></script>
     <script src="js/signature_pad.umd.js"></script>
     <script src="js/signature_app.js"></script>
+    <script src="./js/utils.js" defer></script>
+    <script src="./js/app.js" defer></script>
+    <script src="./js/index.js" defer></script>
+    <link rel="stylesheet" href="./css/index.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
