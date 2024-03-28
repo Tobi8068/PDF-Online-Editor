@@ -23,7 +23,12 @@ let isDragging = false;
 let DrawType = "nothing";
 let initialX, initialY;
 
+/*
+isEditing: true: Form Data Editing Mode
+isEditing: false: Form Data Inserting Mode
+ */
 let isEditing = false;
+let isMove = false;
 
 let isBold = false;
 let isItalic = false;

@@ -16,7 +16,7 @@ export default function PDFViewer() {
         <div
           style={{
             overflow: "hidden",
-            backgroundColor: "#5AB9C1",
+            backgroundColor: "#3C97FE",
             borderRadius: "10px",
             margin: "5px",
           }}

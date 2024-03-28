@@ -13,7 +13,7 @@ const canvas = wrapper.querySelector("canvas");
 const DRAW = "signature-draw",
   TYPE = "signature-type",
   UPLOAD = "signature-upload";
-const signatureFonts = ["SCRIPTIN", "DrSugiyama", "MrDafoe"];
+const signatureFonts = ["MrDafoe", "SCRIPTIN", "DrSugiyama"];
 const signatureTypeFont = document.getElementById("signature-type-font");
 const signatureTypeText = document.getElementById("signature-type-text");
 const signatureTypeColor = document.getElementById("signature-type-color");
@@ -124,7 +124,7 @@ function handleSignatureType() {
     } while (textWidth > maxWidth && fontSize > 10);
 
     // Set font styles
-    ctx.font = fontSize + "px " + fontFamily;
+    ctx.font = "bold " + fontSize + "px " + fontFamily;
     ctx.fillStyle = color;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

@@ -1923,6 +1923,14 @@ See https://github.com/adobe-type-tools/cmap-resources
       </div>
     </div>
     <div class="right-sidebar">
+      <div
+        id="switchEditInsert"
+        class="switch-edit-insert"
+        onclick="changeMode()"
+      >
+        <p>Edit Mode</p>
+        <i class="fa fa-toggle-off"></i>
+      </div>
       <p class="toolbarTitle">Annotations:</p>
       <button
         id="editorHighlight"
@@ -1949,6 +1957,7 @@ See https://github.com/adobe-type-tools/cmap-resources
         aria-controls="editorInkParamsToolbar"
         tabindex="33"
         data-l10n-id="pdfjs-editor-ink-button"
+        style="display: none;"
       >
         <span data-l10n-id="pdfjs-editor-ink-button-label">Draw</span>
       </button>
@@ -2297,8 +2306,12 @@ See https://github.com/adobe-type-tools/cmap-resources
         </div>
         <hr class="signature-hr" />
         <!-- drawing-board -->
-        <div id="drawing-board" class="signature-pad--body" style="display: flex">
-          <canvas style="touch-action: none; user-select: none;"></canvas>
+        <div
+          id="drawing-board"
+          class="signature-pad--body"
+          style="display: flex"
+        >
+          <canvas style="touch-action: none; user-select: none"></canvas>
         </div>
         <hr class="signature-hr" />
         <div
@@ -2312,12 +2325,12 @@ See https://github.com/adobe-type-tools/cmap-resources
     </div>
 
     <script>
+      let sidebar = document.querySelector(".right-sidebar");
       const openToolbar = () => {
         document.getElementById("scaleSelect").value = "auto";
         PDFViewerApplication.pdfViewer.currentScaleValue = "auto";
-        var icon = document.getElementById("penIcon");
+        let icon = document.getElementById("penIcon");
         icon.classList.toggle("rotate");
-        var sidebar = document.querySelector(".right-sidebar");
         sidebar.classList.toggle("active");
       };
       localStorage.setItem(

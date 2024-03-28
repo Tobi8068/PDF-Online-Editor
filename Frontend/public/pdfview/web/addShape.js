@@ -86,7 +86,6 @@ $("#viewer").on("click", function (e) {
     canvas.height = canvas.offsetHeight * ratio;
 
     plot.initStore();
-    console.log(canvas);
     // let plot = new PlotApp();
     isDrawingShape = false;
     $(addShapeBtn).removeClass("active_menu");
@@ -107,7 +106,7 @@ $("#viewer").on("click", function (e) {
       shapeImg.style.width = "100%";
       shapeImg.style.height = "100%";
       shapeImg.src = shapeImgData;
-      shapeImg.style.objectFit = "contain";
+      shapeImg.style.objectFit = "fill";
 
       const shapeContainer = document.createElement("div");
       shapeContainer.id = "shape" + shapeId;

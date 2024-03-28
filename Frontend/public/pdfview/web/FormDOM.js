@@ -135,6 +135,7 @@ const addForm = function (mode) {
         isDate = true;
         handleFormModeChange();
       }
+      break;
     case SIGNATURE:
       if (isSignature) {
         removeEventListener();
@@ -146,6 +147,7 @@ const addForm = function (mode) {
         isSignature = true;
         handleFormModeChange();
       }
+      break;
     default:
       break;
   }
