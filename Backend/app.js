@@ -11,9 +11,23 @@ const puppeteer = require('puppeteer');
 const pdfkit = require('pdfkit');
 const sizeOf = require('image-size');
 const topdf = require('libreoffice-to-pdf');
+const https = require('https');
+const nodemailer = require('nodemailer');
+const uuid = require('uuid');
 
 const app = express();
 const { setCurrentFile, getCurrentFile } = require('./utils/currentFile');
+
+// Configure nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'codevisiondeveloper@gmail.com',
+    pass: 'liktvdrrrxgsnery'
+  }
+});
+
+const formDataMap = new Map();
 
 // Set up the storage for multer
 const storage = multer.diskStorage({
@@ -28,6 +42,11 @@ const storage = multer.diskStorage({
     setCurrentFile("uploads/" + currentFileName);
   }
 });
+
+const options = {
+  key: fs.readFileSync("./cert/privkey1.pem"),
+  cert: fs.readFileSync("./cert/fullchain1.pem"),
+};
 
 const upload = multer({ storage: storage });
 
@@ -94,6 +113,10 @@ async function generateHtmlFromWorkbook(workbook) {
 
   return htmlContent;
 }
+
+app.get('/', function (req, res) {
+  res.send("Success");
+})
 
 // Handle POST requests to /upload_excel
 app.post('/upload_excel', [upload.single('file')], async function (req, res) {
@@ -165,7 +188,71 @@ app.get('/download_image', function (req, res) {
   readStream.pipe(res);
 });
 
+app.post('/sendlink',upload.single('pdfFile'), (req, res) => {
+
+  
+  const pdfFilePath = getCurrentFile();
+  const pdfFileData = fs.readFileSync(pdfFilePath);
+  const base64Data = pdfFileData.toString('base64');
+  const str = String(base64Data)
+  const dataUri = `data:application/pdf; base64, ${str}`;
+
+  const uniqueId = uuid.v4();
+  let newDataSet = [];
+
+  if (!req.file) {
+    return res.status(400).send('No PDF file uploaded.');
+  }
+
+  const formData = req.body.pdfFormData;
+  newDataSet.push({
+    pdfData: dataUri,
+    formData: formData,
+    name: req.body.name,
+    email: req.body.email,
+    description: req.body.description
+  })
+
+  formDataMap.set(uniqueId, newDataSet);
+
+  const uniqueLink = `https://pdf-vision.com/pdfviewer/?id=${uniqueId}`;
+
+  console.log(uniqueLink)
+  // Send email to client with the unique link
+  const mailOptions = {
+    from: 'Stephan Hapi <codevisiondeveloper@gmail.com>',
+    to: `${req.body.email}`,
+    subject: 'Please sign here',
+    text: `Dear ${req.body.name}! Here is the link to access the PDF form: ${uniqueLink}`
+  };
+  
+  transporter.sendMail(mailOptions, function(error, info) {
+    if (error) {
+      console.log(error);
+      res.status(500).send('Failed to send email');
+    } else {
+      console.log('Email sent: ' + info.response);
+      res.send('Email sent with the PDF form link');
+    }
+  });
+
+});
+
+app.get('/getpdfdata', (req, res) => {
+  const uniqueId = req.query.uniqueId;
+  const formData = formDataMap.get(uniqueId);
+
+  if (formData) {
+    res.json(formData);
+  } else {
+    res.status(404).send('Form data not found');
+  }
+});
+
 // Start the server
-app.listen(8081, () => {
-  console.log('Server is running on port 8081');
+// app.listen(8081, () => {
+//   console.log('Server is running on port 8081');
+// });
+https.createServer(options, app).listen(8081, "94.72.120.252", () => {
+  console.log(`Server running at https://94.72.120.252/`);
 });

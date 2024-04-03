@@ -61,8 +61,6 @@ const ALIGN_LEFT = 0,
   ALIGN_CENTER = 1;
 let alignValue = 0;
 
-const absoluteOffset = { x: 10, y: 10 };
-
 let pageWidth = 0,
   pageHeight = 0;
 
@@ -121,9 +119,1077 @@ let formHeight = 25;
 let selectedAlign = "",
   groupNameAlign = "";
 
+function getIdFromUrl() {
+  // Get the URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Get the value of the "id" parameter
+  const id = urlParams.get('id');
+
+  // Return the value of the "id" parameter
+  return id;
+}
+
+const drawFormElement = function () {
+  form_storage.forEach((item) => {
+    let id = item.id;
+    let new_x_y, x, y, width, height;
+    if (item.form_type != RADIO) {
+      x = item.x;
+      y = item.y;
+      width = item.xPage;
+      height = item.yPage;
+    } else {
+      x = item.data.x;
+      y = item.data.y;
+      width = item.data.xPage;
+      height = item.data.yPage;
+    }
+    new_x_y = PDFViewerApplication.pdfViewer._pages[
+      PDFViewerApplication.page - 1
+    ].viewport.convertToViewportPoint(x, y);
+    x = new_x_y[0];
+    y = new_x_y[1];
+    let pg = document.getElementById(String(item.page_number));
+
+    switch (item.form_type) {
+      case CHECKBOX:
+        let checkbox = document.createElement("div");
+        checkbox.id = "checkbox" + id;
+        addFormElementStyle(checkbox, y, x, width, height);
+        let checkmark = document.createElement("div");
+        checkmark.classList.add("checkmark");
+        checkbox.classList.add("checkbox");
+        checkbox.appendChild(checkmark);
+        if (item.isChecked) checkbox.classList.add("checked");
+        checkbox.onclick = function () {
+          toggleCheckbox(checkbox.id);
+        };
+        pg.append(checkbox);
+        document.getElementById(
+          "checkbox-field-input-name"
+        ).value = item.formFieldName;
+        document.getElementById(
+          "checkbox-label"
+        ).value = item.label;
+        document.getElementById(
+          "checkbox-value"
+        ).value = item.value;
+        current_checkbox_id = id;
+
+        checkbox.addEventListener("dblclick", () => {
+          if (!isEditing) {
+            current_checkbox_id = id;
+            let istooltipshow = false;
+            if (
+              document.getElementById("checkbox_tooltipbar" + current_checkbox_id)
+            ) {
+              istooltipshow = true;
+            }
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!istooltipshow) {
+                let tooltipbar = document.createElement("div");
+                current_form_id = id;
+                form_storage.map((element) => {
+                  if (element.id == id) {
+                    document.getElementById("checkbox-field-input-name").value =
+                      element.form_field_name;
+                    document.getElementById("checkbox-label").value =
+                      element.label;
+                    document.getElementById("checkbox-value").value =
+                      element.value;
+                    isOptionPane = true;
+                    option = showOption(
+                      CHECKBOX_OPTION,
+                      element.xPage / 2 - 180,
+                      element.yPage + 15
+                    );
+                    checkbox.append(option);
+                  }
+                });
+                document
+                  .getElementById("checkbox-save-button")
+                  .addEventListener("click", handleCheckbox);
+                addDeleteButton(
+                  current_checkbox_id,
+                  tooltipbar,
+                  checkbox,
+                  "checkbox"
+                );
+              } else {
+                document
+                  .getElementById("checkbox_tooltipbar" + current_checkbox_id)
+                  .remove();
+              }
+            }
+          }
+        });
+        document
+          .getElementById("checkbox-save-button")
+          .addEventListener("click", handleCheckbox);
+        resizeCanvas(checkbox.id, CHECKBOX, id, CHECKBOX_OPTION);
+
+        break;
+      case RADIO:
+        let radio = document.createElement("div");
+        radio.id = "radio" + id;
+        addFormElementStyle(radio, y, x, width, height);
+        radio.style.borderRadius = "50%";
+        radio.classList.add("radio-container");
+        let inputRadio = document.createElement("input");
+        inputRadio.type = "radio";
+        inputRadio.name = item.data.option;
+
+        let spanElement = document.createElement("span");
+        spanElement.classList.add("checkmark-radio");
+
+        radio.append(inputRadio, spanElement);
+        radio.onclick = function () {
+          selectRadioButton(this, id);
+        };
+
+        pg.appendChild(radio);
+
+        current_radio_id = id;
+
+        radio.addEventListener("dblclick", () => {
+          if (!isEditing) {
+            current_radio_id = id;
+
+            let isradiotooltipshow = false;
+
+            if (document.getElementById("radio_tooltipbar" + current_radio_id)) {
+              isradiotooltipshow = true;
+            }
+
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!isradiotooltipshow) {
+                let tooltipbar = document.createElement("div");
+
+                current_form_id = id;
+                form_storage.map((element) => {
+                  if (element.id == id) {
+                    document.getElementById("radio-field-input-name").value =
+                      element.data.option;
+                    document.getElementById("radio-label").value =
+                      element.data.label;
+                    document.getElementById("radio-value").value =
+                      element.data.value;
+                    isOptionPane = true;
+                    option = showOption(
+                      RADIO_OPTION,
+                      element.xPage / 2 - 180,
+                      element.yPage + 15
+                    );
+                    radio.append(option);
+                  }
+                });
+
+                document
+                  .getElementById("radio-save-button")
+                  .addEventListener("click", handleRadio);
+
+                addDeleteButton(current_radio_id, tooltipbar, radio, "radio");
+
+                radio.appendChild(tooltipbar);
+              } else {
+                document
+                  .getElementById("radio_tooltipbar" + current_radio_id)
+                  .remove();
+              }
+            }
+          }
+        });
+        document
+          .getElementById("radio-save-button")
+          .addEventListener("click", handleRadio);
+        resizeCanvas(radio.id, RADIO, id, RADIO_OPTION);
+        break;
+      case TEXTFIELD:
+        let textDiv = document.createElement("div");
+        textDiv.id = "text" + id;
+        addFormElementStyle(textDiv, y, x, width, height);
+
+        let inputElement = document.createElement("input");
+        inputElement.classList.add("text-field-input");
+        inputElement.style.display = "none";
+        inputElement.addEventListener("input", function () {
+          handleText();
+        });
+
+        textDiv.append(inputElement);
+
+        pg.appendChild(textDiv);
+
+        showOptionAndResizebar(
+          TEXTFIELD_OPTION,
+          textDiv,
+          width,
+          height,
+          "text"
+        );
+
+        current_text_id = id;
+        const textfieldAlign = document.querySelectorAll(
+          'input[type=radio][name="text-field"]'
+        );
+        textfieldAlign.forEach(function (radio) {
+          radio.addEventListener("change", handleRadioSelection);
+        });
+        textDiv.addEventListener("dblclick", () => {
+          if (!isEditing) {
+            current_text_id = id;
+
+            let istexttooltipshow = false;
+
+            if (document.getElementById("text_tooltipbar" + current_text_id)) {
+              istexttooltipshow = true;
+            }
+
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!istexttooltipshow) {
+                let tooltipbar = document.createElement("div");
+                current_form_id = id;
+
+                form_storage.map((element) => {
+                  if (element.id == id) {
+                    document.getElementById("text-field-input-name").value =
+                      element.form_field_name;
+                    isOptionPane = true;
+                    option = showOption(
+                      TEXTFIELD_OPTION,
+                      element.xPage / 2 - 180,
+                      element.yPage + 15
+                    );
+                    document.getElementById("text-font-style").value =
+                      element.fontStyle;
+                    document.getElementById("text-font-size").value =
+                      element.fontSize;
+                    document.getElementById("text-font-color").value =
+                      element.textColor;
+                    let selected = element.align;
+                    if (selected == ALIGN_LEFT)
+                      document.getElementById("text-left").checked = true;
+                    if (selected == ALIGN_CENTER)
+                      document.getElementById("text-center").checked = true;
+                    if (selected == ALIGN_RIGHT)
+                      document.getElementById("text-right").checked = true;
+                    textDiv.append(option);
+                  }
+                });
+
+                document
+                  .getElementById("text-save-button")
+                  .addEventListener("click", handleText);
+
+                addDeleteButton(current_text_id, tooltipbar, textDiv, "text");
+              } else {
+                document
+                  .getElementById("text_tooltipbar" + current_text_id)
+                  .remove();
+              }
+            }
+          }
+        });
+
+        handleText();
+
+        document
+          .getElementById("text-save-button")
+          .addEventListener("click", handleText);
+        resizeCanvas(textDiv.id, TEXTFIELD, id, TEXTFIELD_OPTION);
+        break;
+      case COMBOBOX:
+        let comboDiv = document.createElement("div");
+        comboDiv.id = "combo" + id;
+        addFormElementStyle(comboDiv, y, x, width, height);
+
+        let selectElement = document.createElement("select");
+        selectElement.classList.add("combobox-field-input");
+        selectElement.style.display = "none";
+        selectElement.addEventListener("change", function () {
+          handleCombo();
+        });
+
+        comboDiv.append(selectElement);
+
+        pg.appendChild(comboDiv);
+
+        showOptionAndResizebar(
+          COMBOBOX_OPTION,
+          comboDiv,
+          width,
+          height,
+          "combo"
+        );
+        const comboAlign = document.querySelectorAll(
+          'input[type=radio][name="text-field"]'
+        );
+        comboAlign.forEach(function (radio) {
+          radio.addEventListener("change", handleRadioSelection);
+        });
+
+        current_combo_id = id;
+
+        comboDiv.addEventListener("dblclick", (e) => {
+          if (!isEditing) {
+            current_combo_id = id;
+
+            let iscombotooltipshow = false;
+
+            if (document.getElementById("combo_tooltipbar" + current_combo_id)) {
+              iscombotooltipshow = true;
+            }
+
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!iscombotooltipshow) {
+                let tooltipbar = document.createElement("div");
+                current_form_id = id;
+                document.getElementById("option-content").innerHTML = "";
+                form_storage.map((element) => {
+                  if (element.id == id) {
+                    document.getElementById("combo-input-name").value =
+                      element.form_field_name;
+                    isOptionPane = true;
+                    option = showOption(
+                      COMBOBOX_OPTION,
+                      element.xPage / 2 - 180,
+                      element.yPage + 15
+                    );
+                    document.getElementById("combo-font-style").value =
+                      element.fontStyle;
+                    document.getElementById("combo-font-size").value =
+                      element.fontSize;
+                    document.getElementById("combo-font-color").value =
+                      element.textColor;
+                    element.optionArray.map((elementItem) => {
+                      const optionContent = document.createElement("div");
+                      const deleteDivId = `delete-span-${comboboxOptionCount}`;
+                      optionContent.id = `comboOption${deleteDivId}`;
+                      optionContent.className = "combobox-options-content";
+                      const contentSpan = document.createElement("span");
+                      contentSpan.textContent = elementItem;
+                      const deleteSpan = document.createElement("span");
+                      deleteSpan.className = "option-delete";
+                      deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+                      deleteSpan.addEventListener("click", function () {
+                        // Remove the corresponding div when the delete span is clicked
+                        element = element.optionArray.filter(function (item) {
+                          return item !== elementItem;
+                        });
+                        optionContent.remove();
+                      });
+                      optionContent.append(contentSpan, deleteSpan);
+                      document
+                        .getElementById("option-content")
+                        .append(optionContent);
+                    });
+                    comboDiv.append(option);
+                  }
+                });
+
+                document
+                  .getElementById("combo-save-button")
+                  .addEventListener("click", handleCombo);
+
+                addDeleteButton(current_combo_id, tooltipbar, comboDiv, "combo");
+              } else {
+                document
+                  .getElementById("combo_tooltipbar" + current_combo_id)
+                  .remove();
+              }
+            }
+          }
+        });
+
+        handleCombo();
+
+        document.getElementById("add-option").addEventListener("click", () => {
+          const optionName = document.getElementById("option-description").value;
+          const optionContainer = document.getElementById("option-content");
+          const optionContent = document.createElement("div");
+          const deleteDivId = `delete-span-${comboboxOptionCount}`;
+
+          optionContent.id = `comboOption${deleteDivId}`;
+          optionContent.className = "combobox-options-content";
+          const contentSpan = document.createElement("span");
+          contentSpan.textContent = optionName;
+
+          const deleteSpan = document.createElement("span");
+          deleteSpan.className = "option-delete";
+          deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+
+          if (optionName != "") comboboxOptionArray.push(optionName);
+
+          deleteSpan.addEventListener("click", function () {
+            // Remove the corresponding div when the delete span is clicked
+            comboboxOptionArray = comboboxOptionArray.filter(function (item) {
+              return item !== optionName;
+            });
+            optionContent.remove();
+          });
+          optionContent.appendChild(contentSpan);
+          optionContent.appendChild(deleteSpan);
+
+          if (optionName != "") {
+            optionContainer.appendChild(optionContent);
+            comboboxOptionCount++;
+          }
+
+          document.getElementById("option-description").value = "";
+        });
+
+        document
+          .getElementById("combo-save-button")
+          .addEventListener("click", handleCombo);
+
+        resizeCanvas(comboDiv.id, COMBOBOX, id, COMBOBOX_OPTION);
+        break;
+      case LIST:
+        let listDiv = document.createElement("div");
+        listDiv.id = "list" + id;
+        addFormElementStyle(listDiv, y, x, width, height);
+
+        let dropList = document.createElement("div");
+        dropList.style.display = "none";
+        dropList.classList.add("list-field-input");
+
+        listDiv.append(dropList);
+
+        pg.appendChild(listDiv);
+
+        showOptionAndResizebar(
+          LIST_OPTION,
+          listDiv,
+          width,
+          height,
+          "list"
+        );
+        const listAlign = document.querySelectorAll(
+          'input[type=radio][name="text-field"]'
+        );
+        listAlign.forEach(function (radio) {
+          radio.addEventListener("change", handleRadioSelection);
+        });
+
+        current_list_id = id;
+
+        listDiv.addEventListener("dblclick", (e) => {
+          if (!isEditing) {
+            current_list_id = id;
+
+            let islisttooltipshow = false;
+
+            if (document.getElementById("list_tooltipbar" + current_list_id)) {
+              islisttooltipshow = true;
+            }
+
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!islisttooltipshow) {
+                let tooltipbar = document.createElement("div");
+                current_form_id = id;
+                document.getElementById("option-content-list").innerHTML = "";
+                form_storage.map((element) => {
+                  if (element.id == id) {
+                    document.getElementById("list-input-name").value =
+                      element.form_field_name;
+                    isOptionPane = true;
+                    option = showOption(
+                      LIST_OPTION,
+                      element.xPage / 2 - 180,
+                      element.yPage + 15
+                    );
+                    document.getElementById("list-font-style").value =
+                      element.fontStyle;
+                    document.getElementById("list-font-size").value =
+                      element.fontSize;
+                    document.getElementById("list-font-color").value =
+                      element.textColor;
+                    element.optionArray.map((elementItem) => {
+                      const optionContent = document.createElement("div");
+                      const deleteDivId = `delete-span-${listboxOptionCount}`;
+                      optionContent.id = `listOption${deleteDivId}`;
+                      optionContent.className = "combobox-options-content";
+                      const contentSpan = document.createElement("span");
+                      contentSpan.textContent = elementItem;
+                      const deleteSpan = document.createElement("span");
+                      deleteSpan.className = "option-delete";
+                      deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+                      deleteSpan.addEventListener("click", function () {
+                        // Remove the corresponding div when the delete span is clicked
+                        element = element.filter(function (item) {
+                          return item !== elementItem;
+                        });
+                        optionContent.remove();
+                      });
+                      optionContent.append(contentSpan, deleteSpan);
+                      document
+                        .getElementById("option-content-list")
+                        .append(optionContent);
+                    });
+                    listDiv.append(option);
+                  }
+                });
+                document
+                  .getElementById("list-save-button")
+                  .addEventListener("click", handleList);
+
+                addDeleteButton(current_list_id, tooltipbar, listDiv, "list");
+              } else {
+                document
+                  .getElementById("list_tooltipbar" + current_list_id)
+                  .remove();
+              }
+            }
+          }
+        });
+
+        handleList();
+
+        document
+          .getElementById("add-option-list")
+          .addEventListener("click", () => {
+            const optionName = document.getElementById(
+              "option-description-list"
+            ).value;
+            const optionContainer = document.getElementById(
+              "option-content-list"
+            );
+            const optionContent = document.createElement("div");
+            const deleteDivId = `delete-span-${listboxOptionCount}`;
+
+            optionContent.id = `listOption${deleteDivId}`;
+            optionContent.className = "combobox-options-content";
+            const contentSpan = document.createElement("span");
+            contentSpan.textContent = optionName;
+
+            const deleteSpan = document.createElement("span");
+            deleteSpan.className = "option-delete";
+            deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+
+            if (optionName != "") listboxOptionArray.push(optionName);
+
+            deleteSpan.addEventListener("click", function () {
+              // Remove the corresponding div when the delete span is clicked
+              listboxOptionArray = listboxOptionArray.filter(function (item) {
+                return item !== optionName;
+              });
+              optionContent.remove();
+            });
+            optionContent.appendChild(contentSpan);
+            optionContent.appendChild(deleteSpan);
+
+            if (optionName != "") {
+              optionContainer.appendChild(optionContent);
+              listboxOptionCount++;
+            }
+
+            document.getElementById("option-description-list").value = "";
+          });
+
+        document
+          .getElementById("list-save-button")
+          .addEventListener("click", handleList);
+
+        resizeCanvas(listDiv.id, LIST, id, LIST_OPTION);
+        break;
+      case BUTTON:
+        let buttonDiv = document.createElement("div");
+        buttonDiv.id = "button" + id;
+        addFormElementStyle(buttonDiv, y, x, width, height);
+
+        let buttonAction = document.createElement("div");
+        buttonAction.classList.add("button-field-input");
+        buttonAction.style.display = "none";
+        buttonAction.addEventListener("click", function (event) {
+          let parentElement = event.target.parentNode;
+          let newId = parentElement.id.replace("button", "");
+          form_storage.forEach((item) => {
+            if (item.id == newId) {
+              if (item.action === SUBMIT) {
+                form_storage.forEach((item) => {
+                  if (item.form_type === RADIO) {
+                    item.data.isReadOnly = true;
+                  } else {
+                    item.isReadOnly = true;
+                  }
+                })
+              }
+              else if (item.action === RESET) {
+
+              }
+            }
+          })
+        })
+        buttonDiv.append(buttonAction);
+
+        pg.appendChild(buttonDiv);
+
+        showOptionAndResizebar(
+          BUTTON_OPTION,
+          buttonDiv,
+          width,
+          height,
+          "button"
+        );
+        const buttonAlign = document.querySelectorAll(
+          'input[type=radio][name="text-field"]'
+        );
+        buttonAlign.forEach(function (radio) {
+          radio.addEventListener("change", handleRadioSelection);
+        });
+        document.getElementById(
+          "button-field-input-name"
+        ).value = `Button Form Field ${buttonCount++}`;
+        document.getElementById("button-text").value = "Button";
+        current_button_id = id;
+        buttonDiv.addEventListener("dblclick", () => {
+          if (!isEditing) {
+            current_button_id = id;
+
+            let isbuttontooltipshow = false;
+
+            if (
+              document.getElementById("button_tooltipbar" + current_button_id)
+            ) {
+              isbuttontooltipshow = true;
+            }
+
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!isbuttontooltipshow) {
+                let tooltipbar = document.createElement("div");
+                current_form_id = id;
+                form_storage.map((element) => {
+                  if (element.id == id) {
+                    document.getElementById("button-field-input-name").value =
+                      element.form_field_name;
+                    isOptionPane = true;
+                    option = showOption(
+                      BUTTON_OPTION,
+                      element.xPage / 2 - 180,
+                      element.yPage + 15
+                    );
+                    document.getElementById("button-font-style").value =
+                      element.fontStyle;
+                    document.getElementById("button-font-size").value =
+                      element.fontSize;
+                    document.getElementById("button-font-color").value =
+                      element.textColor;
+                    const selectedValue = document.getElementById(
+                      "button-field-input-action"
+                    );
+                    if (element.action == SUBMIT) {
+                      selectedValue.value = "submit";
+                    } else if (element.action == RESET) {
+                      selectedValue.value = "reset";
+                    }
+                    buttonDiv.append(option);
+                  }
+                });
+                document
+                  .getElementById("button-save-button")
+                  .addEventListener("click", handleButton);
+                addDeleteButton(
+                  current_button_id,
+                  tooltipbar,
+                  buttonDiv,
+                  "button"
+                );
+              } else {
+                document
+                  .getElementById("button_tooltipbar" + current_button_id)
+                  .remove();
+              }
+            }
+          }
+        });
+
+        handleButton();
+
+        // const buttonValue = document.getElementById("button-text");
+        // buttonValue.addEventListener('change', () => {
+        //     document.getElementById(buttonDiv.id).textContent = buttonValue.value;
+        // })
+
+        document
+          .getElementById("button-save-button")
+          .addEventListener("click", handleButton);
+        resizeCanvas(buttonDiv.id, BUTTON, id, BUTTON_OPTION);
+        break;
+      case DATE:
+        const newDate = document.createElement("input");
+        newDate.id = "datecontent" + id;
+        newDate.style.position = "relative";
+        newDate.type = "date";
+        newDate.style.width = "100%";
+        newDate.style.height = "100%";
+        newDate.classList.add("textcontent");
+        newDate.value = item.text;
+
+        let dateDiv = document.createElement("div");
+        dateDiv.id = "date" + id;
+        addFormElementStyle(dateDiv, y, x, width, height);
+
+        dateDiv.classList.add("textfield-content");
+        dateDiv.append(newDate);
+        pg.appendChild(dateDiv);
+
+        // Show TextField OptionPane
+        showOptionAndResizebar(
+          DATE_OPTION,
+          dateDiv,
+          width,
+          height,
+          "date"
+        );
+
+        newDate.style.fontFamily =
+          document.getElementById("date-font-style").value;
+        newDate.style.fontSize =
+          document.getElementById("date-font-size").value + "px";
+        newDate.style.color = document.getElementById("date-font-color").value;
+
+        document
+          .getElementById("date-font-style")
+          .addEventListener("change", () => {
+            document.getElementById(current_date_content_id).style.fontFamily =
+              document.getElementById("date-font-style").value;
+          });
+        document
+          .getElementById("date-font-size")
+          .addEventListener("change", () => {
+            document.getElementById(current_date_content_id).style.fontSize =
+              document.getElementById("date-font-size").value + "px";
+          });
+        document
+          .getElementById("date-font-color")
+          .addEventListener("change", () => {
+            document.getElementById(current_date_content_id).style.color =
+              document.getElementById("date-font-color").value;
+          });
+
+        current_date_id = id;
+        current_date_content_id = newDate.id;
+
+        dateDiv.addEventListener("dblclick", () => {
+          if (!isEditing) {
+            current_date_id = id;
+            current_date_content_id = newDate.id;
+
+            let isdatetooltipshow = false;
+
+            if (document.getElementById("date_tooltipbar" + current_date_id)) {
+              isdatetooltipshow = true;
+            }
+
+            if (isDragging) {
+              isDragging = false;
+            } else {
+              if (!isdatetooltipshow) {
+                let tooltipbar = document.createElement("div");
+                current_form_id = id;
+
+                form_storage.map((element) => {
+                  if (element.id == id) {
+                    document.getElementById("date-input-name").value =
+                      element.form_field_name;
+                    isOptionPane = true;
+                    option = showOption(
+                      DATE_OPTION,
+                      element.xPage / 2 - 180,
+                      element.yPage + 15
+                    );
+                    document.getElementById("date-font-style").value =
+                      element.fontStyle;
+                    document.getElementById("date-font-size").value =
+                      element.baseFontSize;
+                    document.getElementById("date-font-color").value =
+                      element.textColor;
+                    let selected = element.align;
+                    if (selected == ALIGN_LEFT)
+                      document.getElementById("date-left").checked = true;
+                    if (selected == ALIGN_CENTER)
+                      document.getElementById("date-center").checked = true;
+                    if (selected == ALIGN_RIGHT)
+                      document.getElementById("date-right").checked = true;
+                    dateDiv.append(option);
+                  }
+                });
+
+                document
+                  .getElementById("date-save-button")
+                  .addEventListener("click", handleDate);
+
+                addDeleteButton(current_date_id, tooltipbar, dateDiv, "date");
+              } else {
+                document
+                  .getElementById("date_tooltipbar" + current_date_id)
+                  .remove();
+              }
+            }
+          }
+        });
+
+        handleDate();
+
+        document
+          .getElementById("date-save-button")
+          .addEventListener("click", handleDate);
+        resizeCanvas(dateDiv.id, DATE, id, DATE_OPTION);
+        break;
+      case SIGNATURE:
+        const signatureContainer = document.createElement("div");
+        signatureContainer.id = "signature" + id;
+        addFormElementStyle(signatureContainer, y, x, width, height);
+        signatureContainer.style.display = "flex";
+        signatureContainer.style.alignItems = "center";
+        signatureContainer.style.justifyContent = "center";
+        signatureContainer.style.userSelect = "none";
+        signatureContainer.style.color = "white";
+        signatureContainer.textContent = "Double Click to sign here!";
+
+        if (item.imgData) createAndAppendImage(item.imgData, signatureContainer, id);
+
+        pg.appendChild(signatureContainer);
+        handleSignature();
+
+        current_signature_id = id;
+
+        resizeCanvas(signatureContainer.id, SIGNATURE, id);
+        signatureContainer.addEventListener("click", () => {
+          current_signature_id = id;
+
+          let istooltipshow = false;
+
+          if (
+            document.getElementById("signature_tooltipbar" + current_signature_id)
+          ) {
+            istooltipshow = true;
+          }
+
+          if (isDragging) {
+            isDragging = false;
+          } else {
+            if (!istooltipshow) {
+              let tooltipbar = document.createElement("div");
+              current_form_id = id;
+              addDeleteButton(
+                current_signature_id,
+                tooltipbar,
+                signatureContainer,
+                "signature"
+              );
+            } else {
+              document
+                .getElementById("signature_tooltipbar" + current_signature_id)
+                .remove();
+            }
+          }
+        });
+
+        signatureContainer.addEventListener("dblclick", () => {
+          const signature_creator = document.getElementById(SIGNATURE_OPTION);
+          signature_creator.style.display = "flex";
+          document.getElementById("signature-initial-tab").click();
+          resetCanvas();
+          document.getElementById("signature-close").onclick = function () {
+            signature_creator.style.display = "none";
+          };
+          document.getElementById("signature-create").onclick = function () {
+            let canvas;
+            if (currentSignType == DRAW) {
+              canvas = document
+                .getElementById("signature-draw-body")
+                .querySelector("canvas");
+              signatureImgData = cropCanvas(canvas);
+              handleSignature();
+              createAndAppendImage(signatureImgData);
+            } else if (currentSignType == TYPE) {
+              canvas = document.getElementById("signature-type-canvas");
+              signatureImgData = cropCanvas(canvas);
+              handleSignature();
+              createAndAppendImage(signatureImgData);
+            } else if (currentSignType == UPLOAD) {
+              const file = document.getElementById("signature-image-input")
+                .files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                  signatureImgData = e.target.result;
+                  handleSignature();
+                  createAndAppendImage(signatureImgData);
+                };
+                reader.readAsDataURL(file);
+              } else {
+                alert("Please select an image file.");
+              }
+            }
+
+            function createAndAppendImage(imgData) {
+              signature_creator.style.display = "none";
+              const signatureImg = document.createElement("img");
+              signatureImg.id = "signatureImg" + id;
+              signatureImg.style.width = "100%";
+              signatureImg.style.height = "100%";
+              signatureImg.src = imgData;
+              signatureImg.style.objectFit = "contain";
+              signatureContainer.textContent = "";
+              signatureContainer.append(signatureImg);
+              resizeCanvas(signatureContainer.id, SIGNATURE, id);
+            }
+          };
+        });
+        break;
+      case SHAPE:
+        let canvas = $("#drawing-board").find("canvas")[0];
+        canvas.width = item.canvasWidth * ratio;
+        canvas.height = item.canvasHeight * ratio;
+        const shapeImg = document.createElement("img");
+        shapeImg.id = "shapeImg" + id;
+        shapeImg.style.width = "100%";
+        shapeImg.style.height = "100%";
+        shapeImg.src = item.imgData;
+        shapeImg.style.objectFit = "fill";
+
+        const shapeContainer = document.createElement("div");
+        shapeContainer.id = "shape" + id;
+        shapeContainer.style.position = "absolute";
+        shapeContainer.style.top = y + "px";
+        shapeContainer.style.left = x + "px";
+        shapeContainer.style.width = width + "px";
+        shapeContainer.style.height = height + "px";
+        shapeContainer.style.zIndex = 100;
+
+        shapeContainer.append(shapeImg);
+        pg.appendChild(shapeContainer);
+        resizeCanvas(shapeContainer.id, SHAPE, id);
+
+        shapeContainer.addEventListener("click", () => {
+          current_shape_id = id;
+
+          let istooltipshow = false;
+
+          if (document.getElementById("shape_tooltipbar" + current_shape_id)) {
+            istooltipshow = true;
+          }
+
+          if (isDragging) {
+            isDragging = false;
+          } else {
+            if (!istooltipshow) {
+              let tooltipbar = document.createElement("div");
+              let editBtn = document.createElement("button");
+              editBtn.style.padding = "5px";
+              editBtn.innerHTML = `<i class="fa-solid fa-pen"></i>`;
+              $(editBtn).on("click", function () {
+                let targetShape = form_storage.filter(function (item) {
+                  return item.id == parseInt(current_shape_id);
+                });
+                $("#drawing-board-container").css("display", "flex");
+                let targetCtx = canvas.getContext("2d");
+                $("#clear-canvas").click();
+                let image = new Image();
+                image.src = targetShape[0].imgData;
+                console.log(image)
+
+                image.onload = function () {
+                  let centerX = canvas.width / 2 - image.width / 2;
+                  let centerY = canvas.height / 2 - image.height / 2;
+                  targetCtx.drawImage(image, centerX, centerY);
+                };
+                $("#drawing-shape-create").on("click", function () {
+                  shapeImgData = cropCanvas(canvas);
+                  shapeWidth = boundingBox.width;
+                  shapeHeight = boundingBox.height;
+                  $("#drawing-board-container").css("display", "none");
+                  shapeImg.src = shapeImgData;
+                  handleShape(shapeWidth, shapeHeight, item.canvasWidth, item.canvasHeight);
+                });
+              });
+              tooltipbar.append(editBtn);
+              current_form_id = id;
+              addDeleteButton(
+                current_shape_id,
+                tooltipbar,
+                shapeContainer,
+                "shape"
+              );
+            } else {
+              document
+                .getElementById("shape_tooltipbar" + current_shape_id)
+                .remove();
+            }
+          }
+        });
+        $("#drawing-shape-create").off("click");
+        break;
+      default:
+        break;
+
+    }
+  })
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   console.log("load");
   loadFontFiles();
+  requestId = getIdFromUrl();
+  if (requestId) {
+    fetch(`${BASE_URL}/getpdfdata?uniqueId=${requestId}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Handle the retrieved data from the backend
+        const dataURI = data[0].pdfData;
+        const base64Data = dataURI.split(',')[1];
+        // Decode base64 data to binary
+        const binaryData = atob(base64Data);
+
+        // Convert binary data to Uint8Array
+        const array = new Uint8Array(binaryData.length);
+        for (let i = 0; i < binaryData.length; i++) {
+          array[i] = binaryData.charCodeAt(i);
+        }
+        // Create Blob from Uint8Array
+        const blob = new Blob([array], { type: 'application/pdf' });
+
+        // Create File from Blob
+        const fileName = 'downloaded.pdf';
+        const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
+
+        form_storage = JSON.parse(data[0].formData);
+        PDFViewerApplication.open({
+          url: URL.createObjectURL(pdfFile),
+          originalUrl: pdfFile.name,
+        });
+        const checkViewerInterval = setInterval(() => {
+          if (PDFViewerApplication.pdfDocument && PDFViewerApplication.pdfDocument.numPages > 0) {
+            // If the document is loaded, call the drawFormElement function
+            clearInterval(checkViewerInterval); // Clear the interval
+            drawFormElement();
+          }
+        }, 100);
+      })
+      .catch(error => {
+        console.error('Error fetching data from the backend:', error);
+      });
+  }
 });
 
 // Check the same form field name and modify field name
@@ -216,6 +1282,7 @@ const handleCheckbox = function (e) {
       xPage: formWidth,
       yPage: formHeight,
       isChecked: false,
+      isReadOnly: false,
       label: label,
       value: value,
     });
@@ -273,6 +1340,7 @@ const handleRadio = function (e) {
         xPage: formWidth,
         yPage: formHeight,
         isChecked: false,
+        isReadOnly: false,
         label: label,
         value: value,
       },
@@ -296,16 +1364,13 @@ const handleText = function (e) {
   const regularFont = document.getElementById("text-font-style").value;
   textColor = document.getElementById("text-font-color").value;
   let initialValue = "";
-  const currentFormText = document.getElementById(`text${current_text_id}`);
+  const currentFormText = document.getElementById(`text${current_form_id}`);
   if (currentFormText) {
     initialValue = currentFormText.querySelector(".text-field-input").value;
   }
 
   for (let i = 0; i < form_storage.length; i++) {
-    if (
-      form_storage[i].form_field_name == formFieldName &&
-      form_storage[i].id == current_form_id
-    ) {
+    if (form_storage[i].id == current_form_id) {
       form_storage[i].fontStyle = fontStyle;
       form_storage[i].fontSize = fontSize;
       form_storage[i].textColor = textColor;
@@ -342,7 +1407,7 @@ const handleText = function (e) {
       id: baseId,
       form_type: TEXTFIELD,
       form_field_name: formFieldName,
-      initialValue: "",
+      initialValue: initialValue,
       page_number: PDFViewerApplication.page,
       x: pos_x_pdf,
       y: pos_y_pdf,
@@ -359,12 +1424,14 @@ const handleText = function (e) {
       align: alignValue,
       xPage: formWidth,
       yPage: formHeight,
+      isReadOnly: false,
     });
     fontStyle = "";
     fontSize = 12;
     textColor = "";
     alignValue = 0;
   }
+  console.log(form_storage);
   document
     .getElementById("text-save-button")
     .removeEventListener("click", handleText);
@@ -391,31 +1458,33 @@ const handleCombo = function (e) {
   }
 
   for (let i = 0; i < form_storage.length; i++) {
-    if (
-      form_storage[i].form_field_name == formFieldName &&
-      form_storage[i].id == current_form_id
-    ) {
-      form_storage[i].optionArray =
-        form_storage[i].optionArray.concat(comboboxOptionArray);
-      form_storage[i].fontStyle = fontStyle;
-      form_storage[i].fontSize = fontSize;
-      form_storage[i].textColor = textColor;
-      form_storage[i].regularFontStyle = regularFont;
-      form_storage[i].initialValue = initialValue;
-      // form_storage[i].align = alignValue;
-      comboboxOptionArray = [];
-      break;
-    } else if (
-      form_storage[i].form_field_name == formFieldName &&
-      form_storage[i].id != current_form_id
-    ) {
-      break;
-    } else if (
-      form_storage[i].form_field_name != formFieldName &&
-      form_storage[i].id == current_form_id
-    ) {
-      form_storage[i].form_field_name = formFieldName;
-      break;
+    if (form_storage[i].form_type === COMBOBOX) {
+      if (
+        form_storage[i].form_field_name == formFieldName &&
+        form_storage[i].id == current_form_id
+      ) {
+        form_storage[i].optionArray =
+          form_storage[i].optionArray.concat(comboboxOptionArray);
+        form_storage[i].fontStyle = fontStyle;
+        form_storage[i].fontSize = fontSize;
+        form_storage[i].textColor = textColor;
+        form_storage[i].regularFontStyle = regularFont;
+        form_storage[i].initialValue = initialValue;
+        // form_storage[i].align = alignValue;
+        comboboxOptionArray = [];
+        break;
+      } else if (
+        form_storage[i].form_field_name == formFieldName &&
+        form_storage[i].id != current_form_id
+      ) {
+        break;
+      } else if (
+        form_storage[i].form_field_name != formFieldName &&
+        form_storage[i].id == current_form_id
+      ) {
+        form_storage[i].form_field_name = formFieldName;
+        break;
+      }
     }
   }
   let count = 0;
@@ -431,7 +1500,7 @@ const handleCombo = function (e) {
       id: baseId,
       form_type: COMBOBOX,
       form_field_name: formFieldName,
-      initialValue: "",
+      initialValue: initialValue,
       page_number: PDFViewerApplication.page,
       optionArray: comboboxOptionArray,
       x: pos_x_pdf,
@@ -446,6 +1515,7 @@ const handleCombo = function (e) {
       align: alignValue,
       xPage: formWidth,
       yPage: formHeight,
+      isReadOnly: false,
     });
     fontStyle = "";
     fontSize = 12;
@@ -467,31 +1537,42 @@ const handleList = function (e) {
   const formFieldName = document.getElementById("list-input-name").value;
   fontStyle = document.getElementById("list-font-style").value;
   fontSize = parseInt(document.getElementById("list-font-size").value);
+  const regularFont = document.getElementById("list-font-style").value;
   textColor = document.getElementById("list-font-color").value;
+  let initialValue = "";
+  const currentFormText = document.getElementById(`list${current_form_id}`);
+  if (currentFormText) {
+    if (currentFormText.querySelector(".list-field-input").querySelector(".active"))
+      initialValue = currentFormText.querySelector(".list-field-input").querySelector(".active").textContent;
+    console.log("me", currentFormText, initialValue);
+  }
   for (let i = 0; i < form_storage.length; i++) {
-    if (
-      form_storage[i].form_field_name == formFieldName &&
-      form_storage[i].id == current_form_id
-    ) {
-      form_storage[i].optionArray =
-        form_storage[i].optionArray.concat(listboxOptionArray);
-      form_storage[i].fontStyle = fontStyle;
-      form_storage[i].fontSize = fontSize;
-      form_storage[i].textColor = textColor;
-      // form_storage[i].align = alignValue;
-      listboxOptionArray = [];
-      break;
-    } else if (
-      form_storage[i].form_field_name == formFieldName &&
-      form_storage[i].id != current_form_id
-    ) {
-      break;
-    } else if (
-      form_storage[i].form_field_name != formFieldName &&
-      form_storage[i].id == current_form_id
-    ) {
-      form_storage[i].form_field_name = formFieldName;
-      break;
+    if (form_storage[i].form_type === LIST) {
+      if (
+        form_storage[i].id == current_form_id
+      ) {
+        form_storage[i].optionArray =
+          form_storage[i].optionArray.concat(listboxOptionArray);
+        form_storage[i].fontStyle = fontStyle;
+        form_storage[i].fontSize = fontSize;
+        form_storage[i].textColor = textColor;
+        form_storage[i].regularFontStyle = regularFont;
+        form_storage[i].initialValue = initialValue;
+        // form_storage[i].align = alignValue;
+        listboxOptionArray = [];
+        break;
+      } else if (
+        form_storage[i].form_field_name == formFieldName &&
+        form_storage[i].id != current_form_id
+      ) {
+        break;
+      } else if (
+        form_storage[i].form_field_name != formFieldName &&
+        form_storage[i].id == current_form_id
+      ) {
+        form_storage[i].form_field_name = formFieldName;
+        break;
+      }
     }
   }
   let count = 0;
@@ -508,6 +1589,7 @@ const handleList = function (e) {
       form_type: LIST,
       form_field_name: formFieldName,
       page_number: PDFViewerApplication.page,
+      initialValue: initialValue,
       optionArray: listboxOptionArray,
       x: pos_x_pdf,
       y: pos_y_pdf,
@@ -521,6 +1603,7 @@ const handleList = function (e) {
       align: alignValue,
       xPage: formWidth,
       yPage: formHeight,
+      isReadOnly: false,
     });
     fontStyle = "";
     fontSize = 12;
@@ -528,6 +1611,7 @@ const handleList = function (e) {
     alignValue = 0;
     listboxOptionArray = [];
   }
+  console.log(form_storage)
   document
     .getElementById("list-save-button")
     .removeEventListener("click", handleCombo);
@@ -715,6 +1799,7 @@ const handleButton = function (e) {
       align: alignValue,
       xPage: formWidth,
       yPage: formHeight,
+      isReadOnly: false,
     });
     fontStyle = "";
     fontSize = 12;
@@ -1146,8 +2231,10 @@ const resizeCanvas = function (id, type, currentId, optionId) {
           }
         }
       } else {
-        if (event.target.parentNode === object) {
-          handleEditMode(DrawType, id, currentId);
+        let parentElement = event.target.parentNode;
+        let listActive = object.querySelector(".list-field-input");
+        if (parentElement === object || event.target === object || parentElement == listActive) {
+          handleEditMode(id, currentId);
         }
       }
     });
@@ -1322,11 +2409,8 @@ const eventHandler = async function (e) {
 
   let pageId = String(PDFViewerApplication.page);
   let pg = document.getElementById(pageId);
-  let rect = pg.getBoundingClientRect();
-  let top = rect.top;
-  let left = rect.left;
-  let topPos = e.pageY - top - absoluteOffset.y;
-  let leftPos = e.pageX - left - absoluteOffset.x;
+  let topPos = y;
+  let leftPos = x;
 
   switch (currentMode) {
     case CHECKBOX:
@@ -1364,14 +2448,6 @@ const eventHandler = async function (e) {
 
       pg.appendChild(checkbox);
 
-      // Show Checkbox OptionPane
-      showOptionAndResizebar(
-        CHECKBOX_OPTION,
-        checkbox,
-        checkboxWidth,
-        checkboxHeight
-      );
-
       document.getElementById(
         "checkbox-field-input-name"
       ).value = `Checkbox Form Field ${checkboxCount++}`;
@@ -1382,18 +2458,17 @@ const eventHandler = async function (e) {
         "checkbox-value"
       ).value = `Value ${checkboxCount}`;
 
+      current_checkbox_id = checkboxId;
+
       checkbox.addEventListener("dblclick", () => {
         if (!isEditing) {
           current_checkbox_id = checkboxId;
-
           let istooltipshow = false;
-
           if (
             document.getElementById("checkbox_tooltipbar" + current_checkbox_id)
           ) {
             istooltipshow = true;
           }
-
           if (isDragging) {
             isDragging = false;
           } else {
@@ -1417,11 +2492,9 @@ const eventHandler = async function (e) {
                   checkbox.append(option);
                 }
               });
-
               document
                 .getElementById("checkbox-save-button")
                 .addEventListener("click", handleCheckbox);
-
               addDeleteButton(
                 current_checkbox_id,
                 tooltipbar,
@@ -1480,9 +2553,6 @@ const eventHandler = async function (e) {
       };
 
       pg.appendChild(radio);
-
-      // Show RadioGroup OptinePane
-      showOptionAndResizebar(RADIO_OPTION, radio, radioWidth, radioHeight);
 
       document.getElementById(
         "radio-field-input-name"
@@ -1856,6 +2926,12 @@ const eventHandler = async function (e) {
       listDiv.id = "list" + listId;
       addFormElementStyle(listDiv, topPos, leftPos, listWidth, listHeight);
 
+      let dropList = document.createElement("div");
+      dropList.style.display = "none";
+      dropList.classList.add("list-field-input");
+
+      listDiv.append(dropList);
+
       pg.appendChild(listDiv);
 
       showOptionAndResizebar(
@@ -1874,6 +2950,8 @@ const eventHandler = async function (e) {
       document.getElementById(
         "list-input-name"
       ).value = `Listbox Form Field ${listCount++}`;
+
+      current_list_id = listId;
 
       listDiv.addEventListener("dblclick", (e) => {
         if (!isEditing) {
@@ -2023,6 +3101,31 @@ const eventHandler = async function (e) {
         buttonHeight
       );
 
+      let buttonAction = document.createElement("div");
+      buttonAction.classList.add("button-field-input");
+      buttonAction.style.display = "none";
+      buttonAction.addEventListener("click", function (event) {
+        let parentElement = event.target.parentNode;
+        let newId = parentElement.id.replace("button", "");
+        form_storage.forEach((item) => {
+          if (item.id == newId) {
+            if (item.action === SUBMIT) {
+              form_storage.forEach((item) => {
+                if (item.form_type === RADIO) {
+                  item.data.isReadOnly = true;
+                } else {
+                  item.isReadOnly = true;
+                }
+              })
+            }
+            else if (item.action === RESET) {
+
+            }
+          }
+        })
+      })
+      buttonDiv.append(buttonAction);
+
       pg.appendChild(buttonDiv);
 
       showOptionAndResizebar(
@@ -2042,6 +3145,7 @@ const eventHandler = async function (e) {
         "button-field-input-name"
       ).value = `Button Form Field ${buttonCount++}`;
       document.getElementById("button-text").value = "Button";
+      current_button_id = buttonId;
       buttonDiv.addEventListener("dblclick", () => {
         if (!isEditing) {
           current_button_id = buttonId;
@@ -2293,6 +3397,8 @@ const eventHandler = async function (e) {
       pg.appendChild(signatureContainer);
       handleSignature();
 
+      current_signature_id = signatureId;
+
       resizeCanvas(signatureContainer.id, SIGNATURE, signatureId);
       signatureContainer.addEventListener("click", () => {
         current_signature_id = signatureId;
@@ -2335,18 +3441,19 @@ const eventHandler = async function (e) {
         };
         document.getElementById("signature-create").onclick = function () {
           let canvas;
+          signature_creator.style.display = "none";
           if (currentSignType == DRAW) {
             canvas = document
               .getElementById("signature-draw-body")
               .querySelector("canvas");
             signatureImgData = cropCanvas(canvas);
             handleSignature();
-            createAndAppendImage(signatureImgData);
+            createAndAppendImage(signatureImgData, signatureContainer, signatureId);
           } else if (currentSignType == TYPE) {
             canvas = document.getElementById("signature-type-canvas");
             signatureImgData = cropCanvas(canvas);
             handleSignature();
-            createAndAppendImage(signatureImgData);
+            createAndAppendImage(signatureImgData, signatureContainer, signatureId);
           } else if (currentSignType == UPLOAD) {
             const file = document.getElementById("signature-image-input")
               .files[0];
@@ -2355,7 +3462,7 @@ const eventHandler = async function (e) {
               reader.onload = function (e) {
                 signatureImgData = e.target.result;
                 handleSignature();
-                createAndAppendImage(signatureImgData);
+                createAndAppendImage(signatureImgData, signatureContainer, signatureId);
               };
               reader.readAsDataURL(file);
             } else {
@@ -2363,18 +3470,6 @@ const eventHandler = async function (e) {
             }
           }
 
-          function createAndAppendImage(imgData) {
-            signature_creator.style.display = "none";
-            const signatureImg = document.createElement("img");
-            signatureImg.id = "signatureImg" + signatureId;
-            signatureImg.style.width = "100%";
-            signatureImg.style.height = "100%";
-            signatureImg.src = imgData;
-            signatureImg.style.objectFit = "contain";
-            signatureContainer.textContent = "";
-            signatureContainer.append(signatureImg);
-            resizeCanvas(signatureContainer.id, SIGNATURE, signatureId);
-          }
         };
       });
 
@@ -2383,6 +3478,18 @@ const eventHandler = async function (e) {
       break;
   }
 };
+
+function createAndAppendImage(imgData, container, id) {
+  const signatureImg = document.createElement("img");
+  signatureImg.id = "signatureImg" + id;
+  signatureImg.style.width = "100%";
+  signatureImg.style.height = "100%";
+  signatureImg.src = imgData;
+  signatureImg.style.objectFit = "contain";
+  container.textContent = "";
+  container.append(signatureImg);
+  resizeCanvas(container.id, SIGNATURE, id);
+}
 
 function getBoundingBox(canvas) {
   let ctx = canvas.getContext("2d");
@@ -2520,7 +3627,9 @@ async function addFormElements() {
             backgroundColor: PDFLib.rgb(1, 1, 1),
             borderColor: PDFLib.rgb(1, 1, 1),
           });
+          console.log("first", form_storage);
           if (form_item.isChecked) checkboxForm.check();
+          if (form_item.isReadOnly) checkboxForm.enableReadOnly();
           break;
         case RADIO:
           radioForm.addOptionToPage(radioCount + "", page, {
@@ -2531,6 +3640,7 @@ async function addFormElements() {
             backgroundColor: PDFLib.rgb(1, 1, 1),
           });
           if (form_item.isChecked) radioForm.select(radioCount + "");
+          if (form_item.data.isReadOnly) radioForm.enableReadOnly();
           radioCount++;
           break;
         case DATE:
@@ -2548,6 +3658,7 @@ async function addFormElements() {
           datefieldForm.setText(form_item.text);
           datefieldForm.updateAppearances(customFont);
           datefieldForm.defaultUpdateAppearances(customFont);
+          if (form_item.isReadOnly) datefieldForm.enableReadOnly();
           break;
         case TEXTFIELD:
           textfieldForm = form.createTextField(form_item.form_field_name);
@@ -2565,6 +3676,7 @@ async function addFormElements() {
           textfieldForm.setFontSize(form_item.fontSize);
           textfieldForm.setAlignment(form_item.align);
           textfieldForm.setText(form_item.initialValue);
+          if (form_item.isReadOnly) textfieldForm.enableReadOnly();
           break;
         case COMBOBOX:
           comboboxForm = form.createDropdown(form_item.form_field_name);
@@ -2582,6 +3694,9 @@ async function addFormElements() {
           comboboxForm.updateAppearances(customFont);
           comboboxForm.defaultUpdateAppearances(customFont);
           comboboxForm.setFontSize(form_item.fontSize);
+          if (form_item.initialValue)
+            comboboxForm.select(form_item.initialValue);
+          if (form_item.isReadOnly) comboboxForm.enableReadOnly();
           break;
         case LIST:
           listboxForm = form.createOptionList(form_item.form_field_name);
@@ -2598,6 +3713,9 @@ async function addFormElements() {
           listboxForm.updateAppearances(customFont);
           listboxForm.defaultUpdateAppearances(customFont);
           listboxForm.setFontSize(form_item.fontSize);
+          if (form_item.initialValue)
+            listboxForm.select(form_item.initialValue);
+          if (form_item.isReadOnly) listboxForm.enableReadOnly();
           break;
         case BUTTON:
           buttonfieldForm = form.createButton(form_item.form_field_name);
@@ -2738,6 +3856,9 @@ const changeMode = () => {
   const formfields = document.querySelectorAll(".form-fields");
   const textfields = document.querySelectorAll(".text-field-input");
   const combofields = document.querySelectorAll(".combobox-field-input");
+  const listfields = document.querySelectorAll(".list-field-input");
+  const buttonfields = document.querySelectorAll(".button-field-input");
+  console.log(buttonfields)
   if (isEditing) {
     switchEditInsert.innerHTML = `
       <p>Edit Mode</p>
@@ -2753,6 +3874,12 @@ const changeMode = () => {
 
     // Disable all combobox field
     combofields.forEach((item) => (item.style.display = "none"));
+
+    // Disable all listbox fields
+    listfields.forEach((item) => (item.style.display = "none"));
+
+    // Disable all button fields
+    buttonfields.forEach((item) => (item.style.display = "none"));
   } else {
     switchEditInsert.innerHTML = `
     <p>Normal Mode</p>
@@ -2795,7 +3922,7 @@ const changeMode = () => {
           item.style.color = formItem.textColor;
           item.style.fontFamily = formItem.regularFontStyle;
           if (formItem.optionArray.length != 0) {
-            item.innerHTML = '';
+            item.innerHTML = "";
             formItem.optionArray.forEach((optionItem) => {
               let optionElement = document.createElement("option");
               optionElement.value = optionItem;
@@ -2806,6 +3933,48 @@ const changeMode = () => {
         }
       });
     });
+    // Enable all listbox fields
+    listfields.forEach((item) => {
+      let activeElement = null;
+      item.style.display = "block";
+      form_storage.forEach((formItem) => {
+        let formId = item.parentNode.id.replace("list", "");
+        if (formItem.id == formId) {
+          item.style.fontSize = formItem.fontSize / 0.75 + "px";
+          item.style.color = formItem.textColor;
+          item.style.fontFamily = formItem.regularFontStyle;
+          if (formItem.optionArray.length != 0) {
+            item.innerHTML = "";
+            formItem.optionArray.forEach((optionItem) => {
+              let optionElement = document.createElement("p");
+              optionElement.onclick = function () {
+                if (activeElement) {
+                  activeElement.classList.remove("active");
+                }
+                optionElement.classList.add("active");
+                activeElement = optionElement;
+                handleList();
+              }
+              optionElement.textContent = optionItem;
+              item.append(optionElement);
+            });
+          }
+        }
+      });
+    })
+    // Enable all button fields
+    buttonfields.forEach((item) => {
+      item.style.display = "flex";
+      form_storage.forEach((formItem) => {
+        let formId = item.parentNode.id.replace("button", "");
+        if (formItem.id == formId) {
+          item.style.fontSize = formItem.fontSize / 0.75 + "px";
+          item.style.color = formItem.textColor;
+          item.style.fontFamily = formItem.regularFontStyle;
+          item.textContent = formItem.text;
+        }
+      })
+    })
   }
 };
 
@@ -2824,49 +3993,39 @@ function selectRadioButton(element, id) {
     if (!radioInput.checked) {
       radioInput.checked = true;
       form_storage.map((item) => {
-        if (item.id === id) {
-          item.isChecked = true;
-          form_storage.map((item1) => {
-            if (item.data.option === item1.data.option && item.id != item1.id) {
-              console.log("here");
-              item1.isChecked = false;
-            }
-          });
+        if (item.hasOwnProperty("data")) {
+          if (item.id === id) {
+            item.isChecked = true;
+            form_storage.map((item1) => {
+              if (item1.hasOwnProperty("data")) {
+                if (
+                  item.data.option === item1.data.option &&
+                  item.id != item1.id
+                ) {
+                  console.log("here");
+                  item1.isChecked = false;
+                }
+              }
+            });
+          }
         }
       });
     }
   }
 }
 
-const handleEditMode = function (drawtype, objectId, formId) {
-  let currentForm;
+const handleEditMode = function (objectId, formId) {
+  console.log('first')
   form_storage.map((item) => {
-    if (item.id === formId) currentForm = item;
-  });
-  let currentObject = document.getElementById(objectId);
-  switch (drawtype) {
-    case CHECKBOX:
-      form_storage.map((item) => {
-        if (item.id === formId) {
-          if (!currentForm.isChecked) {
-            item.isChecked = true;
-          } else {
-            item.isChecked = false;
-          }
+    if (item.form_type == CHECKBOX) {
+      if (item.id === formId) {
+        if (!item.isChecked) {
+          item.isChecked = true;
+        } else {
+          item.isChecked = false;
         }
-      });
-      break;
-    case RADIO:
-      break;
-    case TEXTFIELD:
-      break;
-    case COMBOBOX:
-      break;
-    case LIST:
-      break;
-    case BUTTON:
-      break;
-    default:
-      break;
-  }
+      }
+    }
+  });
+  current_form_id = formId;
 };

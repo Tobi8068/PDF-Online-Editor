@@ -11,7 +11,7 @@ $(addShapeBtn).on("click", function () {
   isDrawingShape = !isDrawingShape;
 });
 
-const handleShape = function (w, h) {
+const handleShape = function (w, h, canvasWidth, canvasHeight) {
   for (let i = 0; i < form_storage.length; i++) {
     if (
       form_storage[i].id == current_form_id
@@ -45,6 +45,8 @@ const handleShape = function (w, h) {
       height: formHeight * 0.75 * 0.8,
       xPage: formWidth,
       yPage: formHeight,
+      canvasWidth: canvasWidth,
+      canvasHeight: canvasHeight,
       imgData: shapeImgData,
     });
   }
@@ -59,9 +61,6 @@ $("#viewer").on("click", function (e) {
 
     let pageId = String(PDFViewerApplication.page);
     let pg = document.getElementById(pageId);
-    let rect = pg.getBoundingClientRect();
-    let top = rect.top;
-    let left = rect.left;
 
     let shape_x_y = PDFViewerApplication.pdfViewer._pages[
       PDFViewerApplication.page - 1
@@ -111,8 +110,8 @@ $("#viewer").on("click", function (e) {
       const shapeContainer = document.createElement("div");
       shapeContainer.id = "shape" + shapeId;
       shapeContainer.style.position = "absolute";
-      shapeContainer.style.top = e.pageY - top - absoluteOffset.y + "px";
-      shapeContainer.style.left = e.pageX - left - absoluteOffset.x + "px";
+      shapeContainer.style.top = y + "px";
+      shapeContainer.style.left = x + "px";
       shapeContainer.style.width = shapeWidth + "px";
       shapeContainer.style.height = shapeHeight + "px";
       shapeContainer.style.zIndex = 100;
@@ -142,11 +141,12 @@ $("#viewer").on("click", function (e) {
               let targetShape = form_storage.filter(function (item) {
                 return item.id == parseInt(current_shape_id);
               });
-              console.log(targetShape[0]);
               $("#drawing-board-container").css("display", "flex");
               let targetCtx = canvas.getContext("2d");
+              targetCtx.clearRect(0, 0, canvas.width, canvas.height);
               let image = new Image();
-              image.src = targetShape[0].imageData;
+              image.src = targetShape[0].imgData;
+              console.log(image)
 
               image.onload = function () {
                 let centerX = canvas.width / 2 - image.width / 2;
@@ -159,7 +159,7 @@ $("#viewer").on("click", function (e) {
                 shapeHeight = boundingBox.height;
                 $("#drawing-board-container").css("display", "none");
                 shapeImg.src = shapeImgData;
-                handleShape(shapeWidth, shapeHeight);
+                handleShape(shapeWidth, shapeHeight, canvas.width, canvas.height);
               });
             });
             tooltipbar.append(editBtn);
@@ -177,7 +177,7 @@ $("#viewer").on("click", function (e) {
           }
         }
       });
-      handleShape(boundingBox.width, boundingBox.height);
+      handleShape(boundingBox.width, boundingBox.height, canvas.width, canvas.height);
       $("#drawing-shape-create").off("click");
     });
   }

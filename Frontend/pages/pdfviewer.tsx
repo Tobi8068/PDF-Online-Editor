@@ -1,4 +1,25 @@
+import { useState, useEffect } from 'react';
 export default function PDFViewer() {
+
+  const [id, setId] = useState<string>(''); // Provide a default value of type string
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialId = urlParams.get('id');
+    if (initialId) {
+      setId(initialId); // Update the state only if initialId is not null
+    }
+  }, []);
+
+  useEffect(() => {
+    if (id) {
+      const iframe = document.getElementById('pdfIframe') as HTMLIFrameElement | null;
+      if (iframe) {
+        iframe.src = `./pdfview/web/viewer.html?id=${id}`;
+      }
+    }
+  }, [id]);
+
   return (
     <>
       <div style={{ width: "100%", maxHeight: "100vh", overflow: "hidden" }}>
@@ -30,7 +51,8 @@ export default function PDFViewer() {
             }}
           >
             <iframe
-              src="./pdfview/web/viewer.html"
+              id="pdfIframe"
+              src={`./pdfview/web/viewer.html?id=${id}`}
               style={{
                 width: "100%",
                 height: "calc(99vh - 45px)",

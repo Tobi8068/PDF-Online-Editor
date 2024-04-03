@@ -1,9 +1,16 @@
 const express = require('express');
 const next = require('next');
+const fs = require('fs');
+const https = require('https');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
+
+const options = {
+  key: fs.readFileSync("./cert/privkey1.pem"),
+  cert: fs.readFileSync("./cert/fullchain1.pem"),
+};
 
 app.prepare()
   .then(() => {
@@ -13,9 +20,18 @@ app.prepare()
       return handle(req, res)
     });
 
-    server.listen(3000, (err) => {
-      if (err) throw err;
-      console.log('> Ready on http://localhost:3000');
+    server.use ((req, res, next) => {
+      if (req.secure) {
+          // request was via https, so do no special handling
+          next();
+      } else {
+          // request was via http, so redirect to https
+          res.redirect('https://' + req.headers.host + req.url);
+      }
+    });
+
+    https.createServer(options, server).listen(443, "94.72.120.252", () => {
+      console.log(`Server running at https://94.72.120.252/`);
     });
   })
   .catch((ex) => {

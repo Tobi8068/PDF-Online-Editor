@@ -229,7 +229,7 @@ const handleTextContent = (e) => {
 document.getElementById("outerContainer").appendChild(comment_control);
 
 let computePageOffset = function () {
-  let pageId = "page" + String(PDFViewerApplication.page);
+  let pageId = String(PDFViewerApplication.page);
   let pg = document.getElementById(pageId);
   var rect = pg.getBoundingClientRect(),
     bodyElt = document.body;
@@ -270,8 +270,8 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
   comment_icon.id = "comment" + commentId;
   comment_icon.style.position = "absolute";
   comment_icon.style.zIndex = 100;
-  comment_icon.style.top = mouse_y - top - 21 + "px";
-  comment_icon.style.left = mouse_x - left - absoluteOffset.x + "px";
+  comment_icon.style.top = mouse_y + "px";
+  comment_icon.style.left = mouse_x + "px";
   comment_icon.style.backgroundSize = "100% 100%";
   comment_icon.style.backgroundImage =
     "url('./images/comment-svgrepo-com.svg')";
@@ -354,13 +354,12 @@ const moveEventHandler = (event, offsetX, offsetY, currentId) => {
 
 document.getElementById("viewer").addEventListener("click", (evt) => {
   if (pageWidth == 0) getPageWidth();
-  mouse_x = evt.x;
-  mouse_y = evt.y;
-
   let ost = computePageOffset();
 
   comment_x = evt.pageX - ost.left;
   comment_y = evt.pageY - ost.top;
+  mouse_x = comment_x;
+  mouse_y = comment_y;
   let x_y = PDFViewerApplication.pdfViewer._pages[
     PDFViewerApplication.page - 1
   ].viewport.convertToPdfPoint(comment_x, comment_y);
@@ -376,11 +375,6 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     isTextModeOn = !isTextModeOn;
     let pageId = String(PDFViewerApplication.page);
     let pg = document.getElementById(pageId);
-    var rect = pg.getBoundingClientRect(),
-      bodyElt = document.body;
-    var top = rect.top;
-    var left = rect.left;
-
     pos_x_pdf = x_y[0];
     pos_y_pdf = x_y[1];
 
@@ -400,8 +394,8 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     const container = document.createElement("div");
     container.id = "text-content" + textContentId;
     container.style.position = "absolute";
-    container.style.top = mouse_y - top - 21 + "px";
-    container.style.left = mouse_x - left - absoluteOffset.x + "px";
+    container.style.top = mouse_y + "px";
+    container.style.left = mouse_x + "px";
     container.style.width = textcontentWidth + "px";
     container.style.height = textcontentHeight + "px";
     container.style.zIndex = 101;
