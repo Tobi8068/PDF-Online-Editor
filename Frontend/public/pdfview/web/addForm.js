@@ -1,5 +1,6 @@
 let baseId = 0;
 let form_storage = [];
+let draw_form_storage;
 let current_form_id = 0;
 let currentMode = null;
 const CHECKBOX = 1,
@@ -55,6 +56,10 @@ const BUTTON_OPTION = "button-field-option";
 const TEXT_CONTENT_OPTION = "text-content-option";
 const DATE_OPTION = "date-option";
 const SIGNATURE_OPTION = "signature-creator";
+
+const optionIdArray = [CHECKBOX_OPTION,
+  RADIO_OPTION, TEXTFIELD_OPTION, COMBOBOX_OPTION, LIST_OPTION,
+  BUTTON_OPTION, TEXT_CONTENT_OPTION, DATE_OPTION];
 
 const ALIGN_LEFT = 0,
   ALIGN_RIGHT = 2,
@@ -130,545 +135,432 @@ function getIdFromUrl() {
   return id;
 }
 
+const generalUserMode = function () {
+  rightSidebarButton.style.display = "none";
+  shareDocumentButton.style.display = "none";
+  submitDocumentButton.style.display = "flex";
+  changeMode();
+}
+
 const drawFormElement = function () {
-  form_storage.forEach((item) => {
-    let id = item.id;
-    let new_x_y, x, y, width, height;
-    if (item.form_type != RADIO) {
-      x = item.x;
-      y = item.y;
-      width = item.xPage;
-      height = item.yPage;
-    } else {
-      x = item.data.x;
-      y = item.data.y;
-      width = item.data.xPage;
-      height = item.data.yPage;
-    }
-    new_x_y = PDFViewerApplication.pdfViewer._pages[
-      PDFViewerApplication.page - 1
-    ].viewport.convertToViewportPoint(x, y);
-    x = new_x_y[0];
-    y = new_x_y[1];
-    let pg = document.getElementById(String(item.page_number));
+  form_storage = draw_form_storage;
+  console.log("first", draw_form_storage);
+  if (form_storage !== null) {
+    form_storage.forEach((item) => {
+      let id = item.id;
+      let new_x_y, x, y, width, height;
+      if (item.form_type != RADIO) {
+        x = item.x;
+        y = item.y;
+        width = item.xPage;
+        height = item.yPage;
+        item.baseX = item.x;
+        item.baseY = item.y;
+      } else {
+        x = item.data.x;
+        y = item.data.y;
+        width = item.data.xPage;
+        height = item.data.yPage;
+        item.data.baseX = item.data.x;
+        item.data.baseY = item.data.y;
+      }
+      new_x_y = PDFViewerApplication.pdfViewer._pages[
+        PDFViewerApplication.page - 1
+      ].viewport.convertToViewportPoint(x, y);
+      x = new_x_y[0];
+      y = new_x_y[1];
+      let pg = document.getElementById(String(item.page_number));
 
-    switch (item.form_type) {
-      case CHECKBOX:
-        let checkbox = document.createElement("div");
-        checkbox.id = "checkbox" + id;
-        addFormElementStyle(checkbox, y, x, width, height);
-        let checkmark = document.createElement("div");
-        checkmark.classList.add("checkmark");
-        checkbox.classList.add("checkbox");
-        checkbox.appendChild(checkmark);
-        if (item.isChecked) checkbox.classList.add("checked");
-        checkbox.onclick = function () {
-          toggleCheckbox(checkbox.id);
-        };
-        pg.append(checkbox);
-        document.getElementById(
-          "checkbox-field-input-name"
-        ).value = item.formFieldName;
-        document.getElementById(
-          "checkbox-label"
-        ).value = item.label;
-        document.getElementById(
-          "checkbox-value"
-        ).value = item.value;
-        current_checkbox_id = id;
+      switch (item.form_type) {
+        case CHECKBOX:
+          let checkbox = document.createElement("div");
+          checkbox.id = "checkbox" + id;
+          addFormElementStyle(checkbox, y, x, width, height);
+          let checkmark = document.createElement("div");
+          checkmark.style.display = 'none';
+          checkmark.classList.add("checkmark");
+          checkbox.classList.add("checkbox");
+          checkbox.appendChild(checkmark);
+          if (item.isChecked) checkbox.classList.add("checked");
+          checkbox.onclick = function () {
+            current_form_id = id;
+            toggleCheckbox(checkbox.id);
+          };
+          pg.append(checkbox);
+          document.getElementById(
+            "checkbox-field-input-name"
+          ).value = item.formFieldName;
+          document.getElementById(
+            "checkbox-label"
+          ).value = item.label;
+          document.getElementById(
+            "checkbox-value"
+          ).value = item.value;
+          current_checkbox_id = id;
 
-        checkbox.addEventListener("dblclick", () => {
-          if (!isEditing) {
+          checkbox.addEventListener("click", () => {
             current_checkbox_id = id;
-            let istooltipshow = false;
-            if (
-              document.getElementById("checkbox_tooltipbar" + current_checkbox_id)
-            ) {
-              istooltipshow = true;
-            }
-            if (isDragging) {
-              isDragging = false;
-            } else {
-              if (!istooltipshow) {
-                let tooltipbar = document.createElement("div");
-                current_form_id = id;
-                form_storage.map((element) => {
-                  if (element.id == id) {
-                    document.getElementById("checkbox-field-input-name").value =
-                      element.form_field_name;
-                    document.getElementById("checkbox-label").value =
-                      element.label;
-                    document.getElementById("checkbox-value").value =
-                      element.value;
-                    isOptionPane = true;
-                    option = showOption(
-                      CHECKBOX_OPTION,
-                      element.xPage / 2 - 180,
-                      element.yPage + 15
-                    );
-                    checkbox.append(option);
-                  }
-                });
-                document
-                  .getElementById("checkbox-save-button")
-                  .addEventListener("click", handleCheckbox);
-                addDeleteButton(
-                  current_checkbox_id,
-                  tooltipbar,
-                  checkbox,
-                  "checkbox"
-                );
+            DrawType = CHECKBOX;
+          })
+
+          checkbox.addEventListener("dblclick", () => {
+            if (!isEditing) {
+              current_checkbox_id = id;
+              let istooltipshow = false;
+              if (
+                document.getElementById("checkbox_tooltipbar" + current_checkbox_id)
+              ) {
+                istooltipshow = true;
+              }
+              if (isDragging) {
+                isDragging = false;
               } else {
-                document
-                  .getElementById("checkbox_tooltipbar" + current_checkbox_id)
-                  .remove();
+                if (!istooltipshow) {
+                  let tooltipbar = document.createElement("div");
+                  current_form_id = id;
+                  form_storage.map((element) => {
+                    if (element.id == id) {
+                      document.getElementById("checkbox-field-input-name").value =
+                        element.form_field_name;
+                      document.getElementById("checkbox-label").value =
+                        element.label;
+                      document.getElementById("checkbox-value").value =
+                        element.value;
+                      isOptionPane = true;
+                      option = showOption(
+                        CHECKBOX_OPTION,
+                        element.xPage / 2 - 180,
+                        element.yPage + 15
+                      );
+                      checkbox.append(option);
+                    }
+                  });
+                  document
+                    .getElementById("checkbox-save-button")
+                    .addEventListener("click", handleCheckbox);
+                  addDeleteButton(
+                    current_checkbox_id,
+                    tooltipbar,
+                    checkbox,
+                    "checkbox"
+                  );
+                } else {
+                  document
+                    .getElementById("checkbox_tooltipbar" + current_checkbox_id)
+                    .remove();
+                }
               }
             }
-          }
-        });
-        document
-          .getElementById("checkbox-save-button")
-          .addEventListener("click", handleCheckbox);
-        resizeCanvas(checkbox.id, CHECKBOX, id, CHECKBOX_OPTION);
-
-        break;
-      case RADIO:
-        let radio = document.createElement("div");
-        radio.id = "radio" + id;
-        addFormElementStyle(radio, y, x, width, height);
-        radio.style.borderRadius = "50%";
-        radio.classList.add("radio-container");
-        let inputRadio = document.createElement("input");
-        inputRadio.type = "radio";
-        inputRadio.name = item.data.option;
-
-        let spanElement = document.createElement("span");
-        spanElement.classList.add("checkmark-radio");
-
-        radio.append(inputRadio, spanElement);
-        radio.onclick = function () {
-          selectRadioButton(this, id);
-        };
-
-        pg.appendChild(radio);
-
-        current_radio_id = id;
-
-        radio.addEventListener("dblclick", () => {
-          if (!isEditing) {
-            current_radio_id = id;
-
-            let isradiotooltipshow = false;
-
-            if (document.getElementById("radio_tooltipbar" + current_radio_id)) {
-              isradiotooltipshow = true;
-            }
-
-            if (isDragging) {
-              isDragging = false;
-            } else {
-              if (!isradiotooltipshow) {
-                let tooltipbar = document.createElement("div");
-
-                current_form_id = id;
-                form_storage.map((element) => {
-                  if (element.id == id) {
-                    document.getElementById("radio-field-input-name").value =
-                      element.data.option;
-                    document.getElementById("radio-label").value =
-                      element.data.label;
-                    document.getElementById("radio-value").value =
-                      element.data.value;
-                    isOptionPane = true;
-                    option = showOption(
-                      RADIO_OPTION,
-                      element.xPage / 2 - 180,
-                      element.yPage + 15
-                    );
-                    radio.append(option);
-                  }
-                });
-
-                document
-                  .getElementById("radio-save-button")
-                  .addEventListener("click", handleRadio);
-
-                addDeleteButton(current_radio_id, tooltipbar, radio, "radio");
-
-                radio.appendChild(tooltipbar);
-              } else {
-                document
-                  .getElementById("radio_tooltipbar" + current_radio_id)
-                  .remove();
-              }
-            }
-          }
-        });
-        document
-          .getElementById("radio-save-button")
-          .addEventListener("click", handleRadio);
-        resizeCanvas(radio.id, RADIO, id, RADIO_OPTION);
-        break;
-      case TEXTFIELD:
-        let textDiv = document.createElement("div");
-        textDiv.id = "text" + id;
-        addFormElementStyle(textDiv, y, x, width, height);
-
-        let inputElement = document.createElement("input");
-        inputElement.classList.add("text-field-input");
-        inputElement.style.display = "none";
-        inputElement.addEventListener("input", function () {
-          handleText();
-        });
-
-        textDiv.append(inputElement);
-
-        pg.appendChild(textDiv);
-
-        showOptionAndResizebar(
-          TEXTFIELD_OPTION,
-          textDiv,
-          width,
-          height,
-          "text"
-        );
-
-        current_text_id = id;
-        const textfieldAlign = document.querySelectorAll(
-          'input[type=radio][name="text-field"]'
-        );
-        textfieldAlign.forEach(function (radio) {
-          radio.addEventListener("change", handleRadioSelection);
-        });
-        textDiv.addEventListener("dblclick", () => {
-          if (!isEditing) {
-            current_text_id = id;
-
-            let istexttooltipshow = false;
-
-            if (document.getElementById("text_tooltipbar" + current_text_id)) {
-              istexttooltipshow = true;
-            }
-
-            if (isDragging) {
-              isDragging = false;
-            } else {
-              if (!istexttooltipshow) {
-                let tooltipbar = document.createElement("div");
-                current_form_id = id;
-
-                form_storage.map((element) => {
-                  if (element.id == id) {
-                    document.getElementById("text-field-input-name").value =
-                      element.form_field_name;
-                    isOptionPane = true;
-                    option = showOption(
-                      TEXTFIELD_OPTION,
-                      element.xPage / 2 - 180,
-                      element.yPage + 15
-                    );
-                    document.getElementById("text-font-style").value =
-                      element.fontStyle;
-                    document.getElementById("text-font-size").value =
-                      element.fontSize;
-                    document.getElementById("text-font-color").value =
-                      element.textColor;
-                    let selected = element.align;
-                    if (selected == ALIGN_LEFT)
-                      document.getElementById("text-left").checked = true;
-                    if (selected == ALIGN_CENTER)
-                      document.getElementById("text-center").checked = true;
-                    if (selected == ALIGN_RIGHT)
-                      document.getElementById("text-right").checked = true;
-                    textDiv.append(option);
-                  }
-                });
-
-                document
-                  .getElementById("text-save-button")
-                  .addEventListener("click", handleText);
-
-                addDeleteButton(current_text_id, tooltipbar, textDiv, "text");
-              } else {
-                document
-                  .getElementById("text_tooltipbar" + current_text_id)
-                  .remove();
-              }
-            }
-          }
-        });
-
-        handleText();
-
-        document
-          .getElementById("text-save-button")
-          .addEventListener("click", handleText);
-        resizeCanvas(textDiv.id, TEXTFIELD, id, TEXTFIELD_OPTION);
-        break;
-      case COMBOBOX:
-        let comboDiv = document.createElement("div");
-        comboDiv.id = "combo" + id;
-        addFormElementStyle(comboDiv, y, x, width, height);
-
-        let selectElement = document.createElement("select");
-        selectElement.classList.add("combobox-field-input");
-        selectElement.style.display = "none";
-        selectElement.addEventListener("change", function () {
-          handleCombo();
-        });
-
-        comboDiv.append(selectElement);
-
-        pg.appendChild(comboDiv);
-
-        showOptionAndResizebar(
-          COMBOBOX_OPTION,
-          comboDiv,
-          width,
-          height,
-          "combo"
-        );
-        const comboAlign = document.querySelectorAll(
-          'input[type=radio][name="text-field"]'
-        );
-        comboAlign.forEach(function (radio) {
-          radio.addEventListener("change", handleRadioSelection);
-        });
-
-        current_combo_id = id;
-
-        comboDiv.addEventListener("dblclick", (e) => {
-          if (!isEditing) {
-            current_combo_id = id;
-
-            let iscombotooltipshow = false;
-
-            if (document.getElementById("combo_tooltipbar" + current_combo_id)) {
-              iscombotooltipshow = true;
-            }
-
-            if (isDragging) {
-              isDragging = false;
-            } else {
-              if (!iscombotooltipshow) {
-                let tooltipbar = document.createElement("div");
-                current_form_id = id;
-                document.getElementById("option-content").innerHTML = "";
-                form_storage.map((element) => {
-                  if (element.id == id) {
-                    document.getElementById("combo-input-name").value =
-                      element.form_field_name;
-                    isOptionPane = true;
-                    option = showOption(
-                      COMBOBOX_OPTION,
-                      element.xPage / 2 - 180,
-                      element.yPage + 15
-                    );
-                    document.getElementById("combo-font-style").value =
-                      element.fontStyle;
-                    document.getElementById("combo-font-size").value =
-                      element.fontSize;
-                    document.getElementById("combo-font-color").value =
-                      element.textColor;
-                    element.optionArray.map((elementItem) => {
-                      const optionContent = document.createElement("div");
-                      const deleteDivId = `delete-span-${comboboxOptionCount}`;
-                      optionContent.id = `comboOption${deleteDivId}`;
-                      optionContent.className = "combobox-options-content";
-                      const contentSpan = document.createElement("span");
-                      contentSpan.textContent = elementItem;
-                      const deleteSpan = document.createElement("span");
-                      deleteSpan.className = "option-delete";
-                      deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
-                      deleteSpan.addEventListener("click", function () {
-                        // Remove the corresponding div when the delete span is clicked
-                        element = element.optionArray.filter(function (item) {
-                          return item !== elementItem;
-                        });
-                        optionContent.remove();
-                      });
-                      optionContent.append(contentSpan, deleteSpan);
-                      document
-                        .getElementById("option-content")
-                        .append(optionContent);
-                    });
-                    comboDiv.append(option);
-                  }
-                });
-
-                document
-                  .getElementById("combo-save-button")
-                  .addEventListener("click", handleCombo);
-
-                addDeleteButton(current_combo_id, tooltipbar, comboDiv, "combo");
-              } else {
-                document
-                  .getElementById("combo_tooltipbar" + current_combo_id)
-                  .remove();
-              }
-            }
-          }
-        });
-
-        handleCombo();
-
-        document.getElementById("add-option").addEventListener("click", () => {
-          const optionName = document.getElementById("option-description").value;
-          const optionContainer = document.getElementById("option-content");
-          const optionContent = document.createElement("div");
-          const deleteDivId = `delete-span-${comboboxOptionCount}`;
-
-          optionContent.id = `comboOption${deleteDivId}`;
-          optionContent.className = "combobox-options-content";
-          const contentSpan = document.createElement("span");
-          contentSpan.textContent = optionName;
-
-          const deleteSpan = document.createElement("span");
-          deleteSpan.className = "option-delete";
-          deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
-
-          if (optionName != "") comboboxOptionArray.push(optionName);
-
-          deleteSpan.addEventListener("click", function () {
-            // Remove the corresponding div when the delete span is clicked
-            comboboxOptionArray = comboboxOptionArray.filter(function (item) {
-              return item !== optionName;
-            });
-            optionContent.remove();
           });
-          optionContent.appendChild(contentSpan);
-          optionContent.appendChild(deleteSpan);
 
-          if (optionName != "") {
-            optionContainer.appendChild(optionContent);
-            comboboxOptionCount++;
-          }
+          document
+            .getElementById("checkbox-save-button")
+            .addEventListener("click", handleCheckbox);
+          resizeCanvas(checkbox.id, CHECKBOX, id, CHECKBOX_OPTION);
 
-          document.getElementById("option-description").value = "";
-        });
+          break;
+        case RADIO:
+          let radio = document.createElement("div");
+          radio.id = "radio" + id;
+          addFormElementStyle(radio, y, x, width, height);
+          radio.style.borderRadius = "50%";
+          radio.classList.add("radio-container");
+          let inputRadio = document.createElement("input");
+          inputRadio.type = "radio";
+          inputRadio.classList.add('radioinputchild');
+          inputRadio.name = item.data.option;
 
-        document
-          .getElementById("combo-save-button")
-          .addEventListener("click", handleCombo);
+          let spanElement = document.createElement("span");
+          spanElement.classList.add("checkmark-radio");
+          inputRadio.style.display = "none";
+          spanElement.style.display = "none";
 
-        resizeCanvas(comboDiv.id, COMBOBOX, id, COMBOBOX_OPTION);
-        break;
-      case LIST:
-        let listDiv = document.createElement("div");
-        listDiv.id = "list" + id;
-        addFormElementStyle(listDiv, y, x, width, height);
+          radio.append(inputRadio, spanElement);
+          radio.onclick = function () {
+            current_form_id = id;
+            selectRadioButton(this, id);
+          };
 
-        let dropList = document.createElement("div");
-        dropList.style.display = "none";
-        dropList.classList.add("list-field-input");
+          pg.appendChild(radio);
 
-        listDiv.append(dropList);
+          current_radio_id = id;
 
-        pg.appendChild(listDiv);
+          radio.addEventListener("click", () => {
+            current_radio_id = id;
+            DrawType = RADIO;
+          })
 
-        showOptionAndResizebar(
-          LIST_OPTION,
-          listDiv,
-          width,
-          height,
-          "list"
-        );
-        const listAlign = document.querySelectorAll(
-          'input[type=radio][name="text-field"]'
-        );
-        listAlign.forEach(function (radio) {
-          radio.addEventListener("change", handleRadioSelection);
-        });
+          radio.addEventListener("dblclick", () => {
+            if (!isEditing) {
+              current_radio_id = id;
 
-        current_list_id = id;
+              let isradiotooltipshow = false;
 
-        listDiv.addEventListener("dblclick", (e) => {
-          if (!isEditing) {
-            current_list_id = id;
+              if (document.getElementById("radio_tooltipbar" + current_radio_id)) {
+                isradiotooltipshow = true;
+              }
 
-            let islisttooltipshow = false;
-
-            if (document.getElementById("list_tooltipbar" + current_list_id)) {
-              islisttooltipshow = true;
-            }
-
-            if (isDragging) {
-              isDragging = false;
-            } else {
-              if (!islisttooltipshow) {
-                let tooltipbar = document.createElement("div");
-                current_form_id = id;
-                document.getElementById("option-content-list").innerHTML = "";
-                form_storage.map((element) => {
-                  if (element.id == id) {
-                    document.getElementById("list-input-name").value =
-                      element.form_field_name;
-                    isOptionPane = true;
-                    option = showOption(
-                      LIST_OPTION,
-                      element.xPage / 2 - 180,
-                      element.yPage + 15
-                    );
-                    document.getElementById("list-font-style").value =
-                      element.fontStyle;
-                    document.getElementById("list-font-size").value =
-                      element.fontSize;
-                    document.getElementById("list-font-color").value =
-                      element.textColor;
-                    element.optionArray.map((elementItem) => {
-                      const optionContent = document.createElement("div");
-                      const deleteDivId = `delete-span-${listboxOptionCount}`;
-                      optionContent.id = `listOption${deleteDivId}`;
-                      optionContent.className = "combobox-options-content";
-                      const contentSpan = document.createElement("span");
-                      contentSpan.textContent = elementItem;
-                      const deleteSpan = document.createElement("span");
-                      deleteSpan.className = "option-delete";
-                      deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
-                      deleteSpan.addEventListener("click", function () {
-                        // Remove the corresponding div when the delete span is clicked
-                        element = element.filter(function (item) {
-                          return item !== elementItem;
-                        });
-                        optionContent.remove();
-                      });
-                      optionContent.append(contentSpan, deleteSpan);
-                      document
-                        .getElementById("option-content-list")
-                        .append(optionContent);
-                    });
-                    listDiv.append(option);
-                  }
-                });
-                document
-                  .getElementById("list-save-button")
-                  .addEventListener("click", handleList);
-
-                addDeleteButton(current_list_id, tooltipbar, listDiv, "list");
+              if (isDragging) {
+                isDragging = false;
               } else {
-                document
-                  .getElementById("list_tooltipbar" + current_list_id)
-                  .remove();
+                if (!isradiotooltipshow) {
+                  let tooltipbar = document.createElement("div");
+
+                  current_form_id = id;
+                  form_storage.map((element) => {
+                    if (element.id == id) {
+                      document.getElementById("radio-field-input-name").value =
+                        element.data.option;
+                      document.getElementById("radio-label").value =
+                        element.data.label;
+                      document.getElementById("radio-value").value =
+                        element.data.value;
+                      isOptionPane = true;
+                      option = showOption(
+                        RADIO_OPTION,
+                        element.xPage / 2 - 180,
+                        element.yPage + 15
+                      );
+                      radio.append(option);
+                    }
+                  });
+
+                  document
+                    .getElementById("radio-save-button")
+                    .addEventListener("click", handleRadio);
+
+                  addDeleteButton(current_radio_id, tooltipbar, radio, "radio");
+
+                  radio.appendChild(tooltipbar);
+                } else {
+                  document
+                    .getElementById("radio_tooltipbar" + current_radio_id)
+                    .remove();
+                }
               }
             }
-          }
-        });
+          });
+          document
+            .getElementById("radio-save-button")
+            .addEventListener("click", handleRadio);
+          resizeCanvas(radio.id, RADIO, id, RADIO_OPTION);
+          break;
+        case TEXTFIELD:
+          let textDiv = document.createElement("div");
+          textDiv.id = "text" + id;
+          addFormElementStyle(textDiv, y, x, width, height);
 
-        handleList();
+          let inputElement = document.createElement("input");
+          inputElement.classList.add("text-field-input");
+          inputElement.style.display = "none";
+          inputElement.addEventListener("input", function () {
+            current_form_id = id;
+            handleText();
+          });
 
-        document
-          .getElementById("add-option-list")
-          .addEventListener("click", () => {
-            const optionName = document.getElementById(
-              "option-description-list"
-            ).value;
-            const optionContainer = document.getElementById(
-              "option-content-list"
-            );
+          textDiv.append(inputElement);
+
+          pg.appendChild(textDiv);
+
+          showOptionAndResizebar(
+            TEXTFIELD_OPTION,
+            textDiv,
+            width,
+            height,
+            "text"
+          );
+
+          current_text_id = id;
+          const textfieldAlign = document.querySelectorAll(
+            'input[type=radio][name="text-field"]'
+          );
+          textfieldAlign.forEach(function (radio) {
+            radio.addEventListener("change", handleRadioSelection);
+          });
+          textDiv.addEventListener("dblclick", () => {
+            if (!isEditing) {
+              current_text_id = id;
+
+              let istexttooltipshow = false;
+
+              if (document.getElementById("text_tooltipbar" + current_text_id)) {
+                istexttooltipshow = true;
+              }
+
+              if (isDragging) {
+                isDragging = false;
+              } else {
+                if (!istexttooltipshow) {
+                  let tooltipbar = document.createElement("div");
+                  current_form_id = id;
+
+                  form_storage.map((element) => {
+                    if (element.id == id) {
+                      document.getElementById("text-field-input-name").value =
+                        element.form_field_name;
+                      isOptionPane = true;
+                      option = showOption(
+                        TEXTFIELD_OPTION,
+                        element.xPage / 2 - 180,
+                        element.yPage + 15
+                      );
+                      document.getElementById("text-font-style").value =
+                        element.fontStyle;
+                      document.getElementById("text-font-size").value =
+                        element.fontSize;
+                      document.getElementById("text-font-color").value =
+                        element.textColor;
+                      let selected = element.align;
+                      if (selected == ALIGN_LEFT)
+                        document.getElementById("text-left").checked = true;
+                      if (selected == ALIGN_CENTER)
+                        document.getElementById("text-center").checked = true;
+                      if (selected == ALIGN_RIGHT)
+                        document.getElementById("text-right").checked = true;
+                      textDiv.append(option);
+                    }
+                  });
+
+                  document
+                    .getElementById("text-save-button")
+                    .addEventListener("click", handleText);
+
+                  addDeleteButton(current_text_id, tooltipbar, textDiv, "text");
+                } else {
+                  document
+                    .getElementById("text_tooltipbar" + current_text_id)
+                    .remove();
+                }
+              }
+            }
+          });
+
+          document.getElementById(TEXTFIELD_OPTION).style.display = "none";
+
+          document
+            .getElementById("text-save-button")
+            .addEventListener("click", handleText);
+          resizeCanvas(textDiv.id, TEXTFIELD, id, TEXTFIELD_OPTION);
+          break;
+        case COMBOBOX:
+          let comboDiv = document.createElement("div");
+          comboDiv.id = "combo" + id;
+          addFormElementStyle(comboDiv, y, x, width, height);
+
+          let selectElement = document.createElement("select");
+          selectElement.classList.add("combobox-field-input");
+          selectElement.style.display = "none";
+          selectElement.addEventListener("change", function () {
+            current_form_id = id;
+            console.log(current_form_id);
+            handleCombo();
+          });
+          // let pElement = document.createElement("p");
+          // pElement.classList.add("combobox-field-value");
+          // selectElement.style.display = "none";
+
+          comboDiv.append(selectElement);
+
+          pg.appendChild(comboDiv);
+
+          showOptionAndResizebar(
+            COMBOBOX_OPTION,
+            comboDiv,
+            width,
+            height,
+            "combo"
+          );
+          const comboAlign = document.querySelectorAll(
+            'input[type=radio][name="text-field"]'
+          );
+          comboAlign.forEach(function (radio) {
+            radio.addEventListener("change", handleRadioSelection);
+          });
+
+          current_combo_id = id;
+
+          comboDiv.addEventListener("dblclick", (e) => {
+            if (!isEditing) {
+              current_combo_id = id;
+
+              let iscombotooltipshow = false;
+
+              if (document.getElementById("combo_tooltipbar" + current_combo_id)) {
+                iscombotooltipshow = true;
+              }
+
+              if (isDragging) {
+                isDragging = false;
+              } else {
+                if (!iscombotooltipshow) {
+                  let tooltipbar = document.createElement("div");
+                  current_form_id = id;
+                  document.getElementById("option-content").innerHTML = "";
+                  form_storage.map((element) => {
+                    if (element.id == id) {
+                      document.getElementById("combo-input-name").value =
+                        element.form_field_name;
+                      isOptionPane = true;
+                      option = showOption(
+                        COMBOBOX_OPTION,
+                        element.xPage / 2 - 180,
+                        element.yPage + 15
+                      );
+                      document.getElementById("combo-font-style").value =
+                        element.fontStyle;
+                      document.getElementById("combo-font-size").value =
+                        element.fontSize;
+                      document.getElementById("combo-font-color").value =
+                        element.textColor;
+                      element.optionArray.map((elementItem) => {
+                        const optionContent = document.createElement("div");
+                        const deleteDivId = `delete-span-${comboboxOptionCount}`;
+                        optionContent.id = `comboOption${deleteDivId}`;
+                        optionContent.className = "combobox-options-content";
+                        const contentSpan = document.createElement("span");
+                        contentSpan.textContent = elementItem;
+                        const deleteSpan = document.createElement("span");
+                        deleteSpan.className = "option-delete";
+                        deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+                        deleteSpan.addEventListener("click", function () {
+                          // Remove the corresponding div when the delete span is clicked
+                          element = element.optionArray.filter(function (item) {
+                            return item !== elementItem;
+                          });
+                          optionContent.remove();
+                        });
+                        optionContent.append(contentSpan, deleteSpan);
+                        document
+                          .getElementById("option-content")
+                          .append(optionContent);
+                      });
+                      comboDiv.append(option);
+                    }
+                  });
+
+                  document
+                    .getElementById("combo-save-button")
+                    .addEventListener("click", handleCombo);
+
+                  addDeleteButton(current_combo_id, tooltipbar, comboDiv, "combo");
+                } else {
+                  document
+                    .getElementById("combo_tooltipbar" + current_combo_id)
+                    .remove();
+                }
+              }
+            }
+          });
+
+          document.getElementById(COMBOBOX_OPTION).style.display = "none";
+
+          document.getElementById("add-option").addEventListener("click", () => {
+            const optionName = document.getElementById("option-description").value;
+            const optionContainer = document.getElementById("option-content");
             const optionContent = document.createElement("div");
-            const deleteDivId = `delete-span-${listboxOptionCount}`;
+            const deleteDivId = `delete-span-${comboboxOptionCount}`;
 
-            optionContent.id = `listOption${deleteDivId}`;
+            optionContent.id = `comboOption${deleteDivId}`;
             optionContent.className = "combobox-options-content";
             const contentSpan = document.createElement("span");
             contentSpan.textContent = optionName;
@@ -677,11 +569,11 @@ const drawFormElement = function () {
             deleteSpan.className = "option-delete";
             deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
 
-            if (optionName != "") listboxOptionArray.push(optionName);
+            if (optionName != "") comboboxOptionArray.push(optionName);
 
             deleteSpan.addEventListener("click", function () {
               // Remove the corresponding div when the delete span is clicked
-              listboxOptionArray = listboxOptionArray.filter(function (item) {
+              comboboxOptionArray = comboboxOptionArray.filter(function (item) {
                 return item !== optionName;
               });
               optionContent.remove();
@@ -691,459 +583,611 @@ const drawFormElement = function () {
 
             if (optionName != "") {
               optionContainer.appendChild(optionContent);
-              listboxOptionCount++;
+              comboboxOptionCount++;
             }
 
-            document.getElementById("option-description-list").value = "";
+            document.getElementById("option-description").value = "";
           });
 
-        document
-          .getElementById("list-save-button")
-          .addEventListener("click", handleList);
+          document
+            .getElementById("combo-save-button")
+            .addEventListener("click", handleCombo);
 
-        resizeCanvas(listDiv.id, LIST, id, LIST_OPTION);
-        break;
-      case BUTTON:
-        let buttonDiv = document.createElement("div");
-        buttonDiv.id = "button" + id;
-        addFormElementStyle(buttonDiv, y, x, width, height);
+          resizeCanvas(comboDiv.id, COMBOBOX, id, COMBOBOX_OPTION);
+          break;
+        case LIST:
+          let listDiv = document.createElement("div");
+          listDiv.id = "list" + id;
+          addFormElementStyle(listDiv, y, x, width, height);
 
-        let buttonAction = document.createElement("div");
-        buttonAction.classList.add("button-field-input");
-        buttonAction.style.display = "none";
-        buttonAction.addEventListener("click", function (event) {
-          let parentElement = event.target.parentNode;
-          let newId = parentElement.id.replace("button", "");
-          form_storage.forEach((item) => {
-            if (item.id == newId) {
-              if (item.action === SUBMIT) {
-                form_storage.forEach((item) => {
-                  if (item.form_type === RADIO) {
-                    item.data.isReadOnly = true;
-                  } else {
-                    item.isReadOnly = true;
-                  }
-                })
+          let dropList = document.createElement("div");
+          dropList.style.display = "none";
+          dropList.classList.add("list-field-input");
+
+          listDiv.append(dropList);
+
+          pg.appendChild(listDiv);
+
+          showOptionAndResizebar(
+            LIST_OPTION,
+            listDiv,
+            width,
+            height,
+            "list"
+          );
+          const listAlign = document.querySelectorAll(
+            'input[type=radio][name="text-field"]'
+          );
+          listAlign.forEach(function (radio) {
+            radio.addEventListener("change", handleRadioSelection);
+          });
+
+          current_list_id = id;
+
+          listDiv.addEventListener("dblclick", (e) => {
+            if (!isEditing) {
+              current_list_id = id;
+
+              let islisttooltipshow = false;
+
+              if (document.getElementById("list_tooltipbar" + current_list_id)) {
+                islisttooltipshow = true;
               }
-              else if (item.action === RESET) {
 
+              if (isDragging) {
+                isDragging = false;
+              } else {
+                if (!islisttooltipshow) {
+                  let tooltipbar = document.createElement("div");
+                  current_form_id = id;
+                  document.getElementById("option-content-list").innerHTML = "";
+                  form_storage.map((element) => {
+                    if (element.id == id) {
+                      document.getElementById("list-input-name").value =
+                        element.form_field_name;
+                      isOptionPane = true;
+                      option = showOption(
+                        LIST_OPTION,
+                        element.xPage / 2 - 180,
+                        element.yPage + 15
+                      );
+                      document.getElementById("list-font-style").value =
+                        element.fontStyle;
+                      document.getElementById("list-font-size").value =
+                        element.fontSize;
+                      document.getElementById("list-font-color").value =
+                        element.textColor;
+                      element.optionArray.map((elementItem) => {
+                        const optionContent = document.createElement("div");
+                        const deleteDivId = `delete-span-${listboxOptionCount}`;
+                        optionContent.id = `listOption${deleteDivId}`;
+                        optionContent.className = "combobox-options-content";
+                        const contentSpan = document.createElement("span");
+                        contentSpan.textContent = elementItem;
+                        const deleteSpan = document.createElement("span");
+                        deleteSpan.className = "option-delete";
+                        deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+                        deleteSpan.addEventListener("click", function () {
+                          // Remove the corresponding div when the delete span is clicked
+                          element = element.filter(function (item) {
+                            return item !== elementItem;
+                          });
+                          optionContent.remove();
+                        });
+                        optionContent.append(contentSpan, deleteSpan);
+                        document
+                          .getElementById("option-content-list")
+                          .append(optionContent);
+                      });
+                      listDiv.append(option);
+                    }
+                  });
+                  document
+                    .getElementById("list-save-button")
+                    .addEventListener("click", handleList);
+
+                  addDeleteButton(current_list_id, tooltipbar, listDiv, "list");
+                } else {
+                  document
+                    .getElementById("list_tooltipbar" + current_list_id)
+                    .remove();
+                }
               }
             }
+          });
+
+          document.getElementById(LIST_OPTION).style.display = "none";
+
+          document
+            .getElementById("add-option-list")
+            .addEventListener("click", () => {
+              const optionName = document.getElementById(
+                "option-description-list"
+              ).value;
+              const optionContainer = document.getElementById(
+                "option-content-list"
+              );
+              const optionContent = document.createElement("div");
+              const deleteDivId = `delete-span-${listboxOptionCount}`;
+
+              optionContent.id = `listOption${deleteDivId}`;
+              optionContent.className = "combobox-options-content";
+              const contentSpan = document.createElement("span");
+              contentSpan.textContent = optionName;
+
+              const deleteSpan = document.createElement("span");
+              deleteSpan.className = "option-delete";
+              deleteSpan.innerHTML = '<i class="fa fa-xmark"></i>';
+
+              if (optionName != "") listboxOptionArray.push(optionName);
+
+              deleteSpan.addEventListener("click", function () {
+                // Remove the corresponding div when the delete span is clicked
+                listboxOptionArray = listboxOptionArray.filter(function (item) {
+                  return item !== optionName;
+                });
+                optionContent.remove();
+              });
+              optionContent.appendChild(contentSpan);
+              optionContent.appendChild(deleteSpan);
+
+              if (optionName != "") {
+                optionContainer.appendChild(optionContent);
+                listboxOptionCount++;
+              }
+
+              document.getElementById("option-description-list").value = "";
+            });
+
+          document
+            .getElementById("list-save-button")
+            .addEventListener("click", handleList);
+
+          resizeCanvas(listDiv.id, LIST, id, LIST_OPTION);
+          break;
+        case BUTTON:
+          let buttonDiv = document.createElement("div");
+          buttonDiv.id = "button" + id;
+          addFormElementStyle(buttonDiv, y, x, width, height);
+
+          let buttonAction = document.createElement("div");
+          buttonAction.classList.add("button-field-input");
+          buttonAction.style.display = "none";
+          buttonAction.addEventListener("click", function (event) {
+            let parentElement = event.target.parentNode;
+            let newId = parentElement.id.replace("button", "");
+            form_storage.forEach((item) => {
+              if (item.id == newId) {
+                if (item.action === SUBMIT) {
+                  if (window.confirm('Do you want to submit now?')) {
+                    submitAction();
+                  }
+                }
+                else if (item.action === RESET) {
+
+                }
+              }
+            })
           })
-        })
-        buttonDiv.append(buttonAction);
+          buttonDiv.append(buttonAction);
 
-        pg.appendChild(buttonDiv);
+          pg.appendChild(buttonDiv);
 
-        showOptionAndResizebar(
-          BUTTON_OPTION,
-          buttonDiv,
-          width,
-          height,
-          "button"
-        );
-        const buttonAlign = document.querySelectorAll(
-          'input[type=radio][name="text-field"]'
-        );
-        buttonAlign.forEach(function (radio) {
-          radio.addEventListener("change", handleRadioSelection);
-        });
-        document.getElementById(
-          "button-field-input-name"
-        ).value = `Button Form Field ${buttonCount++}`;
-        document.getElementById("button-text").value = "Button";
-        current_button_id = id;
-        buttonDiv.addEventListener("dblclick", () => {
-          if (!isEditing) {
-            current_button_id = id;
+          showOptionAndResizebar(
+            BUTTON_OPTION,
+            buttonDiv,
+            width,
+            height,
+            "button"
+          );
+          const buttonAlign = document.querySelectorAll(
+            'input[type=radio][name="text-field"]'
+          );
+          buttonAlign.forEach(function (radio) {
+            radio.addEventListener("change", handleRadioSelection);
+          });
+          document.getElementById(
+            "button-field-input-name"
+          ).value = `Button Form Field ${buttonCount++}`;
+          document.getElementById("button-text").value = "Button";
+          current_button_id = id;
+          buttonDiv.addEventListener("dblclick", () => {
+            if (!isEditing) {
+              current_button_id = id;
 
-            let isbuttontooltipshow = false;
+              let isbuttontooltipshow = false;
 
-            if (
-              document.getElementById("button_tooltipbar" + current_button_id)
-            ) {
-              isbuttontooltipshow = true;
+              if (
+                document.getElementById("button_tooltipbar" + current_button_id)
+              ) {
+                isbuttontooltipshow = true;
+              }
+
+              if (isDragging) {
+                isDragging = false;
+              } else {
+                if (!isbuttontooltipshow) {
+                  let tooltipbar = document.createElement("div");
+                  current_form_id = id;
+                  form_storage.map((element) => {
+                    if (element.id == id) {
+                      document.getElementById("button-field-input-name").value =
+                        element.form_field_name;
+                      isOptionPane = true;
+                      option = showOption(
+                        BUTTON_OPTION,
+                        element.xPage / 2 - 180,
+                        element.yPage + 15
+                      );
+                      document.getElementById("button-font-style").value =
+                        element.fontStyle;
+                      document.getElementById("button-font-size").value =
+                        element.fontSize;
+                      document.getElementById("button-font-color").value =
+                        element.textColor;
+                      const selectedValue = document.getElementById(
+                        "button-field-input-action"
+                      );
+                      if (element.action == SUBMIT) {
+                        selectedValue.value = "submit";
+                      } else if (element.action == RESET) {
+                        selectedValue.value = "reset";
+                      }
+                      buttonDiv.append(option);
+                    }
+                  });
+                  document
+                    .getElementById("button-save-button")
+                    .addEventListener("click", handleButton);
+                  addDeleteButton(
+                    current_button_id,
+                    tooltipbar,
+                    buttonDiv,
+                    "button"
+                  );
+                } else {
+                  document
+                    .getElementById("button_tooltipbar" + current_button_id)
+                    .remove();
+                }
+              }
+            }
+          });
+
+          document.getElementById(BUTTON_OPTION).style.display = "none";
+
+          // const buttonValue = document.getElementById("button-text");
+          // buttonValue.addEventListener('change', () => {
+          //     document.getElementById(buttonDiv.id).textContent = buttonValue.value;
+          // })
+
+          document
+            .getElementById("button-save-button")
+            .addEventListener("click", handleButton);
+          resizeCanvas(buttonDiv.id, BUTTON, id, BUTTON_OPTION);
+          break;
+        case DATE:
+          const newDate = document.createElement("input");
+          newDate.id = "datecontent" + id;
+          newDate.style.position = "relative";
+          newDate.type = "date";
+          newDate.style.width = "100%";
+          newDate.style.height = "100%";
+          newDate.classList.add("textcontent");
+          newDate.value = item.text;
+
+          let dateDiv = document.createElement("div");
+          dateDiv.id = "date" + id;
+          addFormElementStyle(dateDiv, y, x, width, height);
+
+          dateDiv.classList.add("textfield-content");
+          dateDiv.append(newDate);
+          pg.appendChild(dateDiv);
+
+          // Show TextField OptionPane
+          showOptionAndResizebar(
+            DATE_OPTION,
+            dateDiv,
+            width,
+            height,
+            "date"
+          );
+
+          newDate.style.fontFamily =
+            document.getElementById("date-font-style").value;
+          newDate.style.fontSize =
+            document.getElementById("date-font-size").value + "px";
+          newDate.style.color = document.getElementById("date-font-color").value;
+
+          document
+            .getElementById("date-font-style")
+            .addEventListener("change", () => {
+              document.getElementById(current_date_content_id).style.fontFamily =
+                document.getElementById("date-font-style").value;
+            });
+          document
+            .getElementById("date-font-size")
+            .addEventListener("change", () => {
+              document.getElementById(current_date_content_id).style.fontSize =
+                document.getElementById("date-font-size").value + "px";
+            });
+          document
+            .getElementById("date-font-color")
+            .addEventListener("change", () => {
+              document.getElementById(current_date_content_id).style.color =
+                document.getElementById("date-font-color").value;
+            });
+
+          current_date_id = id;
+          current_date_content_id = newDate.id;
+
+          dateDiv.addEventListener("dblclick", () => {
+            if (!isEditing) {
+              current_date_id = id;
+              current_date_content_id = newDate.id;
+
+              let isdatetooltipshow = false;
+
+              if (document.getElementById("date_tooltipbar" + current_date_id)) {
+                isdatetooltipshow = true;
+              }
+
+              if (isDragging) {
+                isDragging = false;
+              } else {
+                if (!isdatetooltipshow) {
+                  let tooltipbar = document.createElement("div");
+                  current_form_id = id;
+
+                  form_storage.map((element) => {
+                    if (element.id == id) {
+                      document.getElementById("date-input-name").value =
+                        element.form_field_name;
+                      isOptionPane = true;
+                      option = showOption(
+                        DATE_OPTION,
+                        element.xPage / 2 - 180,
+                        element.yPage + 15
+                      );
+                      document.getElementById("date-font-style").value =
+                        element.fontStyle;
+                      document.getElementById("date-font-size").value =
+                        element.baseFontSize;
+                      document.getElementById("date-font-color").value =
+                        element.textColor;
+                      let selected = element.align;
+                      if (selected == ALIGN_LEFT)
+                        document.getElementById("date-left").checked = true;
+                      if (selected == ALIGN_CENTER)
+                        document.getElementById("date-center").checked = true;
+                      if (selected == ALIGN_RIGHT)
+                        document.getElementById("date-right").checked = true;
+                      dateDiv.append(option);
+                    }
+                  });
+
+                  document
+                    .getElementById("date-save-button")
+                    .addEventListener("click", handleDate);
+
+                  addDeleteButton(current_date_id, tooltipbar, dateDiv, "date");
+                } else {
+                  document
+                    .getElementById("date_tooltipbar" + current_date_id)
+                    .remove();
+                }
+              }
+            }
+          });
+
+          document.getElementById(DATE_OPTION).style.display = "none";
+
+          document
+            .getElementById("date-save-button")
+            .addEventListener("click", handleDate);
+          resizeCanvas(dateDiv.id, DATE, id, DATE_OPTION);
+          break;
+        case SIGNATURE:
+          console.log("id:", id)
+          const signatureContainer = document.createElement("div");
+          signatureContainer.id = "signature" + id;
+          addFormElementStyle(signatureContainer, y, x, width, height);
+          signatureContainer.style.display = "flex";
+          signatureContainer.style.alignItems = "center";
+          signatureContainer.style.justifyContent = "center";
+          signatureContainer.style.userSelect = "none";
+          signatureContainer.style.color = "white";
+          signatureContainer.textContent = "Double Click to sign here!";
+
+          if (item.imgData) createAndAppendImage(item.imgData, signatureContainer, id);
+
+          pg.appendChild(signatureContainer);
+
+          current_signature_id = id;
+
+          resizeCanvas(signatureContainer.id, SIGNATURE, id);
+          signatureContainer.addEventListener("click", () => {
+            if (!isEditing) {
+              current_signature_id = id;
+
+
+              let istooltipshow = false;
+
+              if (
+                document.getElementById("signature_tooltipbar" + current_signature_id)
+              ) {
+                istooltipshow = true;
+              }
+
+              if (isDragging) {
+                isDragging = false;
+              } else {
+                if (!istooltipshow) {
+                  let tooltipbar = document.createElement("div");
+                  current_form_id = id;
+                  addDeleteButton(
+                    current_signature_id,
+                    tooltipbar,
+                    signatureContainer,
+                    "signature"
+                  );
+                } else {
+                  document
+                    .getElementById("signature_tooltipbar" + current_signature_id)
+                    .remove();
+                }
+              }
+            }
+          });
+
+          signatureContainer.addEventListener("dblclick", () => {
+            current_form_id = id;
+            console.log("clickid", id)
+            if (!isSubmit) {
+              const signature_creator = document.getElementById(SIGNATURE_OPTION);
+              signature_creator.style.display = "flex";
+              document.getElementById("signature-initial-tab").click();
+              resetCanvas();
+              document.getElementById("signature-close").onclick = function () {
+                signature_creator.style.display = "none";
+              };
+              document.getElementById("signature-create").onclick = function () {
+                let canvas;
+                if (currentSignType == DRAW) {
+                  canvas = document
+                    .getElementById("signature-draw-body")
+                    .querySelector("canvas");
+                  signatureImgData = cropCanvas(canvas);
+                  handleSignature();
+                  createAndAppendImage(signatureImgData);
+                } else if (currentSignType == TYPE) {
+                  canvas = document.getElementById("signature-type-canvas");
+                  signatureImgData = cropCanvas(canvas);
+                  handleSignature();
+                  createAndAppendImage(signatureImgData);
+                } else if (currentSignType == UPLOAD) {
+                  const file = document.getElementById("signature-image-input")
+                    .files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                      signatureImgData = e.target.result;
+                      handleSignature();
+                      createAndAppendImage(signatureImgData);
+                    };
+                    reader.readAsDataURL(file);
+                  } else {
+                    alert("Please select an image file.");
+                  }
+                }
+
+                function createAndAppendImage(imgData) {
+                  signature_creator.style.display = "none";
+                  const signatureImg = document.createElement("img");
+                  signatureImg.id = "signatureImg" + id;
+                  signatureImg.style.width = "100%";
+                  signatureImg.style.height = "100%";
+                  signatureImg.src = imgData;
+                  signatureImg.style.objectFit = "contain";
+                  signatureContainer.textContent = "";
+                  signatureContainer.append(signatureImg);
+                  resizeCanvas(signatureContainer.id, SIGNATURE, id);
+                }
+              };
+            }
+          });
+          break;
+        case SHAPE:
+          let canvas = $("#drawing-board").find("canvas")[0];
+          canvas.width = item.canvasWidth * ratio;
+          canvas.height = item.canvasHeight * ratio;
+          const shapeImg = document.createElement("img");
+          shapeImg.id = "shapeImg" + id;
+          shapeImg.style.width = "100%";
+          shapeImg.style.height = "100%";
+          shapeImg.src = item.imgData;
+          shapeImg.style.objectFit = "fill";
+
+          const shapeContainer = document.createElement("div");
+          shapeContainer.id = "shape" + id;
+          shapeContainer.style.position = "absolute";
+          shapeContainer.style.top = y + "px";
+          shapeContainer.style.left = x + "px";
+          shapeContainer.style.width = width + "px";
+          shapeContainer.style.height = height + "px";
+          shapeContainer.style.zIndex = 100;
+
+          shapeContainer.append(shapeImg);
+          pg.appendChild(shapeContainer);
+          resizeCanvas(shapeContainer.id, SHAPE, id);
+
+          shapeContainer.addEventListener("click", () => {
+            current_shape_id = id;
+
+            let istooltipshow = false;
+
+            if (document.getElementById("shape_tooltipbar" + current_shape_id)) {
+              istooltipshow = true;
             }
 
             if (isDragging) {
               isDragging = false;
             } else {
-              if (!isbuttontooltipshow) {
+              if (!istooltipshow) {
                 let tooltipbar = document.createElement("div");
-                current_form_id = id;
-                form_storage.map((element) => {
-                  if (element.id == id) {
-                    document.getElementById("button-field-input-name").value =
-                      element.form_field_name;
-                    isOptionPane = true;
-                    option = showOption(
-                      BUTTON_OPTION,
-                      element.xPage / 2 - 180,
-                      element.yPage + 15
-                    );
-                    document.getElementById("button-font-style").value =
-                      element.fontStyle;
-                    document.getElementById("button-font-size").value =
-                      element.fontSize;
-                    document.getElementById("button-font-color").value =
-                      element.textColor;
-                    const selectedValue = document.getElementById(
-                      "button-field-input-action"
-                    );
-                    if (element.action == SUBMIT) {
-                      selectedValue.value = "submit";
-                    } else if (element.action == RESET) {
-                      selectedValue.value = "reset";
-                    }
-                    buttonDiv.append(option);
-                  }
+                let editBtn = document.createElement("button");
+                editBtn.style.padding = "5px";
+                editBtn.innerHTML = `<i class="fa-solid fa-pen"></i>`;
+                $(editBtn).on("click", function () {
+                  let targetShape = form_storage.filter(function (item) {
+                    return item.id == parseInt(current_shape_id);
+                  });
+                  $("#drawing-board-container").css("display", "flex");
+                  let targetCtx = canvas.getContext("2d");
+                  $("#clear-canvas").click();
+                  let image = new Image();
+                  image.src = targetShape[0].imgData;
+
+                  image.onload = function () {
+                    let centerX = canvas.width / 2 - image.width / 2;
+                    let centerY = canvas.height / 2 - image.height / 2;
+                    targetCtx.drawImage(image, centerX, centerY);
+                  };
+                  $("#drawing-shape-create").on("click", function () {
+                    shapeImgData = cropCanvas(canvas);
+                    shapeWidth = boundingBox.width;
+                    shapeHeight = boundingBox.height;
+                    $("#drawing-board-container").css("display", "none");
+                    shapeImg.src = shapeImgData;
+                    handleShape(shapeWidth, shapeHeight, item.canvasWidth, item.canvasHeight);
+                  });
                 });
-                document
-                  .getElementById("button-save-button")
-                  .addEventListener("click", handleButton);
+                tooltipbar.append(editBtn);
+                current_form_id = id;
                 addDeleteButton(
-                  current_button_id,
+                  current_shape_id,
                   tooltipbar,
-                  buttonDiv,
-                  "button"
+                  shapeContainer,
+                  "shape"
                 );
               } else {
                 document
-                  .getElementById("button_tooltipbar" + current_button_id)
+                  .getElementById("shape_tooltipbar" + current_shape_id)
                   .remove();
               }
             }
-          }
-        });
-
-        handleButton();
-
-        // const buttonValue = document.getElementById("button-text");
-        // buttonValue.addEventListener('change', () => {
-        //     document.getElementById(buttonDiv.id).textContent = buttonValue.value;
-        // })
-
-        document
-          .getElementById("button-save-button")
-          .addEventListener("click", handleButton);
-        resizeCanvas(buttonDiv.id, BUTTON, id, BUTTON_OPTION);
-        break;
-      case DATE:
-        const newDate = document.createElement("input");
-        newDate.id = "datecontent" + id;
-        newDate.style.position = "relative";
-        newDate.type = "date";
-        newDate.style.width = "100%";
-        newDate.style.height = "100%";
-        newDate.classList.add("textcontent");
-        newDate.value = item.text;
-
-        let dateDiv = document.createElement("div");
-        dateDiv.id = "date" + id;
-        addFormElementStyle(dateDiv, y, x, width, height);
-
-        dateDiv.classList.add("textfield-content");
-        dateDiv.append(newDate);
-        pg.appendChild(dateDiv);
-
-        // Show TextField OptionPane
-        showOptionAndResizebar(
-          DATE_OPTION,
-          dateDiv,
-          width,
-          height,
-          "date"
-        );
-
-        newDate.style.fontFamily =
-          document.getElementById("date-font-style").value;
-        newDate.style.fontSize =
-          document.getElementById("date-font-size").value + "px";
-        newDate.style.color = document.getElementById("date-font-color").value;
-
-        document
-          .getElementById("date-font-style")
-          .addEventListener("change", () => {
-            document.getElementById(current_date_content_id).style.fontFamily =
-              document.getElementById("date-font-style").value;
           });
-        document
-          .getElementById("date-font-size")
-          .addEventListener("change", () => {
-            document.getElementById(current_date_content_id).style.fontSize =
-              document.getElementById("date-font-size").value + "px";
-          });
-        document
-          .getElementById("date-font-color")
-          .addEventListener("change", () => {
-            document.getElementById(current_date_content_id).style.color =
-              document.getElementById("date-font-color").value;
-          });
-
-        current_date_id = id;
-        current_date_content_id = newDate.id;
-
-        dateDiv.addEventListener("dblclick", () => {
-          if (!isEditing) {
-            current_date_id = id;
-            current_date_content_id = newDate.id;
-
-            let isdatetooltipshow = false;
-
-            if (document.getElementById("date_tooltipbar" + current_date_id)) {
-              isdatetooltipshow = true;
-            }
-
-            if (isDragging) {
-              isDragging = false;
-            } else {
-              if (!isdatetooltipshow) {
-                let tooltipbar = document.createElement("div");
-                current_form_id = id;
-
-                form_storage.map((element) => {
-                  if (element.id == id) {
-                    document.getElementById("date-input-name").value =
-                      element.form_field_name;
-                    isOptionPane = true;
-                    option = showOption(
-                      DATE_OPTION,
-                      element.xPage / 2 - 180,
-                      element.yPage + 15
-                    );
-                    document.getElementById("date-font-style").value =
-                      element.fontStyle;
-                    document.getElementById("date-font-size").value =
-                      element.baseFontSize;
-                    document.getElementById("date-font-color").value =
-                      element.textColor;
-                    let selected = element.align;
-                    if (selected == ALIGN_LEFT)
-                      document.getElementById("date-left").checked = true;
-                    if (selected == ALIGN_CENTER)
-                      document.getElementById("date-center").checked = true;
-                    if (selected == ALIGN_RIGHT)
-                      document.getElementById("date-right").checked = true;
-                    dateDiv.append(option);
-                  }
-                });
-
-                document
-                  .getElementById("date-save-button")
-                  .addEventListener("click", handleDate);
-
-                addDeleteButton(current_date_id, tooltipbar, dateDiv, "date");
-              } else {
-                document
-                  .getElementById("date_tooltipbar" + current_date_id)
-                  .remove();
-              }
-            }
-          }
-        });
-
-        handleDate();
-
-        document
-          .getElementById("date-save-button")
-          .addEventListener("click", handleDate);
-        resizeCanvas(dateDiv.id, DATE, id, DATE_OPTION);
-        break;
-      case SIGNATURE:
-        const signatureContainer = document.createElement("div");
-        signatureContainer.id = "signature" + id;
-        addFormElementStyle(signatureContainer, y, x, width, height);
-        signatureContainer.style.display = "flex";
-        signatureContainer.style.alignItems = "center";
-        signatureContainer.style.justifyContent = "center";
-        signatureContainer.style.userSelect = "none";
-        signatureContainer.style.color = "white";
-        signatureContainer.textContent = "Double Click to sign here!";
-
-        if (item.imgData) createAndAppendImage(item.imgData, signatureContainer, id);
-
-        pg.appendChild(signatureContainer);
-        handleSignature();
-
-        current_signature_id = id;
-
-        resizeCanvas(signatureContainer.id, SIGNATURE, id);
-        signatureContainer.addEventListener("click", () => {
-          current_signature_id = id;
-
-          let istooltipshow = false;
-
-          if (
-            document.getElementById("signature_tooltipbar" + current_signature_id)
-          ) {
-            istooltipshow = true;
-          }
-
-          if (isDragging) {
-            isDragging = false;
-          } else {
-            if (!istooltipshow) {
-              let tooltipbar = document.createElement("div");
-              current_form_id = id;
-              addDeleteButton(
-                current_signature_id,
-                tooltipbar,
-                signatureContainer,
-                "signature"
-              );
-            } else {
-              document
-                .getElementById("signature_tooltipbar" + current_signature_id)
-                .remove();
-            }
-          }
-        });
-
-        signatureContainer.addEventListener("dblclick", () => {
-          const signature_creator = document.getElementById(SIGNATURE_OPTION);
-          signature_creator.style.display = "flex";
-          document.getElementById("signature-initial-tab").click();
-          resetCanvas();
-          document.getElementById("signature-close").onclick = function () {
-            signature_creator.style.display = "none";
-          };
-          document.getElementById("signature-create").onclick = function () {
-            let canvas;
-            if (currentSignType == DRAW) {
-              canvas = document
-                .getElementById("signature-draw-body")
-                .querySelector("canvas");
-              signatureImgData = cropCanvas(canvas);
-              handleSignature();
-              createAndAppendImage(signatureImgData);
-            } else if (currentSignType == TYPE) {
-              canvas = document.getElementById("signature-type-canvas");
-              signatureImgData = cropCanvas(canvas);
-              handleSignature();
-              createAndAppendImage(signatureImgData);
-            } else if (currentSignType == UPLOAD) {
-              const file = document.getElementById("signature-image-input")
-                .files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                  signatureImgData = e.target.result;
-                  handleSignature();
-                  createAndAppendImage(signatureImgData);
-                };
-                reader.readAsDataURL(file);
-              } else {
-                alert("Please select an image file.");
-              }
-            }
-
-            function createAndAppendImage(imgData) {
-              signature_creator.style.display = "none";
-              const signatureImg = document.createElement("img");
-              signatureImg.id = "signatureImg" + id;
-              signatureImg.style.width = "100%";
-              signatureImg.style.height = "100%";
-              signatureImg.src = imgData;
-              signatureImg.style.objectFit = "contain";
-              signatureContainer.textContent = "";
-              signatureContainer.append(signatureImg);
-              resizeCanvas(signatureContainer.id, SIGNATURE, id);
-            }
-          };
-        });
-        break;
-      case SHAPE:
-        let canvas = $("#drawing-board").find("canvas")[0];
-        canvas.width = item.canvasWidth * ratio;
-        canvas.height = item.canvasHeight * ratio;
-        const shapeImg = document.createElement("img");
-        shapeImg.id = "shapeImg" + id;
-        shapeImg.style.width = "100%";
-        shapeImg.style.height = "100%";
-        shapeImg.src = item.imgData;
-        shapeImg.style.objectFit = "fill";
-
-        const shapeContainer = document.createElement("div");
-        shapeContainer.id = "shape" + id;
-        shapeContainer.style.position = "absolute";
-        shapeContainer.style.top = y + "px";
-        shapeContainer.style.left = x + "px";
-        shapeContainer.style.width = width + "px";
-        shapeContainer.style.height = height + "px";
-        shapeContainer.style.zIndex = 100;
-
-        shapeContainer.append(shapeImg);
-        pg.appendChild(shapeContainer);
-        resizeCanvas(shapeContainer.id, SHAPE, id);
-
-        shapeContainer.addEventListener("click", () => {
-          current_shape_id = id;
-
-          let istooltipshow = false;
-
-          if (document.getElementById("shape_tooltipbar" + current_shape_id)) {
-            istooltipshow = true;
-          }
-
-          if (isDragging) {
-            isDragging = false;
-          } else {
-            if (!istooltipshow) {
-              let tooltipbar = document.createElement("div");
-              let editBtn = document.createElement("button");
-              editBtn.style.padding = "5px";
-              editBtn.innerHTML = `<i class="fa-solid fa-pen"></i>`;
-              $(editBtn).on("click", function () {
-                let targetShape = form_storage.filter(function (item) {
-                  return item.id == parseInt(current_shape_id);
-                });
-                $("#drawing-board-container").css("display", "flex");
-                let targetCtx = canvas.getContext("2d");
-                $("#clear-canvas").click();
-                let image = new Image();
-                image.src = targetShape[0].imgData;
-                console.log(image)
-
-                image.onload = function () {
-                  let centerX = canvas.width / 2 - image.width / 2;
-                  let centerY = canvas.height / 2 - image.height / 2;
-                  targetCtx.drawImage(image, centerX, centerY);
-                };
-                $("#drawing-shape-create").on("click", function () {
-                  shapeImgData = cropCanvas(canvas);
-                  shapeWidth = boundingBox.width;
-                  shapeHeight = boundingBox.height;
-                  $("#drawing-board-container").css("display", "none");
-                  shapeImg.src = shapeImgData;
-                  handleShape(shapeWidth, shapeHeight, item.canvasWidth, item.canvasHeight);
-                });
-              });
-              tooltipbar.append(editBtn);
-              current_form_id = id;
-              addDeleteButton(
-                current_shape_id,
-                tooltipbar,
-                shapeContainer,
-                "shape"
-              );
-            } else {
-              document
-                .getElementById("shape_tooltipbar" + current_shape_id)
-                .remove();
-            }
-          }
-        });
-        $("#drawing-shape-create").off("click");
-        break;
-      default:
-        break;
-
-    }
-  })
+          $("#drawing-shape-create").off("click");
+          break;
+        default:
+          break;
+      }
+    })
+  }
+  generalUserMode();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("load");
   loadFontFiles();
   requestId = getIdFromUrl();
   if (requestId) {
@@ -1155,6 +1199,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then(data => {
+        form_storage = [];
+        clientName = data[0].name;
+        clientEmail = data[0].email;
         // Handle the retrieved data from the backend
         const dataURI = data[0].pdfData;
         const base64Data = dataURI.split(',')[1];
@@ -1173,7 +1220,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const fileName = 'downloaded.pdf';
         const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
 
-        form_storage = JSON.parse(data[0].formData);
+        draw_form_storage = JSON.parse(data[0].formData);
         PDFViewerApplication.open({
           url: URL.createObjectURL(pdfFile),
           originalUrl: pdfFile.name,
@@ -1257,8 +1304,6 @@ function handleRadioSelection(event) {
 // When click "Save" button, save the information of Checkbox element.
 
 const handleCheckbox = function (e) {
-  formWidth = 25;
-  formHeight = 25;
   isOptionPane = false;
   document.getElementById(CHECKBOX_OPTION).style.display = "none";
   if (e) e.stopPropagation();
@@ -1270,6 +1315,7 @@ const handleCheckbox = function (e) {
   if (count == form_storage.length || form_storage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "checkbox" + baseId,
       form_type: CHECKBOX,
       form_field_name: formFieldName,
       page_number: PDFViewerApplication.page,
@@ -1294,8 +1340,6 @@ const handleCheckbox = function (e) {
 // When click "Save" button, save the information of RadioGroup element.
 
 const handleRadio = function (e) {
-  formWidth = 25;
-  formHeight = 25;
   isOptionPane = false;
   const label = document.getElementById("radio-label").value;
   const value = document.getElementById("radio-value").value;
@@ -1327,6 +1371,7 @@ const handleRadio = function (e) {
   if (count == form_storage.length || form_storage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "radio" + baseId,
       form_type: RADIO,
       page_number: PDFViewerApplication.page,
       data: {
@@ -1353,8 +1398,6 @@ const handleRadio = function (e) {
 // When click "Save" button, save the information of TextField element.
 
 const handleText = function (e) {
-  formWidth = 300;
-  formHeight = 40;
   isOptionPane = false;
   document.getElementById(TEXTFIELD_OPTION).style.display = "none";
   if (e) e.stopPropagation();
@@ -1405,6 +1448,7 @@ const handleText = function (e) {
   if (count == form_storage.length || form_storage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "text" + baseId,
       form_type: TEXTFIELD,
       form_field_name: formFieldName,
       initialValue: initialValue,
@@ -1431,7 +1475,6 @@ const handleText = function (e) {
     textColor = "";
     alignValue = 0;
   }
-  console.log(form_storage);
   document
     .getElementById("text-save-button")
     .removeEventListener("click", handleText);
@@ -1440,8 +1483,6 @@ const handleText = function (e) {
 // When click "Save" button, save the information of Combobox element.
 
 const handleCombo = function (e) {
-  formWidth = 300;
-  formHeight = 40;
   isOptionPane = false;
   document.getElementById(COMBOBOX_OPTION).style.display = "none";
   if (e) e.stopPropagation();
@@ -1451,12 +1492,13 @@ const handleCombo = function (e) {
   fontSize = parseInt(document.getElementById("combo-font-size").value);
   const regularFont = document.getElementById("combo-font-style").value;
   textColor = document.getElementById("combo-font-color").value;
-  let initialValue = "";
-  const currentFormText = document.getElementById(`combo${current_combo_id}`);
+  let initialValue = comboboxOptionArray[0];
+  const currentFormText = document.getElementById(`combo${current_form_id}`);
   if (currentFormText) {
-    initialValue = currentFormText.querySelector(".combobox-field-input").value;
+    let currentValue = currentFormText.querySelector(".combobox-field-input").value;
+    if (currentValue != "") initialValue = currentValue;
   }
-
+  console.log(formFieldName);
   for (let i = 0; i < form_storage.length; i++) {
     if (form_storage[i].form_type === COMBOBOX) {
       if (
@@ -1482,7 +1524,7 @@ const handleCombo = function (e) {
         form_storage[i].form_field_name != formFieldName &&
         form_storage[i].id == current_form_id
       ) {
-        form_storage[i].form_field_name = formFieldName;
+        if (formFieldName != "") form_storage[i].form_field_name = formFieldName;
         break;
       }
     }
@@ -1498,6 +1540,7 @@ const handleCombo = function (e) {
   if (count == form_storage.length || form_storage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "combo" + baseId,
       form_type: COMBOBOX,
       form_field_name: formFieldName,
       initialValue: initialValue,
@@ -1530,8 +1573,6 @@ const handleCombo = function (e) {
 // When click "Save" button, save the information of Listbox element.
 
 const handleList = function (e) {
-  formWidth = 300;
-  formHeight = 120;
   document.getElementById(LIST_OPTION).style.display = "none";
   if (e) e.stopPropagation();
   const formFieldName = document.getElementById("list-input-name").value;
@@ -1544,7 +1585,6 @@ const handleList = function (e) {
   if (currentFormText) {
     if (currentFormText.querySelector(".list-field-input").querySelector(".active"))
       initialValue = currentFormText.querySelector(".list-field-input").querySelector(".active").textContent;
-    console.log("me", currentFormText, initialValue);
   }
   for (let i = 0; i < form_storage.length; i++) {
     if (form_storage[i].form_type === LIST) {
@@ -1586,6 +1626,7 @@ const handleList = function (e) {
   if (count == form_storage.length || form_storage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "list" + baseId,
       form_type: LIST,
       form_field_name: formFieldName,
       page_number: PDFViewerApplication.page,
@@ -1611,7 +1652,6 @@ const handleList = function (e) {
     alignValue = 0;
     listboxOptionArray = [];
   }
-  console.log(form_storage)
   document
     .getElementById("list-save-button")
     .removeEventListener("click", handleCombo);
@@ -1721,8 +1761,6 @@ const showOption = function (id, x, y) {
 
 // When click "Save" button, save the information of Button element.
 const handleButton = function (e) {
-  formWidth = 160;
-  formHeight = 40;
   isOptionPane = false;
   document.getElementById(BUTTON_OPTION).style.display = "none";
   let form_action = 0;
@@ -1782,6 +1820,7 @@ const handleButton = function (e) {
   if (count == form_storage.length || form_storage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "button" + baseId,
       form_type: BUTTON,
       form_field_name: formFieldName,
       text: initialValue,
@@ -1813,8 +1852,6 @@ const handleButton = function (e) {
 };
 
 const handleDate = function (e) {
-  formWidth = 160;
-  formHeight = 40;
   isOptionPane = false;
   document.getElementById(DATE_OPTION).style.display = "none";
   if (e) e.stopPropagation();
@@ -1855,6 +1892,7 @@ const handleDate = function (e) {
   if (count == form_storage.length || form_storage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "datecontent" + baseId,
       form_type: DATE,
       form_field_name: formFieldName,
       page_number: PDFViewerApplication.page,
@@ -1883,22 +1921,44 @@ const handleDate = function (e) {
 };
 
 const handleSignature = function () {
-  formWidth = 200;
-  formHeight = 50;
-  form_storage.push({
-    id: baseId,
-    form_type: SIGNATURE,
-    page_number: PDFViewerApplication.page,
-    x: pos_x_pdf,
-    y: pos_y_pdf,
-    baseX: pos_x_pdf,
-    baseY: pos_y_pdf,
-    width: formWidth * 0.75 * 0.8,
-    height: formHeight * 0.75 * 0.8,
-    xPage: formWidth,
-    yPage: formHeight,
-    imgData: signatureImgData,
+  console.log("signature!", current_form_id);
+  for (let i = 0; i < form_storage.length; i++) {
+    if (
+      form_storage[i].id == current_form_id
+    ) {
+      form_storage[i].imgData = signatureImgData;
+      break;
+    }
+  }
+  let signStorage = form_storage.filter(function (item) {
+    return item.form_type == SIGNATURE;
   });
+  let count = 0;
+  for (let j = 0; j < signStorage.length; j++) {
+    if (
+      signStorage[j].id != current_form_id
+    )
+      count++;
+  }
+  if (count == signStorage.length || signStorage == null) {
+    console.log("handle")
+    form_storage.push({
+      id: baseId,
+      containerId: "signature" + baseId,
+      form_type: SIGNATURE,
+      page_number: PDFViewerApplication.page,
+      x: pos_x_pdf,
+      y: pos_y_pdf,
+      baseX: pos_x_pdf,
+      baseY: pos_y_pdf,
+      width: formWidth * 0.75 * 0.8,
+      height: formHeight * 0.75 * 0.8,
+      xPage: formWidth,
+      yPage: formHeight,
+      imgData: signatureImgData,
+    });
+  }
+  console.log(form_storage)
 };
 
 // Resize and move canvas using Interact.js library.
@@ -2064,11 +2124,11 @@ const resizeCanvas = function (id, type, currentId, optionId) {
         },
       },
     });
-  // if (isEditing) {
-  //   interactInstance.draggable(false);
-  // } else {
-  //   interactInstance.draggable(true);
-  // }
+  if (isSubmit) {
+    interactInstance.draggable(false);
+  } else {
+    interactInstance.draggable(true);
+  }
   if (DrawType == TEXT_CONTENT) {
     let containerId = `text-content${current_text_num_id}`;
     let container = document.getElementById(containerId);
@@ -2119,26 +2179,28 @@ const resizeCanvas = function (id, type, currentId, optionId) {
     let signatureContainer = document.getElementById(currentSignId);
     let signatureImg = document.getElementById(`signatureImg${currentId}`);
     document.addEventListener("click", function (event) {
-      if (
-        event.target === signatureImg ||
-        event.target === signatureContainer
-      ) {
-        if (!document.getElementById("topLeft")) {
-          document
-            .getElementById(currentSignId)
-            .classList.add("border-resizebar");
-          addResizebar(currentSignId);
-        }
-      } else {
-        if (document.getElementById("topLeft")) {
-          document
-            .getElementById(currentSignId)
-            .classList.remove("border-resizebar");
-          removeResizebar(currentSignId);
-          const deleteSign = document.getElementById(
-            `signature_tooltipbar${current_signature_id}`
-          );
-          if (deleteSign) deleteSign.remove();
+      if (!isEditing) {
+        if (
+          event.target === signatureImg ||
+          event.target === signatureContainer
+        ) {
+          if (!document.getElementById("topLeft")) {
+            document
+              .getElementById(currentSignId)
+              .classList.add("border-resizebar");
+            addResizebar(currentSignId);
+          }
+        } else {
+          if (signatureContainer && signatureContainer.querySelector("#topLeft")) {
+            document
+              .getElementById(currentSignId)
+              .classList.remove("border-resizebar");
+            removeResizebar(currentSignId);
+            const deleteSign = document.getElementById(
+              `signature_tooltipbar${current_signature_id}`
+            );
+            if (deleteSign) deleteSign.remove();
+          }
         }
       }
     });
@@ -2146,100 +2208,196 @@ const resizeCanvas = function (id, type, currentId, optionId) {
     let currentShapeId = `shape${currentId}`;
     let shapeImg = document.getElementById(`shapeImg${currentId}`);
     document.addEventListener("click", function (event) {
-      if (event.target === shapeImg) {
-        if (!document.getElementById("topLeft")) {
-          document
-            .getElementById(currentShapeId)
-            .classList.add("border-resizebar");
-          addResizebar(currentShapeId);
-        }
-      } else {
-        if (document.getElementById("topLeft")) {
-          document
-            .getElementById(currentShapeId)
-            .classList.remove("border-resizebar");
-          removeResizebar(currentShapeId);
-          const deleteShape = document.getElementById(
-            `shape_tooltipbar${current_shape_id}`
-          );
-          if (deleteShape) deleteShape.remove();
+      if (!isEditing) {
+        if (event.target === shapeImg) {
+          if (!document.getElementById("topLeft")) {
+            document
+              .getElementById(currentShapeId)
+              .classList.add("border-resizebar");
+            addResizebar(currentShapeId);
+          }
+        } else {
+          if (document.getElementById("topLeft")) {
+            document
+              .getElementById(currentShapeId)
+              .classList.remove("border-resizebar");
+            removeResizebar(currentShapeId);
+            const deleteShape = document.getElementById(
+              `shape_tooltipbar${current_shape_id}`
+            );
+            if (deleteShape) deleteShape.remove();
+          }
         }
       }
     });
   } else {
-    let object = document.getElementById(id);
-    document.addEventListener("click", function (event) {
-      if (!isEditing) {
-        if (event.target.parentNode === object || event.target === object) {
-          if (!document.getElementById("topLeft")) addResizebar(id);
-        } else {
-          if (document.getElementById("topLeft")) removeResizebar(id);
-          if (optionId)
-            document.getElementById(optionId).style.display = "none";
-          switch (DrawType) {
-            case CHECKBOX:
-              handleCheckbox();
-              const deleteCheck = document.getElementById(
-                `checkbox_tooltipbar${current_checkbox_id}`
-              );
-              if (deleteCheck) deleteCheck.remove();
-              break;
-            case RADIO:
-              handleRadio();
-              const deleteRadio = document.getElementById(
-                `radio_tooltipbar${current_radio_id}`
-              );
-              if (deleteRadio) deleteRadio.remove();
-              break;
-            case TEXTFIELD:
-              handleText();
-              const deleteText = document.getElementById(
-                `text_tooltipbar${current_text_id}`
-              );
-              if (deleteText) deleteText.remove();
-              break;
-            case COMBOBOX:
-              handleCombo();
-              const deleteCombo = document.getElementById(
-                `combo_tooltipbar${current_combo_id}`
-              );
-              if (deleteCombo) deleteCombo.remove();
-              break;
-            case LIST:
-              handleList();
-              const deleteList = document.getElementById(
-                `list_tooltipbar${current_list_id}`
-              );
-              if (deleteList) deleteList.remove();
-              break;
-            case BUTTON:
-              handleButton();
-              const deleteButton = document.getElementById(
-                `button_tooltipbar${current_button_id}`
-              );
-              if (deleteButton) deleteButton.remove();
-              break;
-            case DATE:
-              handleDate();
-              const deleteDate = document.getElementById(
-                `date_tooltipbar${current_date_id}`
-              );
-              if (deleteDate) deleteDate.remove();
-              break;
-            default:
-              break;
-          }
-        }
-      } else {
-        let parentElement = event.target.parentNode;
-        let listActive = object.querySelector(".list-field-input");
-        if (parentElement === object || event.target === object || parentElement == listActive) {
-          handleEditMode(id, currentId);
-        }
-      }
-    });
   }
+
 };
+
+document.addEventListener("click", function (event) {
+  let isExisting = false;
+  let currentFormType, currentObject;
+  currentObject = event.target;
+  let currentObjectParentId = '';
+  if (currentObject) {
+    let parentElement = currentObject.parentNode;
+    if (parentElement) {
+      currentObjectParentId = parentElement.id;
+    }
+  }
+  if (form_storage !== null) {
+    form_storage.forEach((item) => {
+      if (item.containerId === currentObject.id || item.containerId === currentObjectParentId) {
+        currentFormType = item.form_type;
+        DrawType = item.form_type;
+        isExisting = true;
+      }
+    })
+  }
+  if (isExisting) {
+    if (!isEditing) {
+      if (form_storage !== null) {
+        form_storage.forEach((item) => {
+          let currentItem;
+          if (item.form_type === DATE) currentItem = document.getElementById(item.containerId).parentElement;
+          else currentItem = document.getElementById(item.containerId);
+          if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
+        })
+      }
+      switch (currentFormType) {
+        case CHECKBOX:
+          handleCheckbox();
+          const deleteCheck = document.getElementById(
+            `checkbox_tooltipbar${current_checkbox_id}`
+          );
+          if (deleteCheck) deleteCheck.remove();
+          break;
+        case RADIO:
+          handleRadio();
+          const deleteRadio = document.getElementById(
+            `radio_tooltipbar${current_radio_id}`
+          );
+          if (deleteRadio) deleteRadio.remove();
+          break;
+        case TEXTFIELD:
+          handleText();
+          const deleteText = document.getElementById(
+            `text_tooltipbar${current_text_id}`
+          );
+          if (deleteText) deleteText.remove();
+          break;
+        case COMBOBOX:
+          handleCombo();
+          const deleteCombo = document.getElementById(
+            `combo_tooltipbar${current_combo_id}`
+          );
+          if (deleteCombo) deleteCombo.remove();
+          break;
+        case LIST:
+          handleList();
+          const deleteList = document.getElementById(
+            `list_tooltipbar${current_list_id}`
+          );
+          if (deleteList) deleteList.remove();
+          break;
+        case BUTTON:
+          handleButton();
+          const deleteButton = document.getElementById(
+            `button_tooltipbar${current_button_id}`
+          );
+          if (deleteButton) deleteButton.remove();
+          break;
+        case DATE:
+          handleDate();
+          const deleteDate = document.getElementById(
+            `date_tooltipbar${current_date_id}`
+          );
+          if (deleteDate) deleteDate.remove();
+          break;
+        default:
+          break;
+      }
+      if (currentFormType === DATE) {
+        if (!currentObject.parentElement.querySelector("#topLeft")) addResizebar(currentObject.parentElement.id);
+      } else {
+        if (!currentObject.querySelector("#topLeft")) addResizebar(currentObject.id);
+      }
+      optionIdArray.forEach((item) => {
+        if (document.getElementById(item))
+          document.getElementById(item).style.display = "none";
+      })
+    } else {
+      handleEditMode(current_form_id);
+    }
+  } else {
+    if (form_storage !== null) {
+      form_storage.forEach((item) => {
+        let currentItem;
+        if (item.form_type === DATE) currentItem = document.getElementById(item.containerId).parentElement;
+        else currentItem = document.getElementById(item.containerId);
+        if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
+      })
+    }
+    switch (currentFormType) {
+      case CHECKBOX:
+        handleCheckbox();
+        const deleteCheck = document.getElementById(
+          `checkbox_tooltipbar${current_checkbox_id}`
+        );
+        if (deleteCheck) deleteCheck.remove();
+        break;
+      case RADIO:
+        handleRadio();
+        const deleteRadio = document.getElementById(
+          `radio_tooltipbar${current_radio_id}`
+        );
+        if (deleteRadio) deleteRadio.remove();
+        break;
+      case TEXTFIELD:
+        handleText();
+        const deleteText = document.getElementById(
+          `text_tooltipbar${current_text_id}`
+        );
+        if (deleteText) deleteText.remove();
+        break;
+      case COMBOBOX:
+        handleCombo();
+        const deleteCombo = document.getElementById(
+          `combo_tooltipbar${current_combo_id}`
+        );
+        if (deleteCombo) deleteCombo.remove();
+        break;
+      case LIST:
+        handleList();
+        const deleteList = document.getElementById(
+          `list_tooltipbar${current_list_id}`
+        );
+        if (deleteList) deleteList.remove();
+        break;
+      case BUTTON:
+        handleButton();
+        const deleteButton = document.getElementById(
+          `button_tooltipbar${current_button_id}`
+        );
+        if (deleteButton) deleteButton.remove();
+        break;
+      case DATE:
+        handleDate();
+        const deleteDate = document.getElementById(
+          `date_tooltipbar${current_date_id}`
+        );
+        if (deleteDate) deleteDate.remove();
+        break;
+      default:
+        break;
+    }
+    optionIdArray.forEach((item) => {
+      if (document.getElementById(item))
+        document.getElementById(item).style.display = "none";
+    })
+  }
+});
 
 const resizeHandler = function (width, height, currentId) {
   if (DrawType == RADIO) {
@@ -2339,6 +2497,7 @@ const addDeleteButton = function (currentId, container, object, type) {
   container.style.justifyContent = "center";
   container.style.gap = "5px";
   container.style.height = parseInt(top) + "px";
+  container.classList.add("delete-button");
   let deleteBtn = document.createElement("button");
   deleteBtn.style.padding = "5px";
   deleteBtn.innerHTML = `<i class="fas fa-trash-can"></i>`;
@@ -2399,6 +2558,76 @@ const addFormElementStyle = function (object, top, left, width, height) {
   object.style.borderRadius = "3px";
   object.classList.add("form-fields");
 };
+const removeFormElementStyle = function (id) {
+  document.getElementById(id)
+}
+
+const toTransparent = function (object) {
+  if (object) {
+    object.style.border = "none";
+    object.style.backgroundColor = "transparent";
+  }
+}
+
+const submitAction = function () {
+  const comboValue = document.querySelectorAll(".combobox-field-value");
+  isSubmit = true;
+  form_storage.forEach((item) => {
+    if (item.form_type === RADIO) {
+      item.data.isReadOnly = true;
+    } else {
+      item.isReadOnly = true;
+    }
+
+    resizeCanvas(`${item.containerId}`);
+    let currentItem;
+    if (item.form_type != DATE) currentItem = document.getElementById(item.containerId);
+    else currentItem = document.getElementById(item.containerId).parentElement;
+    toTransparent(currentItem);
+    switch (item.form_type) {
+      case CHECKBOX:
+        break;
+      case RADIO:
+        toTransparent(currentItem.querySelector(".radioinputchild"));
+        toTransparent(currentItem.querySelector(".checkmark-radio"));
+        break;
+      case TEXTFIELD:
+        toTransparent(currentItem.querySelector(".text-field-input"));
+        currentItem.querySelector(".text-field-input").disabled = true;
+        break;
+      case COMBOBOX:
+        toTransparent(currentItem.querySelector(".combobox-field-input"));
+        currentItem.querySelector(".combobox-field-input").disabled = true;
+
+        // currentItem.querySelector(".combobox-field-value").style.display = "block";
+        // currentItem.querySelector(".combobox-field-value").textContent = item.initialValue;
+        break;
+      case LIST:
+        toTransparent(currentItem.querySelector(".list-field-input"));
+        currentItem.querySelector(".list-field-input").querySelectorAll("p").forEach((pitem) => {
+          toTransparent(pitem);
+          if (pitem.textContent != item.initialValue) pitem.remove();
+        });
+        break;
+      case DATE:
+        toTransparent(currentItem.querySelector("input[type='date']"));
+        currentItem.querySelector("input[type='date']").disabled = true;
+        currentItem.style.boxShadow = "none";
+        break;
+      case SIGNATURE:
+        break;
+      case BUTTON:
+        currentItem.remove();
+        break;
+      default:
+        break;
+    }
+  })
+  form_storage = form_storage.filter((item) => {
+    return item.form_type !== BUTTON;
+  })
+  console.log(form_storage);
+}
 
 // Handle the specified event.
 const eventHandler = async function (e) {
@@ -2426,8 +2655,8 @@ const eventHandler = async function (e) {
       let checkboxId = baseId;
       current_form_id = checkboxId;
 
-      const checkboxWidth = 25;
-      const checkboxHeight = 25;
+      formWidth = 25;
+      formHeight = 25;
 
       let checkbox = document.createElement("div");
       checkbox.id = "checkbox" + checkboxId;
@@ -2435,18 +2664,22 @@ const eventHandler = async function (e) {
         checkbox,
         topPos,
         leftPos,
-        checkboxWidth,
-        checkboxHeight
+        formWidth,
+        formHeight
       );
       let checkmark = document.createElement("div");
       checkmark.classList.add("checkmark");
+      checkmark.style.display = 'none';
       checkbox.classList.add("checkbox");
       checkbox.appendChild(checkmark);
       checkbox.onclick = function () {
+        current_form_id = checkboxId;
         toggleCheckbox(checkbox.id);
       };
 
       pg.appendChild(checkbox);
+
+      showOptionAndResizebar(CHECKBOX_OPTION, checkbox, formWidth, formHeight);
 
       document.getElementById(
         "checkbox-field-input-name"
@@ -2531,28 +2764,35 @@ const eventHandler = async function (e) {
       let radioId = baseId;
       current_form_id = radioId;
 
-      const radioWidth = 25;
-      const radioHeight = 25;
+      formWidth = 25;
+      formHeight = 25;
 
       let radio = document.createElement("div");
       radio.id = "radio" + radioId;
-      addFormElementStyle(radio, topPos, leftPos, radioWidth, radioHeight);
+      addFormElementStyle(radio, topPos, leftPos, formWidth, formHeight);
       radio.style.borderRadius = "50%";
       radio.classList.add("radio-container");
 
       let inputRadio = document.createElement("input");
       inputRadio.type = "radio";
+      inputRadio.classList.add('radioinputchild');
       inputRadio.name = `Radio Group Form Field ${radioId}`;
 
       let spanElement = document.createElement("span");
       spanElement.classList.add("checkmark-radio");
 
+      inputRadio.style.display = "none";
+      spanElement.style.display = "none";
+
       radio.append(inputRadio, spanElement);
       radio.onclick = function () {
+        current_form_id = radioId;
         selectRadioButton(this, radioId);
       };
 
       pg.appendChild(radio);
+
+      showOptionAndResizebar(RADIO_OPTION, radio, formWidth, formHeight)
 
       document.getElementById(
         "radio-field-input-name"
@@ -2633,17 +2873,18 @@ const eventHandler = async function (e) {
       let textId = baseId;
       current_form_id = textId;
 
-      const textWidth = 300;
-      const textHeight = 40;
+      formWidth = 300;
+      formHeight = 40;
 
       let textDiv = document.createElement("div");
       textDiv.id = "text" + textId;
-      addFormElementStyle(textDiv, topPos, leftPos, textWidth, textHeight);
+      addFormElementStyle(textDiv, topPos, leftPos, formWidth, formHeight);
 
       let inputElement = document.createElement("input");
       inputElement.classList.add("text-field-input");
       inputElement.style.display = "none";
       inputElement.addEventListener("input", function () {
+        current_form_id = textId;
         handleText();
       });
 
@@ -2655,8 +2896,8 @@ const eventHandler = async function (e) {
       showOptionAndResizebar(
         TEXTFIELD_OPTION,
         textDiv,
-        textWidth,
-        textHeight,
+        formWidth,
+        formHeight,
         "text"
       );
       const textfieldAlign = document.querySelectorAll(
@@ -2751,17 +2992,19 @@ const eventHandler = async function (e) {
       let comboId = baseId;
       current_form_id = comboId;
 
-      const comboWidth = 300;
-      const comboHeight = 40;
+      formWidth = 300;
+      formHeight = 40;
 
       let comboDiv = document.createElement("div");
       comboDiv.id = "combo" + comboId;
-      addFormElementStyle(comboDiv, topPos, leftPos, comboWidth, comboHeight);
+      addFormElementStyle(comboDiv, topPos, leftPos, formWidth, formHeight);
 
       let selectElement = document.createElement("select");
       selectElement.classList.add("combobox-field-input");
       selectElement.style.display = "none";
       selectElement.addEventListener("change", function () {
+        current_form_id = comboId;
+        console.log(current_form_id);
         handleCombo();
       });
 
@@ -2773,8 +3016,8 @@ const eventHandler = async function (e) {
       showOptionAndResizebar(
         COMBOBOX_OPTION,
         comboDiv,
-        comboWidth,
-        comboHeight,
+        formWidth,
+        formHeight,
         "combo"
       );
       const comboAlign = document.querySelectorAll(
@@ -2919,12 +3162,12 @@ const eventHandler = async function (e) {
       let listId = baseId;
       current_form_id = listId;
 
-      const listWidth = 300;
-      const listHeight = 120;
+      formWidth = 300;
+      formHeight = 120;
 
       let listDiv = document.createElement("div");
       listDiv.id = "list" + listId;
-      addFormElementStyle(listDiv, topPos, leftPos, listWidth, listHeight);
+      addFormElementStyle(listDiv, topPos, leftPos, formWidth, formHeight);
 
       let dropList = document.createElement("div");
       dropList.style.display = "none";
@@ -2937,8 +3180,8 @@ const eventHandler = async function (e) {
       showOptionAndResizebar(
         LIST_OPTION,
         listDiv,
-        listWidth,
-        listHeight,
+        formWidth,
+        formHeight,
         "list"
       );
       const listAlign = document.querySelectorAll(
@@ -3088,8 +3331,8 @@ const eventHandler = async function (e) {
       let buttonId = baseId;
       current_form_id = buttonId;
 
-      const buttonWidth = 160;
-      const buttonHeight = 40;
+      formWidth = 160;
+      formHeight = 40;
 
       let buttonDiv = document.createElement("div");
       buttonDiv.id = "button" + buttonId;
@@ -3097,8 +3340,8 @@ const eventHandler = async function (e) {
         buttonDiv,
         topPos,
         leftPos,
-        buttonWidth,
-        buttonHeight
+        formWidth,
+        formHeight
       );
 
       let buttonAction = document.createElement("div");
@@ -3107,22 +3350,20 @@ const eventHandler = async function (e) {
       buttonAction.addEventListener("click", function (event) {
         let parentElement = event.target.parentNode;
         let newId = parentElement.id.replace("button", "");
-        form_storage.forEach((item) => {
-          if (item.id == newId) {
-            if (item.action === SUBMIT) {
-              form_storage.forEach((item) => {
-                if (item.form_type === RADIO) {
-                  item.data.isReadOnly = true;
-                } else {
-                  item.isReadOnly = true;
+        if (form_storage !== null) {
+          form_storage.forEach((item) => {
+            if (item.id == newId) {
+              if (item.action === SUBMIT) {
+                if (window.confirm('Do you want to submit now?')) {
+                  submitAction();
                 }
-              })
-            }
-            else if (item.action === RESET) {
+              }
+              else if (item.action === RESET) {
 
+              }
             }
-          }
-        })
+          })
+        }
       })
       buttonDiv.append(buttonAction);
 
@@ -3131,8 +3372,8 @@ const eventHandler = async function (e) {
       showOptionAndResizebar(
         BUTTON_OPTION,
         buttonDiv,
-        buttonWidth,
-        buttonHeight,
+        formWidth,
+        formHeight,
         "button"
       );
       const buttonAlign = document.querySelectorAll(
@@ -3234,8 +3475,8 @@ const eventHandler = async function (e) {
       let dateId = baseId;
       current_form_id = dateId;
 
-      const dateWidth = 160;
-      const dateHeight = 40;
+      formWidth = 160;
+      formHeight = 40;
 
       const today = new Date();
       const formattedDate = today.toISOString().split("T")[0];
@@ -3251,7 +3492,7 @@ const eventHandler = async function (e) {
 
       let dateDiv = document.createElement("div");
       dateDiv.id = "date" + dateId;
-      addFormElementStyle(dateDiv, topPos, leftPos, dateWidth, dateHeight);
+      addFormElementStyle(dateDiv, topPos, leftPos, formWidth, formHeight);
 
       dateDiv.classList.add("textfield-content");
       dateDiv.append(newDate);
@@ -3261,8 +3502,8 @@ const eventHandler = async function (e) {
       showOptionAndResizebar(
         DATE_OPTION,
         dateDiv,
-        dateWidth,
-        dateHeight,
+        formWidth,
+        formHeight,
         "date"
       );
 
@@ -3375,8 +3616,8 @@ const eventHandler = async function (e) {
       let signatureId = baseId;
       current_form_id = signatureId;
 
-      const signatureWidth = 200;
-      const signatureHeight = 50;
+      formWidth = 200;
+      formHeight = 50;
 
       const signatureContainer = document.createElement("div");
       signatureContainer.id = "signature" + signatureId;
@@ -3384,8 +3625,8 @@ const eventHandler = async function (e) {
         signatureContainer,
         topPos,
         leftPos,
-        signatureWidth,
-        signatureHeight
+        formWidth,
+        formHeight
       );
       signatureContainer.style.display = "flex";
       signatureContainer.style.alignItems = "center";
@@ -3401,78 +3642,80 @@ const eventHandler = async function (e) {
 
       resizeCanvas(signatureContainer.id, SIGNATURE, signatureId);
       signatureContainer.addEventListener("click", () => {
-        current_signature_id = signatureId;
+        if (!isEditing) {
+          current_signature_id = signatureId;
 
-        let istooltipshow = false;
+          let istooltipshow = false;
 
-        if (
-          document.getElementById("signature_tooltipbar" + current_signature_id)
-        ) {
-          istooltipshow = true;
-        }
+          if (
+            document.getElementById("signature_tooltipbar" + current_signature_id)
+          ) {
+            istooltipshow = true;
+          }
 
-        if (isDragging) {
-          isDragging = false;
-        } else {
-          if (!istooltipshow) {
-            let tooltipbar = document.createElement("div");
-            current_form_id = signatureId;
-            addDeleteButton(
-              current_signature_id,
-              tooltipbar,
-              signatureContainer,
-              "signature"
-            );
+          if (isDragging) {
+            isDragging = false;
           } else {
-            document
-              .getElementById("signature_tooltipbar" + current_signature_id)
-              .remove();
+            if (!istooltipshow) {
+              let tooltipbar = document.createElement("div");
+              current_form_id = signatureId;
+              addDeleteButton(
+                current_signature_id,
+                tooltipbar,
+                signatureContainer,
+                "signature"
+              );
+            } else {
+              document
+                .getElementById("signature_tooltipbar" + current_signature_id)
+                .remove();
+            }
           }
         }
       });
 
       signatureContainer.addEventListener("dblclick", () => {
-        const signature_creator = document.getElementById(SIGNATURE_OPTION);
-        signature_creator.style.display = "flex";
-        document.getElementById("signature-initial-tab").click();
-        resetCanvas();
-        document.getElementById("signature-close").onclick = function () {
-          signature_creator.style.display = "none";
-        };
-        document.getElementById("signature-create").onclick = function () {
-          let canvas;
-          signature_creator.style.display = "none";
-          if (currentSignType == DRAW) {
-            canvas = document
-              .getElementById("signature-draw-body")
-              .querySelector("canvas");
-            signatureImgData = cropCanvas(canvas);
-            handleSignature();
-            createAndAppendImage(signatureImgData, signatureContainer, signatureId);
-          } else if (currentSignType == TYPE) {
-            canvas = document.getElementById("signature-type-canvas");
-            signatureImgData = cropCanvas(canvas);
-            handleSignature();
-            createAndAppendImage(signatureImgData, signatureContainer, signatureId);
-          } else if (currentSignType == UPLOAD) {
-            const file = document.getElementById("signature-image-input")
-              .files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = function (e) {
-                signatureImgData = e.target.result;
-                handleSignature();
-                createAndAppendImage(signatureImgData, signatureContainer, signatureId);
-              };
-              reader.readAsDataURL(file);
-            } else {
-              alert("Please select an image file.");
+        if (!isSubmit) {
+          const signature_creator = document.getElementById(SIGNATURE_OPTION);
+          signature_creator.style.display = "flex";
+          document.getElementById("signature-initial-tab").click();
+          resetCanvas();
+          document.getElementById("signature-close").onclick = function () {
+            signature_creator.style.display = "none";
+          };
+          document.getElementById("signature-create").onclick = function () {
+            let canvas;
+            signature_creator.style.display = "none";
+            if (currentSignType == DRAW) {
+              canvas = document
+                .getElementById("signature-draw-body")
+                .querySelector("canvas");
+              signatureImgData = cropCanvas(canvas);
+              handleSignature();
+              createAndAppendImage(signatureImgData, signatureContainer, signatureId);
+            } else if (currentSignType == TYPE) {
+              canvas = document.getElementById("signature-type-canvas");
+              signatureImgData = cropCanvas(canvas);
+              handleSignature();
+              createAndAppendImage(signatureImgData, signatureContainer, signatureId);
+            } else if (currentSignType == UPLOAD) {
+              const file = document.getElementById("signature-image-input")
+                .files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                  signatureImgData = e.target.result;
+                  handleSignature();
+                  createAndAppendImage(signatureImgData, signatureContainer, signatureId);
+                };
+                reader.readAsDataURL(file);
+              } else {
+                alert("Please select an image file.");
+              }
             }
-          }
-
-        };
+          };
+        }
       });
-
       break;
     default:
       break;
@@ -3563,6 +3806,7 @@ const flatten = async function () {
 };
 
 async function addFormElements() {
+  console.log(form_storage);
   const fontStyles = {
     Courier: PDFLib.StandardFonts.Courier,
     CourierBold: PDFLib.StandardFonts.CourierBold,
@@ -3627,8 +3871,9 @@ async function addFormElements() {
             backgroundColor: PDFLib.rgb(1, 1, 1),
             borderColor: PDFLib.rgb(1, 1, 1),
           });
-          console.log("first", form_storage);
-          if (form_item.isChecked) checkboxForm.check();
+          if (form_item.isChecked) {
+            checkboxForm.check();
+          }
           if (form_item.isReadOnly) checkboxForm.enableReadOnly();
           break;
         case RADIO:
@@ -3662,6 +3907,7 @@ async function addFormElements() {
           break;
         case TEXTFIELD:
           textfieldForm = form.createTextField(form_item.form_field_name);
+          textfieldForm.setText(form_item.initialValue);
           textfieldForm.addToPage(page, {
             x: form_item.x,
             y: form_item.y - form_item.height,
@@ -3675,47 +3921,82 @@ async function addFormElements() {
           textfieldForm.defaultUpdateAppearances(customFont);
           textfieldForm.setFontSize(form_item.fontSize);
           textfieldForm.setAlignment(form_item.align);
-          textfieldForm.setText(form_item.initialValue);
           if (form_item.isReadOnly) textfieldForm.enableReadOnly();
           break;
         case COMBOBOX:
           comboboxForm = form.createDropdown(form_item.form_field_name);
           comboboxForm.addOptions(form_item.optionArray);
-          comboboxForm.addToPage(page, {
-            x: form_item.x,
-            y: form_item.y - form_item.height,
-            width: form_item.width,
-            height: form_item.height,
-            textColor: PDFLib.rgb(r, g, b),
-            backgroundColor: PDFLib.rgb(1, 1, 1),
-            borderSize: 1,
-            borderColor: PDFLib.rgb(0.23, 0.23, 0.23),
-          });
-          comboboxForm.updateAppearances(customFont);
-          comboboxForm.defaultUpdateAppearances(customFont);
-          comboboxForm.setFontSize(form_item.fontSize);
-          if (form_item.initialValue)
-            comboboxForm.select(form_item.initialValue);
-          if (form_item.isReadOnly) comboboxForm.enableReadOnly();
+          if (!form_item.isReadOnly) {
+            console.log('not readonly')
+            if (form_item.initialValue)
+              comboboxForm.select(form_item.initialValue);
+            comboboxForm.addToPage(page, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              textColor: PDFLib.rgb(r, g, b),
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+              borderWidth: 1,
+              borderColor: PDFLib.rgb(0.23, 0.23, 0.23),
+            });
+            comboboxForm.updateAppearances(customFont);
+            comboboxForm.defaultUpdateAppearances(customFont);
+            comboboxForm.setFontSize(form_item.fontSize);
+          } else {
+            console.log('readonly')
+            if (form_item.initialValue)
+              comboboxForm.select(form_item.initialValue);
+            comboboxForm.addToPage(page, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              textColor: PDFLib.rgb(r, g, b),
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+              borderWidth: 0
+            });
+            comboboxForm.updateAppearances(customFont);
+            comboboxForm.defaultUpdateAppearances(customFont);
+            comboboxForm.setFontSize(form_item.fontSize);
+            comboboxForm.enableReadOnly();
+          }
           break;
         case LIST:
-          listboxForm = form.createOptionList(form_item.form_field_name);
-          listboxForm.addOptions(form_item.optionArray);
-          listboxForm.addToPage(page, {
-            x: form_item.x,
-            y: form_item.y - form_item.height,
-            width: form_item.width,
-            height: form_item.height,
-            textColor: PDFLib.rgb(r, g, b),
-            backgroundColor: PDFLib.rgb(1, 1, 1),
-            borderColor: PDFLib.rgb(1, 1, 1),
-          });
-          listboxForm.updateAppearances(customFont);
-          listboxForm.defaultUpdateAppearances(customFont);
-          listboxForm.setFontSize(form_item.fontSize);
-          if (form_item.initialValue)
-            listboxForm.select(form_item.initialValue);
-          if (form_item.isReadOnly) listboxForm.enableReadOnly();
+          if (form_item.isReadOnly) {
+            listboxForm = form.createTextField(form_item.form_field_name);
+            listboxForm.setText(form_item.initialValue);
+            listboxForm.addToPage(page, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: 75 * 0.75 * 0.75,
+              height: form_item.height,
+              textColor: PDFLib.rgb(r, g, b),
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+              borderColor: PDFLib.rgb(1, 1, 1),
+            });
+            listboxForm.updateAppearances(customFont);
+            listboxForm.defaultUpdateAppearances(customFont);
+            listboxForm.setFontSize(form_item.fontSize);
+            listboxForm.enableReadOnly();
+          } else {
+            listboxForm = form.createOptionList(form_item.form_field_name);
+            listboxForm.addOptions(form_item.optionArray);
+            listboxForm.addToPage(page, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              textColor: PDFLib.rgb(r, g, b),
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+              borderColor: PDFLib.rgb(1, 1, 1),
+            });
+            listboxForm.updateAppearances(customFont);
+            listboxForm.defaultUpdateAppearances(customFont);
+            listboxForm.setFontSize(form_item.fontSize);
+            if (form_item.initialValue)
+              listboxForm.select(form_item.initialValue);
+          }
           break;
         case BUTTON:
           buttonfieldForm = form.createButton(form_item.form_field_name);
@@ -3792,13 +4073,15 @@ async function addFormElements() {
           });
           break;
         case SIGNATURE:
-          const pngImage = await pdfDoc.embedPng(form_item.imgData);
-          page.drawImage(pngImage, {
-            x: form_item.x,
-            y: form_item.y - form_item.height,
-            width: form_item.width,
-            height: form_item.height,
-          });
+          if (form_item.imgData != undefined) {
+            const pngImage = await pdfDoc.embedPng(form_item.imgData);
+            page.drawImage(pngImage, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+            });
+          }
           break;
         case SHAPE:
           const shapeImage = await pdfDoc.embedPng(form_item.imgData);
@@ -3808,7 +4091,6 @@ async function addFormElements() {
             width: form_item.width,
             height: form_item.height,
           });
-          console.log("first");
           break;
         default:
           break;
@@ -3854,11 +4136,14 @@ async function addFormElements() {
 const changeMode = () => {
   const switchEditInsert = document.getElementById("switchEditInsert");
   const formfields = document.querySelectorAll(".form-fields");
+  const checkfields = document.querySelectorAll(".checkmark");
+  const radiofields1 = document.querySelectorAll(".radioinputchild");
+  const radiofields2 = document.querySelectorAll(".checkmark-radio");
   const textfields = document.querySelectorAll(".text-field-input");
   const combofields = document.querySelectorAll(".combobox-field-input");
+  const combovalues = document.querySelectorAll(".combobox-field-value");
   const listfields = document.querySelectorAll(".list-field-input");
   const buttonfields = document.querySelectorAll(".button-field-input");
-  console.log(buttonfields)
   if (isEditing) {
     switchEditInsert.innerHTML = `
       <p>Edit Mode</p>
@@ -3868,6 +4153,15 @@ const changeMode = () => {
     sidebar.querySelectorAll("button").forEach((item) => {
       item.disabled = false;
     });
+
+    formfields.forEach((item) => {
+      item.style.background = "#3C97FE";
+    });
+
+    // Disable all checkbox and radiobutton field to input
+    checkfields.forEach((item) => (item.style.display = "none"));
+    radiofields1.forEach((item) => (item.style.display = "none"));
+    radiofields2.forEach((item) => (item.style.display = "none"));
 
     // Disable all text field to input
     textfields.forEach((item) => (item.style.display = "none"));
@@ -3892,100 +4186,136 @@ const changeMode = () => {
     // Disable resize and move for all form fields
     formfields.forEach((item) => {
       if (item.querySelector("#topLeft")) removeResizebar(item.id);
+      if (item.querySelector(".delete-button")) item.querySelector(".delete-button").remove();
+      item.style.background = "white";
+      item.style.border = "1px solid #3C97FE";
+      item.style.color = "#3C97FE";
+    });
+    // Enable all checkbox and radio field to input
+    checkfields.forEach((item) => {
+      item.style.display = "flex";
+
+    });
+    radiofields1.forEach((item) => {
+      item.style.display = "inline-block";
+    });
+    radiofields2.forEach((item) => {
+      item.style.display = "inline-block";
     });
     // Enable all text field to input
     textfields.forEach((item) => {
       item.style.display = "block";
-      form_storage.forEach((formItem) => {
-        let formId = item.parentNode.id.replace("text", "");
-        if (formItem.id == formId) {
-          // if(formItem.isBold) item.style.fontWeight = "bold";
-          // else item.style.fontWeight = "normal";
-          // if(formItem.isItalic) item.style.fontStyle = "italic";
-          // else item.style.fontStyle = "normal";
-          item.style.fontSize = formItem.fontSize / 0.75 + "px";
-          item.style.color = formItem.textColor;
-          item.style.fontFamily = formItem.regularFontStyle;
-          if (formItem.align == 0) item.style.textAlign = "left";
-          else if (formItem.align == 1) item.style.textAlign = "center";
-          else if (formItem.align == 2) item.style.textAlign = "right";
-        }
-      });
+      if (form_storage !== null) {
+        form_storage.forEach((formItem) => {
+          let formId = item.parentNode.id.replace("text", "");
+          if (formItem.id == formId) {
+            // if(formItem.isBold) item.style.fontWeight = "bold";
+            // else item.style.fontWeight = "normal";
+            // if(formItem.isItalic) item.style.fontStyle = "italic";
+            // else item.style.fontStyle = "normal";
+            item.style.fontSize = formItem.fontSize / 0.75 + "px";
+            item.style.color = formItem.textColor;
+            item.style.fontFamily = formItem.regularFontStyle;
+            if (formItem.align == 0) item.style.textAlign = "left";
+            else if (formItem.align == 1) item.style.textAlign = "center";
+            else if (formItem.align == 2) item.style.textAlign = "right";
+          }
+        });
+      }
     });
     // Enable all combobox fields
     combofields.forEach((item) => {
       item.style.display = "block";
-      form_storage.forEach((formItem) => {
-        let formId = item.parentNode.id.replace("combo", "");
-        if (formItem.id == formId) {
-          item.style.fontSize = formItem.fontSize / 0.75 + "px";
-          item.style.color = formItem.textColor;
-          item.style.fontFamily = formItem.regularFontStyle;
-          if (formItem.optionArray.length != 0) {
-            item.innerHTML = "";
-            formItem.optionArray.forEach((optionItem) => {
-              let optionElement = document.createElement("option");
-              optionElement.value = optionItem;
-              optionElement.text = optionItem;
-              item.append(optionElement);
-            });
+      if (form_storage !== null) {
+        form_storage.forEach((formItem) => {
+          let formId = item.parentNode.id.replace("combo", "");
+          if (formItem.id == formId) {
+            item.style.fontSize = formItem.fontSize / 0.75 + "px";
+            item.style.color = formItem.textColor;
+            item.style.fontFamily = formItem.regularFontStyle;
+            if (formItem.optionArray.length != 0) {
+              item.innerHTML = "";
+              formItem.optionArray.forEach((optionItem) => {
+                let optionElement = document.createElement("option");
+                optionElement.value = optionItem;
+                optionElement.text = optionItem;
+                item.append(optionElement);
+              });
+            }
           }
-        }
-      });
+        });
+      }
+    });
+    combovalues.forEach((item) => {
+      if (form_storage !== null) {
+        form_storage.forEach((formItem) => {
+          let formId = item.parentNode.id.replace("combo", "");
+          if (formItem.id == formId) {
+            item.style.fontSize = formItem.fontSize / 0.75 + "px";
+            item.style.color = formItem.textColor;
+            item.style.fontFamily = formItem.regularFontStyle;
+          }
+        });
+      }
     });
     // Enable all listbox fields
     listfields.forEach((item) => {
       let activeElement = null;
       item.style.display = "block";
-      form_storage.forEach((formItem) => {
-        let formId = item.parentNode.id.replace("list", "");
-        if (formItem.id == formId) {
-          item.style.fontSize = formItem.fontSize / 0.75 + "px";
-          item.style.color = formItem.textColor;
-          item.style.fontFamily = formItem.regularFontStyle;
-          if (formItem.optionArray.length != 0) {
-            item.innerHTML = "";
-            formItem.optionArray.forEach((optionItem) => {
-              let optionElement = document.createElement("p");
-              optionElement.onclick = function () {
-                if (activeElement) {
-                  activeElement.classList.remove("active");
+      if (form_storage !== null) {
+        form_storage.forEach((formItem) => {
+          let formId = item.parentNode.id.replace("list", "");
+          if (formItem.id == formId) {
+            item.style.fontSize = formItem.fontSize / 0.75 + "px";
+            item.style.color = formItem.textColor;
+            item.style.fontFamily = formItem.regularFontStyle;
+            if (formItem.optionArray.length != 0) {
+              item.innerHTML = "";
+              formItem.optionArray.forEach((optionItem) => {
+                let optionElement = document.createElement("p");
+                optionElement.onclick = function () {
+                  if (activeElement) {
+                    activeElement.classList.remove("active");
+                  }
+                  current_form_id = formId;
+                  optionElement.classList.add("active");
+                  activeElement = optionElement;
+                  handleList();
                 }
-                optionElement.classList.add("active");
-                activeElement = optionElement;
-                handleList();
-              }
-              optionElement.textContent = optionItem;
-              item.append(optionElement);
-            });
+                optionElement.textContent = optionItem;
+                item.append(optionElement);
+              });
+            }
           }
-        }
-      });
+        });
+      }
     })
     // Enable all button fields
     buttonfields.forEach((item) => {
       item.style.display = "flex";
-      form_storage.forEach((formItem) => {
-        let formId = item.parentNode.id.replace("button", "");
-        if (formItem.id == formId) {
-          item.style.fontSize = formItem.fontSize / 0.75 + "px";
-          item.style.color = formItem.textColor;
-          item.style.fontFamily = formItem.regularFontStyle;
-          item.textContent = formItem.text;
-        }
-      })
+      if (form_storage !== null) {
+        form_storage.forEach((formItem) => {
+          let formId = item.parentNode.id.replace("button", "");
+          if (formItem.id == formId) {
+            item.style.fontSize = formItem.fontSize / 0.75 + "px";
+            item.style.color = formItem.textColor;
+            item.style.fontFamily = formItem.regularFontStyle;
+            item.textContent = formItem.text;
+          }
+        })
+      }
     })
   }
 };
 
 function toggleCheckbox(id) {
-  if (isEditing) {
+  if (isEditing && !isSubmit) {
     const checkbox = document.getElementById(id);
     checkbox.classList.toggle("checked");
   }
 }
 function selectRadioButton(element, id) {
-  if (isEditing) {
+  if (isEditing && !isSubmit) {
     // Find the radio input within the clicked div
     let radioInput = element.querySelector('input[type="radio"]');
 
@@ -4002,7 +4332,6 @@ function selectRadioButton(element, id) {
                   item.data.option === item1.data.option &&
                   item.id != item1.id
                 ) {
-                  console.log("here");
                   item1.isChecked = false;
                 }
               }
@@ -4014,18 +4343,58 @@ function selectRadioButton(element, id) {
   }
 }
 
-const handleEditMode = function (objectId, formId) {
-  console.log('first')
-  form_storage.map((item) => {
-    if (item.form_type == CHECKBOX) {
-      if (item.id === formId) {
-        if (!item.isChecked) {
-          item.isChecked = true;
-        } else {
-          item.isChecked = false;
+const handleEditMode = function (formId) {
+  if (!isSubmit) {
+    form_storage.map((item) => {
+      if (item.form_type == CHECKBOX) {
+        if (item.id === formId) {
+          if (!item.isChecked) {
+            item.isChecked = true;
+          } else {
+            item.isChecked = false;
+          }
         }
       }
-    }
-  });
-  current_form_id = formId;
+    });
+    current_form_id = formId;
+  }
 };
+
+const sendSubmitData = function () {
+  const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+  const formData = new FormData();
+  formData.append('pdfFile', pdfBlob, "uploaded.pdf");
+  formData.append('pdfFormData', JSON.stringify(form_storage));
+  formData.append('name', clientName);
+  formData.append('email', clientEmail);
+
+  fetch(`${BASE_URL}/savedocument`, {
+    method: 'POST',
+    body: formData
+  })
+    .then(response => {
+      if (response.ok) {
+        alert("Thanks for your submitting your document!");
+      } else {
+        console.error('Failed to upload PDF file');
+      }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+const submitDocument = async function () {
+  if (window.confirm('Do you continue to submit now?')) {
+    submitAction();
+    pdfBytes = await PDFViewerApplication.pdfDocument.saveDocument();
+    const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+    pdfBytes = await pdfDoc.save();
+    if (form_storage.length != 0) {
+      addFormElements().then(() => {
+        sendSubmitData();
+      });
+    } else {
+      sendSubmitData();
+    }
+  }
+}

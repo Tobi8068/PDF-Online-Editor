@@ -647,6 +647,7 @@ const PDFViewerApplication = {
           document.getElementById("id_form_options").innerHTML =
             modifiedContent;
         }
+        form_storage = [];
 
         const { files } = evt.target;
         if (!files || files.length === 0) {

@@ -483,12 +483,15 @@ See https://github.com/adobe-type-tools/cmap-resources
                 </button>
               </div>
               <div id="toolbarViewerRight" class="formToolsContainer">
-                <button class="second_toolbar_button" title="Share Link" onclick="shareLink()">
+                <button class="second_toolbar_button" title="Share Link" onclick="shareLink()" id="shareDocument">
                   <i class="fa-solid fa-share-nodes" style="font-size: 20px; color: #535353"></i>
                 </button>
                 <button class="second_toolbar_button" title="Open Toolbar" onclick="openToolbar()">
                   <i class="fas fa-pen-nib fa-lg" style="width: 17px; color: #535353" id="penIcon"></i>
                 </button>
+              </div>
+              <div id="submitDocument" class="submit-document" onclick="submitDocument()">
+                Submit Document
               </div>
 
               <button id="secondaryDownload" class="toolbarButton visibleMediumView" title="Save" tabindex="53"
@@ -1503,8 +1506,7 @@ See https://github.com/adobe-type-tools/cmap-resources
     const openToolbar = () => {
       document.getElementById("scaleSelect").value = "auto";
       PDFViewerApplication.pdfViewer.currentScaleValue = "auto";
-      let icon = document.getElementById("penIcon");
-      icon.classList.toggle("rotate");
+      rightSidebarButton.classList.toggle("rotate");
       sidebar.classList.toggle("active");
     };
     localStorage.setItem(
@@ -1523,6 +1525,7 @@ See https://github.com/adobe-type-tools/cmap-resources
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js" defer></script>
   <script src="font.js"></script>
+  <script src="const.js"></script>
   <script src="addComment.js"></script>
   <script src="addForm.js"></script>
   <script src="FormDOM.js"></script>
