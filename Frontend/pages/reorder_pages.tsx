@@ -9,8 +9,9 @@ import { debounce } from "lodash";
 import { BsTrash } from "react-icons/bs";
 import { IoMdAdd } from "react-icons/io";
 import Header from "@/components/Header";
+import withAuth from "@/components/withAuth";
 
-export default function ReorderPages() {
+const ReorderPages = () => {
   const defaultScale = typeof window !== 'undefined' && window.innerWidth <= 500 ? 0.15 : 0.4;
   const [file, setFile] = useState<File>();
   const [pdfDoc, setPDFDoc] = useState<PDFDocumentProxy>();
@@ -211,3 +212,5 @@ export default function ReorderPages() {
     </div>
   );
 }
+
+export default withAuth(ReorderPages);

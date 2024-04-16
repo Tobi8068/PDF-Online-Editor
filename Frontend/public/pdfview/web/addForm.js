@@ -1,19 +1,8 @@
 let baseId = 0;
-let form_storage = [];
 let draw_form_storage;
 let current_form_id = 0;
 let currentMode = null;
-const CHECKBOX = 1,
-  RADIO = 2,
-  TEXTFIELD = 3,
-  COMBOBOX = 4,
-  LIST = 5,
-  BUTTON = 6,
-  TEXT_CONTENT = 7,
-  DATE = 8,
-  COMMENT = 9,
-  SIGNATURE = 10,
-  SHAPE = 11;
+
 let checkboxCount = 1,
   radioCount = 1,
   textfieldCount = 1,
@@ -46,20 +35,6 @@ let fontStyle = "",
 const SUBMIT = 1,
   RESET = 2,
   NOACTION = 3;
-
-const CHECKBOX_OPTION = "checkbox-option";
-const RADIO_OPTION = "radio-button-option";
-const TEXTFIELD_OPTION = "text-field-option";
-const COMBOBOX_OPTION = "combo-option";
-const LIST_OPTION = "list-option";
-const BUTTON_OPTION = "button-field-option";
-const TEXT_CONTENT_OPTION = "text-content-option";
-const DATE_OPTION = "date-option";
-const SIGNATURE_OPTION = "signature-creator";
-
-const optionIdArray = [CHECKBOX_OPTION,
-  RADIO_OPTION, TEXTFIELD_OPTION, COMBOBOX_OPTION, LIST_OPTION,
-  BUTTON_OPTION, TEXT_CONTENT_OPTION, DATE_OPTION];
 
 const ALIGN_LEFT = 0,
   ALIGN_RIGHT = 2,
@@ -144,7 +119,6 @@ const generalUserMode = function () {
 
 const drawFormElement = function () {
   form_storage = draw_form_storage;
-  console.log("first", draw_form_storage);
   if (form_storage !== null) {
     form_storage.forEach((item) => {
       let id = item.id;
@@ -452,7 +426,6 @@ const drawFormElement = function () {
           selectElement.style.display = "none";
           selectElement.addEventListener("change", function () {
             current_form_id = id;
-            console.log(current_form_id);
             handleCombo();
           });
           // let pElement = document.createElement("p");
@@ -876,6 +849,11 @@ const drawFormElement = function () {
           newDate.classList.add("textcontent");
           newDate.value = item.text;
 
+          newDate.addEventListener("change", () => {
+            current_form_id = dateId;
+            handleDate();
+          });
+
           let dateDiv = document.createElement("div");
           dateDiv.id = "date" + id;
           addFormElementStyle(dateDiv, y, x, width, height);
@@ -988,7 +966,6 @@ const drawFormElement = function () {
           resizeCanvas(dateDiv.id, DATE, id, DATE_OPTION);
           break;
         case SIGNATURE:
-          console.log("id:", id)
           const signatureContainer = document.createElement("div");
           signatureContainer.id = "signature" + id;
           addFormElementStyle(signatureContainer, y, x, width, height);
@@ -1042,7 +1019,6 @@ const drawFormElement = function () {
 
           signatureContainer.addEventListener("dblclick", () => {
             current_form_id = id;
-            console.log("clickid", id)
             if (!isSubmit) {
               const signature_creator = document.getElementById(SIGNATURE_OPTION);
               signature_creator.style.display = "flex";
@@ -1115,13 +1091,15 @@ const drawFormElement = function () {
           shapeContainer.style.left = x + "px";
           shapeContainer.style.width = width + "px";
           shapeContainer.style.height = height + "px";
-          shapeContainer.style.zIndex = 100;
+          shapeContainer.style.zIndex = standardZIndex;
+          shapeContainer.tabIndex = 0;
+          shapeContainer.classList.add("form-fields");
 
           shapeContainer.append(shapeImg);
           pg.appendChild(shapeContainer);
           resizeCanvas(shapeContainer.id, SHAPE, id);
 
-          shapeContainer.addEventListener("click", () => {
+          shapeContainer.addEventListener("dblclick", () => {
             current_shape_id = id;
 
             let istooltipshow = false;
@@ -1184,6 +1162,46 @@ const drawFormElement = function () {
       }
     })
   }
+  if (text_storage !== null) {
+    text_storage.forEach((item) => {
+      let id = item.id;
+      let new_x_y, x, y, width, height;
+      x = item.x;
+      y = item.y;
+      item.baseX = item.x;
+      item.baseY = item.y;
+      new_x_y = PDFViewerApplication.pdfViewer._pages[
+        PDFViewerApplication.page - 1
+      ].viewport.convertToViewportPoint(x, y);
+      x = new_x_y[0];
+      y = new_x_y[1];
+      let pg = document.getElementById(String(item.page_number));
+      const newText = document.createElement("div");
+      let textofStorage = '';
+      item.text.forEach((textitem, index) => {
+        textofStorage += textitem;
+        if (index < item.text.length - 1) {
+          textofStorage += '\n';
+        }
+      })
+      newText.innerHTML = textofStorage.replace(/\n/g, '<br>');
+      newText.classList.add("textcontent");
+
+      const container = document.createElement("div");
+      container.style.position = "absolute";
+      container.style.top = y + "px";
+      container.style.left = x + "px";
+      container.style.width = "fit-content";
+      container.style.height = "fit-content";
+      container.style.zIndex = 101;
+      container.tabIndex = 0;
+      container.append(newText);
+      pg.append(container);
+      newText.style.fontFamily = item.regularFontStyle;
+      newText.style.fontSize = item.baseFontSize;
+      newText.style.color = item.textColor;
+    })
+  }
   generalUserMode();
 }
 
@@ -1221,6 +1239,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
 
         draw_form_storage = JSON.parse(data[0].formData);
+        text_storage = JSON.parse(data[0].textData);
         PDFViewerApplication.open({
           url: URL.createObjectURL(pdfFile),
           originalUrl: pdfFile.name,
@@ -1498,7 +1517,6 @@ const handleCombo = function (e) {
     let currentValue = currentFormText.querySelector(".combobox-field-input").value;
     if (currentValue != "") initialValue = currentValue;
   }
-  console.log(formFieldName);
   for (let i = 0; i < form_storage.length; i++) {
     if (form_storage[i].form_type === COMBOBOX) {
       if (
@@ -1704,20 +1722,24 @@ const addResizebar = function (objectId) {
   bottomRight.classList.add("resize-r");
   bottomRight.classList.add("resize-b");
   const container = document.getElementById(objectId);
-  container.append(
-    top,
-    left,
-    right,
-    bottom,
-    topLeft,
-    topRight,
-    bottomLeft,
-    bottomRight
-  );
+  if (container) {
+    container.classList.add('border-resizebar');
+    container.append(
+      top,
+      left,
+      right,
+      bottom,
+      topLeft,
+      topRight,
+      bottomLeft,
+      bottomRight
+    );
+  }
 };
 
 const removeResizebar = function (objectId) {
   const container = document.getElementById(objectId);
+  container.classList.remove('border-resizebar');
   const resizePoints = [
     "topLeft",
     "top",
@@ -1731,7 +1753,7 @@ const removeResizebar = function (objectId) {
   if (container) {
     resizePoints.forEach((item) => {
       let childElement = document.getElementById(item);
-      if (container.contains(childElement)) {
+      if (container.querySelector(`#${item}`)) {
         container.removeChild(childElement);
       } else {
         console.log("Child element with id " + item + "not found");
@@ -1750,7 +1772,6 @@ const showOption = function (id, x, y) {
   if (fieldOption) {
     if (isOptionPane) fieldOption.style.display = "flex";
     else fieldOption.style.display = "none";
-    fieldOption.style.zIndex = 150;
 
     fieldOption.style.top = y + "px";
     fieldOption.style.left = x + "px";
@@ -1852,39 +1873,48 @@ const handleButton = function (e) {
 };
 
 const handleDate = function (e) {
+  console.log(current_form_id);
+  const text = document.getElementById(current_date_content_id).value;
+
   isOptionPane = false;
-  document.getElementById(DATE_OPTION).style.display = "none";
   if (e) e.stopPropagation();
   const formFieldName = document.getElementById("date-input-name").value;
   fontStyle = generateFontName("date-font-style");
   fontSize = parseInt(document.getElementById("date-font-size").value);
   textColor = document.getElementById("date-font-color").value;
   const regularFont = document.getElementById("date-font-style").value;
-  const text = document.getElementById(current_date_content_id).value;
 
-  for (let i = 0; i < form_storage.length; i++) {
-    if (
-      form_storage[i].form_field_name == formFieldName &&
-      form_storage[i].id == current_form_id
-    ) {
-      form_storage[i].fontStyle = fontStyle;
-      form_storage[i].fontSize = fontSize * 0.75 * 0.8;
-      form_storage[i].textColor = textColor;
-      form_storage[i].text = text;
-      break;
-    } else if (
-      form_storage[i].form_field_name == formFieldName &&
-      form_storage[i].id != current_form_id
-    ) {
-      break;
-    } else if (
-      form_storage[i].form_field_name != formFieldName &&
-      form_storage[i].id == current_form_id
-    ) {
-      form_storage[i].form_field_name = formFieldName;
-      break;
+  if (window.getComputedStyle(document.getElementById(DATE_OPTION)).getPropertyValue('display') !== "none") {
+    document.getElementById(DATE_OPTION).style.display = "none";
+    for (let i = 0; i < form_storage.length; i++) {
+      if (
+        form_storage[i].form_field_name == formFieldName &&
+        form_storage[i].id == current_form_id
+      ) {
+        form_storage[i].fontStyle = fontStyle;
+        form_storage[i].fontSize = fontSize * 0.75 * 0.8;
+        form_storage[i].textColor = textColor;
+        form_storage[i].text = text;
+        break;
+      } else if (
+        form_storage[i].form_field_name == formFieldName &&
+        form_storage[i].id != current_form_id
+      ) {
+        break;
+      } else if (
+        form_storage[i].form_field_name != formFieldName &&
+        form_storage[i].id == current_form_id
+      ) {
+        form_storage[i].form_field_name = formFieldName;
+        break;
+      }
+    }
+  } else {
+    for (let i = 0; i < form_storage.length; i++) {
+      if (form_storage[i].id == current_form_id) form_storage[i].text = text;
     }
   }
+
   let count = 0;
   for (let j = 0; j < form_storage.length; j++) {
     if (form_storage[j].id != current_form_id) count++;
@@ -1921,7 +1951,6 @@ const handleDate = function (e) {
 };
 
 const handleSignature = function () {
-  console.log("signature!", current_form_id);
   for (let i = 0; i < form_storage.length; i++) {
     if (
       form_storage[i].id == current_form_id
@@ -1941,7 +1970,6 @@ const handleSignature = function () {
       count++;
   }
   if (count == signStorage.length || signStorage == null) {
-    console.log("handle")
     form_storage.push({
       id: baseId,
       containerId: "signature" + baseId,
@@ -1958,7 +1986,6 @@ const handleSignature = function () {
       imgData: signatureImgData,
     });
   }
-  console.log(form_storage)
 };
 
 // Resize and move canvas using Interact.js library.
@@ -1979,40 +2006,44 @@ const resizeCanvas = function (id, type, currentId, optionId) {
 
       listeners: {
         move(event) {
-          var target = event.target;
-          let x = parseFloat(target.getAttribute("data-x")) || 0;
-          let y = parseFloat(target.getAttribute("data-y")) || 0;
+          if (!isEditing) {
+            var target = event.target;
+            let x = parseFloat(target.getAttribute("data-x")) || 0;
+            let y = parseFloat(target.getAttribute("data-y")) || 0;
 
-          // update the element's style
-          target.style.width = event.rect.width + "px";
-          target.style.height = event.rect.height + "px";
+            // update the element's style
+            target.style.width = event.rect.width + "px";
+            target.style.height = event.rect.height + "px";
 
-          // translate when resizing from top or left edges
-          x += event.deltaRect.left;
-          y += event.deltaRect.top;
+            // translate when resizing from top or left edges
+            x += event.deltaRect.left;
+            y += event.deltaRect.top;
 
-          target.style.transform = "translate(" + x + "px," + y + "px)";
+            target.style.transform = "translate(" + x + "px," + y + "px)";
 
-          target.setAttribute("data-x", x);
-          target.setAttribute("data-y", y);
+            target.setAttribute("data-x", x);
+            target.setAttribute("data-y", y);
 
-          resizeHandler(event.rect.width, event.rect.height, currentId);
-          showOption(
-            optionId,
-            event.rect.width / 2 - 180,
-            event.rect.height + 15
-          );
+            resizeHandler(event.rect.width, event.rect.height, currentId);
+            showOption(
+              optionId,
+              event.rect.width / 2 - 180,
+              event.rect.height + 15
+            );
+          }
         },
         end(event) {
-          let target = event.target;
-          let x = parseFloat(target.getAttribute("data-x")) || 0;
-          let y = parseFloat(target.getAttribute("data-y")) || 0;
-          // update the element's style
-          target.style.width = event.rect.width + "px";
-          target.style.height = event.rect.height + "px";
-          target.setAttribute("data-x", x);
-          target.setAttribute("data-y", y);
-          moveEventHandler(event, x, y, currentId);
+          if (!isEditing) {
+            let target = event.target;
+            let x = parseFloat(target.getAttribute("data-x")) || 0;
+            let y = parseFloat(target.getAttribute("data-y")) || 0;
+            // update the element's style
+            target.style.width = event.rect.width + "px";
+            target.style.height = event.rect.height + "px";
+            target.setAttribute("data-x", x);
+            target.setAttribute("data-y", y);
+            moveEventHandler(event, x, y, currentId);
+          }
         },
       },
       modifiers: [
@@ -2032,211 +2063,155 @@ const resizeCanvas = function (id, type, currentId, optionId) {
     .draggable({
       listeners: {
         move(event) {
-          var target = event.target;
-          // keep the dragged position in the data-x/data-y attributes
-          var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
-          var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
-          if (DrawType === RADIO) {
-            form_storage.map(function (item) {
-              if (item.id === parseInt(currentId)) {
-                let posXpdf = item.data.baseX + x * 0.75 * 0.8;
-                let posYpdf =
-                  item.data.baseY - y * 0.75 * 0.8 - item.data.height;
-                if (posXpdf < 0) {
-                  newX = 0 - item.data.baseX / 0.75 / 0.8;
-                } else if (posXpdf + item.data.width >= pageWidth) {
-                  newX =
-                    (pageWidth - item.data.width - item.data.baseX) /
-                    0.75 /
-                    0.8;
-                } else newX = x;
-                if (posYpdf < 0) {
-                  newY = (item.data.baseY - item.data.height) / 0.75 / 0.8;
-                } else if (posYpdf + item.data.height >= pageHeight) {
-                  newY = (item.data.baseY - pageHeight) / 0.75 / 0.8;
-                } else newY = y;
-              }
-            });
-          } else if (DrawType === TEXT_CONTENT) {
-            text_storage.map(function (item) {
-              if (item.id === parseInt(currentId)) {
-                let posXpdf = item.baseX + x * 0.75 * 0.8;
-                let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
-                if (posXpdf < 0) {
-                  newX = 0 - item.baseX / 0.75 / 0.8;
-                } else if (posXpdf + item.width >= pageWidth) {
-                  newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
-                } else newX = x;
-                if (posYpdf < 0) {
-                  newY = (item.baseY - item.height) / 0.75 / 0.8;
-                } else if (posYpdf + item.height >= pageHeight) {
-                  newY = (item.baseY - pageHeight) / 0.75 / 0.8;
-                } else newY = y;
-              }
-            });
-          } else if (DrawType === COMMENT) {
-            comment_storage.map(function (item) {
-              if (item.id === parseInt(currentId)) {
-                let posXpdf = item.baseX + x * 0.75 * 0.8;
-                let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
-                if (posXpdf < 0) {
-                  newX = 0 - item.baseX / 0.75 / 0.8;
-                } else if (posXpdf + item.width >= pageWidth) {
-                  newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
-                } else newX = x;
-                if (posYpdf < 0) {
-                  newY = (item.baseY - item.height) / 0.75 / 0.8;
-                } else if (posYpdf + item.height >= pageHeight) {
-                  newY = (item.baseY - pageHeight) / 0.75 / 0.8;
-                } else newY = y;
-              }
-            });
-          } else {
-            form_storage.map(function (item) {
-              if (item.id === parseInt(currentId)) {
-                let posXpdf = item.baseX + x * 0.75 * 0.8;
-                let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
-                if (posXpdf < 0) {
-                  newX = 0 - item.baseX / 0.75 / 0.8;
-                } else if (posXpdf + item.width >= pageWidth) {
-                  newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
-                } else newX = x;
-                if (posYpdf < 0) {
-                  newY = (item.baseY - item.height) / 0.75 / 0.8;
-                } else if (posYpdf + item.height >= pageHeight) {
-                  newY = (item.baseY - pageHeight) / 0.75 / 0.8;
-                } else newY = y;
-              }
-            });
-          }
-          // translate the element
-          target.style.transform = "translate(" + newX + "px, " + newY + "px)";
+          if (!isEditing) {
+            var target = event.target;
+            // keep the dragged position in the data-x/data-y attributes
+            var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
+            var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+            if (DrawType === RADIO) {
+              form_storage.map(function (item) {
+                if (item.id === parseInt(currentId)) {
+                  if (item.data.baseX && item.data.baseY) {
+                    let posXpdf = item.data.baseX + x * 0.75 * 0.8;
+                    let posYpdf =
+                      item.data.baseY - y * 0.75 * 0.8 - item.data.height;
+                    if (posXpdf < 0) {
+                      newX = 0 - item.data.baseX / 0.75 / 0.8;
+                    } else if (posXpdf + item.data.width >= pageWidth) {
+                      newX =
+                        (pageWidth - item.data.width - item.data.baseX) /
+                        0.75 /
+                        0.8;
+                    } else newX = x;
+                    if (posYpdf < 0) {
+                      newY = (item.data.baseY - item.data.height) / 0.75 / 0.8;
+                    } else if (posYpdf + item.data.height >= pageHeight) {
+                      newY = (item.data.baseY - pageHeight) / 0.75 / 0.8;
+                    } else newY = y;
+                  }
+                }
+              });
+            } else if (DrawType === TEXT_CONTENT) {
+              text_storage.map(function (item) {
+                if (item.id === parseInt(currentId)) {
+                  let posXpdf = item.baseX + x * 0.75 * 0.8;
+                  let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
+                  if (posXpdf < 0) {
+                    newX = 0 - item.baseX / 0.75 / 0.8;
+                  } else if (posXpdf + item.width >= pageWidth) {
+                    newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
+                  } else newX = x;
+                  if (posYpdf < 0) {
+                    newY = (item.baseY - item.height) / 0.75 / 0.8;
+                  } else if (posYpdf + item.height >= pageHeight) {
+                    newY = (item.baseY - pageHeight) / 0.75 / 0.8;
+                  } else newY = y;
+                }
+              });
+            } else if (DrawType === COMMENT) {
+              comment_storage.map(function (item) {
+                if (item.id === parseInt(currentId)) {
+                  let posXpdf = item.baseX + x * 0.75 * 0.8;
+                  let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
+                  if (posXpdf < 0) {
+                    newX = 0 - item.baseX / 0.75 / 0.8;
+                  } else if (posXpdf + item.width >= pageWidth) {
+                    newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
+                  } else newX = x;
+                  if (posYpdf < 0) {
+                    newY = (item.baseY - item.height) / 0.75 / 0.8;
+                  } else if (posYpdf + item.height >= pageHeight) {
+                    newY = (item.baseY - pageHeight) / 0.75 / 0.8;
+                  } else newY = y;
+                }
+              });
+            } else {
+              form_storage.map(function (item) {
+                if (item.id === parseInt(currentId)) {
+                  let posXpdf = item.baseX + x * 0.75 * 0.8;
+                  let posYpdf = item.baseY - y * 0.75 * 0.8 - item.height;
+                  if (posXpdf < 0) {
+                    newX = 0 - item.baseX / 0.75 / 0.8;
+                  } else if (posXpdf + item.width >= pageWidth) {
+                    newX = (pageWidth - item.width - item.baseX) / 0.75 / 0.8;
+                  } else newX = x;
+                  if (posYpdf < 0) {
+                    newY = (item.baseY - item.height) / 0.75 / 0.8;
+                  } else if (posYpdf + item.height >= pageHeight) {
+                    newY = (item.baseY - pageHeight) / 0.75 / 0.8;
+                  } else newY = y;
+                }
+              });
+            }
+            // translate the element
+            target.style.transform = "translate(" + newX + "px, " + newY + "px)";
 
-          // update the position attributes
-          target.setAttribute("data-x", newX);
-          target.setAttribute("data-y", newY);
+            // update the position attributes
+            target.setAttribute("data-x", newX);
+            target.setAttribute("data-y", newY);
+          }
         },
         end(event) {
-          const target = event.target;
-          var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
-          var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
-          moveEventHandler(event, newX, newY, currentId);
+          if (!isEditing) {
+            const target = event.target;
+            var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
+            var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+            moveEventHandler(event, newX, newY, currentId);
+          }
         },
       },
     });
-  if (isSubmit) {
-    interactInstance.draggable(false);
-  } else {
-    interactInstance.draggable(true);
-  }
-  if (DrawType == TEXT_CONTENT) {
-    let containerId = `text-content${current_text_num_id}`;
-    let container = document.getElementById(containerId);
-    let currentText = document.getElementById(current_text_content_id);
-    currentText.addEventListener("focus", function () {
-      if (!container.classList.contains("textfield-content"))
-        container.classList.add("textfield-content");
-      if (!document.getElementById("topLeft")) addResizebar(containerId);
-    });
-    container.addEventListener("dblclick", function (event) {
-      event.stopPropagation();
-      if (!container.classList.contains("textfield-content"))
-        container.classList.add("textfield-content");
-      interactInstance.draggable(false);
-    });
-
-    container.addEventListener("focus", function () {
-      interactInstance.draggable(false);
-      if (!container.classList.contains("textfield-content"))
-        container.classList.add("textfield-content");
-      if (!document.getElementById("topLeft")) addResizebar(containerId);
-    });
-    container.addEventListener("blur", function (event) {
-      interactInstance.draggable(true);
-      if (document.getElementById("topLeft") && container)
-        removeResizebar(containerId);
-      if (container.classList.contains("textfield-content"))
-        container.classList.remove("textfield-content");
-      const deleteButton = document.getElementById(
-        "text-content_tooltipbar" + current_text_num_id
-      );
-      if (deleteButton) deleteButton.remove();
-      const inputElements = container.querySelectorAll("input");
-      const selectElements = container.querySelectorAll("select");
-      const buttonElements = container.querySelectorAll("button");
-
-      if (
-        !event.relatedTarget ||
-        ![...inputElements, ...selectElements, ...buttonElements].includes(
-          event.relatedTarget
-        )
-      ) {
-        document.getElementById(TEXT_CONTENT_OPTION).style.display = "none";
-      }
-    });
-  } else if (DrawType == SIGNATURE) {
-    let currentSignId = `signature${currentId}`;
-    let signatureContainer = document.getElementById(currentSignId);
-    let signatureImg = document.getElementById(`signatureImg${currentId}`);
-    document.addEventListener("click", function (event) {
-      if (!isEditing) {
-        if (
-          event.target === signatureImg ||
-          event.target === signatureContainer
-        ) {
-          if (!document.getElementById("topLeft")) {
-            document
-              .getElementById(currentSignId)
-              .classList.add("border-resizebar");
-            addResizebar(currentSignId);
-          }
-        } else {
-          if (signatureContainer && signatureContainer.querySelector("#topLeft")) {
-            document
-              .getElementById(currentSignId)
-              .classList.remove("border-resizebar");
-            removeResizebar(currentSignId);
-            const deleteSign = document.getElementById(
-              `signature_tooltipbar${current_signature_id}`
-            );
-            if (deleteSign) deleteSign.remove();
-          }
-        }
-      }
-    });
-  } else if (DrawType === SHAPE) {
-    let currentShapeId = `shape${currentId}`;
-    let shapeImg = document.getElementById(`shapeImg${currentId}`);
-    document.addEventListener("click", function (event) {
-      if (!isEditing) {
-        if (event.target === shapeImg) {
-          if (!document.getElementById("topLeft")) {
-            document
-              .getElementById(currentShapeId)
-              .classList.add("border-resizebar");
-            addResizebar(currentShapeId);
-          }
-        } else {
-          if (document.getElementById("topLeft")) {
-            document
-              .getElementById(currentShapeId)
-              .classList.remove("border-resizebar");
-            removeResizebar(currentShapeId);
-            const deleteShape = document.getElementById(
-              `shape_tooltipbar${current_shape_id}`
-            );
-            if (deleteShape) deleteShape.remove();
-          }
-        }
-      }
-    });
-  } else {
-  }
-
 };
 
-document.addEventListener("click", function (event) {
+const saveFormElementByClick = function () {
+  const elementsToRemove = [
+    document.getElementById(`checkbox_tooltipbar${current_form_id}`),
+    document.getElementById(`radio_tooltipbar${current_form_id}`),
+    document.getElementById(`text_tooltipbar${current_form_id}`),
+    document.getElementById(`combo_tooltipbar${current_form_id}`),
+    document.getElementById(`list_tooltipbar${current_form_id}`),
+    document.getElementById(`button_tooltipbar${current_form_id}`),
+    document.getElementById(`date_tooltipbar${current_form_id}`),
+    document.getElementById(`text-content_tooltipbar${current_text_num_id}`),
+    document.getElementById(`shape_tooltipbar${current_form_id}`)
+  ];
+  const optionElements = [checkboxOption, radioOption, textFieldOption, comboOption, listOption, buttonOption, dateOption, textContentOption];
+  const handlers = [handleCheckbox, handleRadio, handleText, handleCombo, handleList, handleButton, handleDate, handleTextContent];
+
+  for (let i = 0; i < optionElements.length; i++) {
+    if (window.getComputedStyle(optionElements[i]).getPropertyValue('display') !== "none") {
+      handlers[i]();
+    }
+  }
+  elementsToRemove.forEach(element => {
+    if (element) {
+      element.remove();
+    }
+  });
+  if (form_storage.length != 0) {
+    form_storage.forEach((item) => {
+      let currentItem = document.getElementById(item.containerId);
+      currentItem.style.zIndex = standardZIndex;
+      console.log(currentItem)
+      if (currentItem.classList.contains("textfield-content"))
+        currentItem.classList.remove("textfield-content");
+    })
+  }
+  if (text_storage.length != 0) {
+    text_storage.forEach((item) => {
+      let currentItem = document.getElementById(item.containerId);
+      if (currentItem) {
+        currentItem.style.zIndex = standardZIndex;
+        if (currentItem.classList.contains("textfield-content"))
+          currentItem.classList.remove("textfield-content");
+      } 
+    })
+  }
+}
+
+document.addEventListener("mousedown", function (event) {
   let isExisting = false;
+  let optionCount = 0;
   let currentFormType, currentObject;
   currentObject = event.target;
   let currentObjectParentId = '';
@@ -2248,7 +2223,17 @@ document.addEventListener("click", function (event) {
   }
   if (form_storage !== null) {
     form_storage.forEach((item) => {
+      handleTextContent
       if (item.containerId === currentObject.id || item.containerId === currentObjectParentId) {
+        currentFormType = item.form_type;
+        DrawType = item.form_type;
+        isExisting = true;
+      }
+    })
+  }
+  if (text_storage !== null) {
+    text_storage.forEach((item) => {
+      if (item.textContentId === currentObject.id) {
         currentFormType = item.form_type;
         DrawType = item.form_type;
         isExisting = true;
@@ -2265,68 +2250,25 @@ document.addEventListener("click", function (event) {
           if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
         })
       }
-      switch (currentFormType) {
-        case CHECKBOX:
-          handleCheckbox();
-          const deleteCheck = document.getElementById(
-            `checkbox_tooltipbar${current_checkbox_id}`
-          );
-          if (deleteCheck) deleteCheck.remove();
-          break;
-        case RADIO:
-          handleRadio();
-          const deleteRadio = document.getElementById(
-            `radio_tooltipbar${current_radio_id}`
-          );
-          if (deleteRadio) deleteRadio.remove();
-          break;
-        case TEXTFIELD:
-          handleText();
-          const deleteText = document.getElementById(
-            `text_tooltipbar${current_text_id}`
-          );
-          if (deleteText) deleteText.remove();
-          break;
-        case COMBOBOX:
-          handleCombo();
-          const deleteCombo = document.getElementById(
-            `combo_tooltipbar${current_combo_id}`
-          );
-          if (deleteCombo) deleteCombo.remove();
-          break;
-        case LIST:
-          handleList();
-          const deleteList = document.getElementById(
-            `list_tooltipbar${current_list_id}`
-          );
-          if (deleteList) deleteList.remove();
-          break;
-        case BUTTON:
-          handleButton();
-          const deleteButton = document.getElementById(
-            `button_tooltipbar${current_button_id}`
-          );
-          if (deleteButton) deleteButton.remove();
-          break;
-        case DATE:
-          handleDate();
-          const deleteDate = document.getElementById(
-            `date_tooltipbar${current_date_id}`
-          );
-          if (deleteDate) deleteDate.remove();
-          break;
-        default:
-          break;
-      }
+      saveFormElementByClick();
       if (currentFormType === DATE) {
         if (!currentObject.parentElement.querySelector("#topLeft")) addResizebar(currentObject.parentElement.id);
+        currentObject.parentElement.style.zIndex = selectedZIndex;
+      } else if (currentFormType === SIGNATURE || currentFormType === SHAPE) {
+        if (currentObject.tagName === "IMG") {
+          if (!currentObject.parentElement.querySelector("#topLeft")) addResizebar(currentObject.parentElement.id);
+          currentObject.parentElement.style.zIndex = selectedZIndex;
+        } else {
+          if (!currentObject.querySelector("#topLeft")) addResizebar(currentObject.id);
+          currentObject.style.zIndex = selectedZIndex;
+        }
+      } else if (currentFormType == TEXT_CONTENT) {
+        if (!currentObject.parentElement.classList.contains("textfield-content"))
+          currentObject.parentElement.classList.add("textfield-content");
       } else {
         if (!currentObject.querySelector("#topLeft")) addResizebar(currentObject.id);
+        currentObject.style.zIndex = selectedZIndex;
       }
-      optionIdArray.forEach((item) => {
-        if (document.getElementById(item))
-          document.getElementById(item).style.display = "none";
-      })
     } else {
       handleEditMode(current_form_id);
     }
@@ -2339,63 +2281,12 @@ document.addEventListener("click", function (event) {
         if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
       })
     }
-    switch (currentFormType) {
-      case CHECKBOX:
-        handleCheckbox();
-        const deleteCheck = document.getElementById(
-          `checkbox_tooltipbar${current_checkbox_id}`
-        );
-        if (deleteCheck) deleteCheck.remove();
-        break;
-      case RADIO:
-        handleRadio();
-        const deleteRadio = document.getElementById(
-          `radio_tooltipbar${current_radio_id}`
-        );
-        if (deleteRadio) deleteRadio.remove();
-        break;
-      case TEXTFIELD:
-        handleText();
-        const deleteText = document.getElementById(
-          `text_tooltipbar${current_text_id}`
-        );
-        if (deleteText) deleteText.remove();
-        break;
-      case COMBOBOX:
-        handleCombo();
-        const deleteCombo = document.getElementById(
-          `combo_tooltipbar${current_combo_id}`
-        );
-        if (deleteCombo) deleteCombo.remove();
-        break;
-      case LIST:
-        handleList();
-        const deleteList = document.getElementById(
-          `list_tooltipbar${current_list_id}`
-        );
-        if (deleteList) deleteList.remove();
-        break;
-      case BUTTON:
-        handleButton();
-        const deleteButton = document.getElementById(
-          `button_tooltipbar${current_button_id}`
-        );
-        if (deleteButton) deleteButton.remove();
-        break;
-      case DATE:
-        handleDate();
-        const deleteDate = document.getElementById(
-          `date_tooltipbar${current_date_id}`
-        );
-        if (deleteDate) deleteDate.remove();
-        break;
-      default:
-        break;
-    }
     optionIdArray.forEach((item) => {
-      if (document.getElementById(item))
-        document.getElementById(item).style.display = "none";
+      if (document.getElementById(item).contains(currentObject)) {
+        optionCount++;
+      }
     })
+    if (optionCount == 0) saveFormElementByClick();
   }
 });
 
@@ -2484,17 +2375,17 @@ const showOptionAndResizebar = function (
 };
 // Add Delete button and define action.
 const addDeleteButton = function (currentId, container, object, type) {
-  const left = object.style.width;
-  const top = object.style.height;
+  const left = object.offsetWidth;
+  const top = object.offsetHeight;
 
   container.id = `${type}_tooltipbar` + currentId;
   container.style.position = "absolute";
-  container.style.zIndex = 100;
-  container.style.top = "0px";
-  container.style.left = parseInt(left) + 10 + "px";
+  container.style.zIndex = standardZIndex;
+  container.style.top = -10 - parseInt(top) + "px";
+  container.style.left = "0px";
   container.style.display = "flex";
-  container.style.flexDirection = "column";
-  container.style.justifyContent = "center";
+  container.style.flexDirection = "row";
+  container.style.alignItems = "center";
   container.style.gap = "5px";
   container.style.height = parseInt(top) + "px";
   container.classList.add("delete-button");
@@ -2553,7 +2444,7 @@ const addFormElementStyle = function (object, top, left, width, height) {
   object.style.width = width + "px";
   object.style.height = height + "px";
   object.style.background = "#3C97FE";
-  object.style.zIndex = 100;
+  object.style.zIndex = standardZIndex;
   object.tabIndex = 0;
   object.style.borderRadius = "3px";
   object.classList.add("form-fields");
@@ -2571,7 +2462,6 @@ const toTransparent = function (object) {
 
 const submitAction = function () {
   const comboValue = document.querySelectorAll(".combobox-field-value");
-  isSubmit = true;
   form_storage.forEach((item) => {
     if (item.form_type === RADIO) {
       item.data.isReadOnly = true;
@@ -2580,6 +2470,7 @@ const submitAction = function () {
     }
 
     resizeCanvas(`${item.containerId}`);
+    if (item.form_type == SHAPE) resizeCanvas(`${item.imgId}`);
     let currentItem;
     if (item.form_type != DATE) currentItem = document.getElementById(item.containerId);
     else currentItem = document.getElementById(item.containerId).parentElement;
@@ -2626,7 +2517,6 @@ const submitAction = function () {
   form_storage = form_storage.filter((item) => {
     return item.form_type !== BUTTON;
   })
-  console.log(form_storage);
 }
 
 // Handle the specified event.
@@ -3004,7 +2894,6 @@ const eventHandler = async function (e) {
       selectElement.style.display = "none";
       selectElement.addEventListener("change", function () {
         current_form_id = comboId;
-        console.log(current_form_id);
         handleCombo();
       });
 
@@ -3490,6 +3379,11 @@ const eventHandler = async function (e) {
       newDate.classList.add("textcontent");
       newDate.value = formattedDate;
 
+      newDate.addEventListener("change", () => {
+        current_form_id = dateId;
+        handleDate();
+      });
+
       let dateDiv = document.createElement("div");
       dateDiv.id = "date" + dateId;
       addFormElementStyle(dateDiv, topPos, leftPos, formWidth, formHeight);
@@ -3863,71 +3757,117 @@ async function addFormElements() {
       switch (form_item.form_type) {
         case CHECKBOX:
           checkboxForm = form.createCheckBox(form_item.form_field_name);
-          checkboxForm.addToPage(page, {
-            x: form_item.x,
-            y: form_item.y - form_item.height,
-            width: form_item.width,
-            height: form_item.height,
-            backgroundColor: PDFLib.rgb(1, 1, 1),
-            borderColor: PDFLib.rgb(1, 1, 1),
-          });
-          if (form_item.isChecked) {
-            checkboxForm.check();
+          if (form_item.isReadOnly) {
+            if (form_item.isChecked) {
+              checkboxForm.addToPage(page, {
+                x: form_item.x,
+                y: form_item.y - form_item.height,
+                width: form_item.width,
+                height: form_item.height,
+                backgroundColor: PDFLib.rgb(1, 1, 1),
+                borderColor: PDFLib.rgb(1, 1, 1),
+              });
+              checkboxForm.check();
+              checkboxForm.enableReadOnly();
+            }
+          } else {
+            checkboxForm.addToPage(page, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+              borderColor: PDFLib.rgb(1, 1, 1),
+            });
+            if (form_item.isChecked) checkboxForm.check();
           }
-          if (form_item.isReadOnly) checkboxForm.enableReadOnly();
           break;
         case RADIO:
-          radioForm.addOptionToPage(radioCount + "", page, {
-            x: form_item.data.x,
-            y: form_item.data.y - form_item.data.height,
-            width: form_item.data.width,
-            height: form_item.data.height,
-            backgroundColor: PDFLib.rgb(1, 1, 1),
-          });
-          if (form_item.isChecked) radioForm.select(radioCount + "");
-          if (form_item.data.isReadOnly) radioForm.enableReadOnly();
+          if (form_item.data.isReadOnly) {
+            if (form_item.data.isChecked) {
+              radioForm.addOptionToPage(radioCount + "", page, {
+                x: form_item.data.x,
+                y: form_item.data.y - form_item.data.height,
+                width: form_item.data.width,
+                height: form_item.data.height,
+                backgroundColor: PDFLib.rgb(1, 1, 1),
+              });
+              radioForm.select(radioCount + "");
+            }
+          } else {
+            radioForm.addOptionToPage(radioCount + "", page, {
+              x: form_item.data.x,
+              y: form_item.data.y - form_item.data.height,
+              width: form_item.data.width,
+              height: form_item.data.height,
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+            });
+            if (form_item.data.isChecked) {
+              radioForm.select(radioCount + "");
+            }
+          }
           radioCount++;
           break;
         case DATE:
-          datefieldForm = form.createTextField(form_item.form_field_name);
-          datefieldForm.addToPage(page, {
-            x: form_item.x,
-            y: form_item.y - form_item.height,
-            width: form_item.width,
-            height: form_item.height,
-            textColor: PDFLib.rgb(r, g, b),
-            backgroundColor: PDFLib.rgb(1, 1, 1),
-            borderColor: PDFLib.rgb(1, 1, 1),
-          });
-          datefieldForm.setFontSize(form_item.fontSize);
-          datefieldForm.setText(form_item.text);
-          datefieldForm.updateAppearances(customFont);
-          datefieldForm.defaultUpdateAppearances(customFont);
-          if (form_item.isReadOnly) datefieldForm.enableReadOnly();
+          if (!form_item.isReadOnly) {
+            datefieldForm = form.createTextField(form_item.form_field_name);
+            datefieldForm.addToPage(page, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              textColor: PDFLib.rgb(r, g, b),
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+              borderColor: PDFLib.rgb(1, 1, 1),
+            });
+            datefieldForm.setFontSize(form_item.fontSize);
+            datefieldForm.setText(form_item.text);
+            datefieldForm.updateAppearances(customFont);
+            datefieldForm.defaultUpdateAppearances(customFont);
+            datefieldForm.enableReadOnly();
+          } else {
+            page.drawText(form_item.text, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              size: form_item.fontSize,
+              color: PDFLib.rgb(r, g, b)
+            });
+          }
           break;
         case TEXTFIELD:
-          textfieldForm = form.createTextField(form_item.form_field_name);
-          textfieldForm.setText(form_item.initialValue);
-          textfieldForm.addToPage(page, {
-            x: form_item.x,
-            y: form_item.y - form_item.height,
-            width: form_item.width,
-            height: form_item.height,
-            textColor: PDFLib.rgb(r, g, b),
-            backgroundColor: PDFLib.rgb(1, 1, 1),
-            borderColor: PDFLib.rgb(1, 1, 1),
-          });
-          textfieldForm.updateAppearances(customFont);
-          textfieldForm.defaultUpdateAppearances(customFont);
-          textfieldForm.setFontSize(form_item.fontSize);
-          textfieldForm.setAlignment(form_item.align);
-          if (form_item.isReadOnly) textfieldForm.enableReadOnly();
+          if (!form_item.isReadOnly) {
+            textfieldForm = form.createTextField(form_item.form_field_name);
+            textfieldForm.setText(form_item.initialValue);
+            textfieldForm.addToPage(page, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              textColor: PDFLib.rgb(r, g, b),
+              backgroundColor: PDFLib.rgb(1, 1, 1),
+              borderColor: PDFLib.rgb(1, 1, 1),
+            });
+            textfieldForm.updateAppearances(customFont);
+            textfieldForm.defaultUpdateAppearances(customFont);
+            textfieldForm.setFontSize(form_item.fontSize);
+            textfieldForm.setAlignment(form_item.align);
+          } else {
+            page.drawText(form_item.initialValue, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              height: form_item.height,
+              size: form_item.fontSize,
+              color: PDFLib.rgb(r, g, b)
+            });
+          }
           break;
         case COMBOBOX:
-          comboboxForm = form.createDropdown(form_item.form_field_name);
-          comboboxForm.addOptions(form_item.optionArray);
           if (!form_item.isReadOnly) {
-            console.log('not readonly')
+            comboboxForm = form.createDropdown(form_item.form_field_name);
+            comboboxForm.addOptions(form_item.optionArray);
             if (form_item.initialValue)
               comboboxForm.select(form_item.initialValue);
             comboboxForm.addToPage(page, {
@@ -3944,42 +3884,18 @@ async function addFormElements() {
             comboboxForm.defaultUpdateAppearances(customFont);
             comboboxForm.setFontSize(form_item.fontSize);
           } else {
-            console.log('readonly')
-            if (form_item.initialValue)
-              comboboxForm.select(form_item.initialValue);
-            comboboxForm.addToPage(page, {
+            page.drawText(form_item.initialValue, {
               x: form_item.x,
               y: form_item.y - form_item.height,
               width: form_item.width,
               height: form_item.height,
-              textColor: PDFLib.rgb(r, g, b),
-              backgroundColor: PDFLib.rgb(1, 1, 1),
-              borderWidth: 0
+              size: form_item.fontSize,
+              color: PDFLib.rgb(r, g, b)
             });
-            comboboxForm.updateAppearances(customFont);
-            comboboxForm.defaultUpdateAppearances(customFont);
-            comboboxForm.setFontSize(form_item.fontSize);
-            comboboxForm.enableReadOnly();
           }
           break;
         case LIST:
-          if (form_item.isReadOnly) {
-            listboxForm = form.createTextField(form_item.form_field_name);
-            listboxForm.setText(form_item.initialValue);
-            listboxForm.addToPage(page, {
-              x: form_item.x,
-              y: form_item.y - form_item.height,
-              width: 75 * 0.75 * 0.75,
-              height: form_item.height,
-              textColor: PDFLib.rgb(r, g, b),
-              backgroundColor: PDFLib.rgb(1, 1, 1),
-              borderColor: PDFLib.rgb(1, 1, 1),
-            });
-            listboxForm.updateAppearances(customFont);
-            listboxForm.defaultUpdateAppearances(customFont);
-            listboxForm.setFontSize(form_item.fontSize);
-            listboxForm.enableReadOnly();
-          } else {
+          if (!form_item.isReadOnly) {
             listboxForm = form.createOptionList(form_item.form_field_name);
             listboxForm.addOptions(form_item.optionArray);
             listboxForm.addToPage(page, {
@@ -3996,6 +3912,14 @@ async function addFormElements() {
             listboxForm.setFontSize(form_item.fontSize);
             if (form_item.initialValue)
               listboxForm.select(form_item.initialValue);
+          } else {
+            page.drawText(form_item.initialValue, {
+              x: form_item.x,
+              y: form_item.y - form_item.height,
+              width: form_item.width,
+              size: form_item.fontSize,
+              color: PDFLib.rgb(r, g, b)
+            });
           }
           break;
         case BUTTON:
@@ -4120,7 +4044,7 @@ async function addFormElements() {
         });
         page.drawText(content, {
           x: text_item.x,
-          y: text_item.y,
+          y: text_item.y - text_item.height,
           font: customFont,
           size: text_item.fontSize,
           color: PDFLib.rgb(r, g, b),
@@ -4144,6 +4068,7 @@ const changeMode = () => {
   const combovalues = document.querySelectorAll(".combobox-field-value");
   const listfields = document.querySelectorAll(".list-field-input");
   const buttonfields = document.querySelectorAll(".button-field-input");
+  const textcontentfields = document.querySelectorAll(".textcontent");
   if (isEditing) {
     switchEditInsert.innerHTML = `
       <p>Edit Mode</p>
@@ -4174,6 +4099,9 @@ const changeMode = () => {
 
     // Disable all button fields
     buttonfields.forEach((item) => (item.style.display = "none"));
+
+    textcontentfields.forEach((item) => { item.contentEditable = "true" });
+
   } else {
     switchEditInsert.innerHTML = `
     <p>Normal Mode</p>
@@ -4305,6 +4233,7 @@ const changeMode = () => {
         })
       }
     })
+    textcontentfields.forEach((item) => { item.contentEditable = "false" });
   }
 };
 
@@ -4325,14 +4254,14 @@ function selectRadioButton(element, id) {
       form_storage.map((item) => {
         if (item.hasOwnProperty("data")) {
           if (item.id === id) {
-            item.isChecked = true;
+            item.data.isChecked = true;
             form_storage.map((item1) => {
               if (item1.hasOwnProperty("data")) {
                 if (
                   item.data.option === item1.data.option &&
                   item.id != item1.id
                 ) {
-                  item1.isChecked = false;
+                  item1.data.isChecked = false;
                 }
               }
             });
@@ -4368,6 +4297,7 @@ const sendSubmitData = function () {
   formData.append('pdfFormData', JSON.stringify(form_storage));
   formData.append('name', clientName);
   formData.append('email', clientEmail);
+  formData.append('currentId', requestId);
 
   fetch(`${BASE_URL}/savedocument`, {
     method: 'POST',

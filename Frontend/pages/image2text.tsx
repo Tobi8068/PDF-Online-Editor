@@ -2,6 +2,7 @@ import { useState } from "react";
 import Button from "../components/button";
 import CopyToClipboardButton from "../components/CopyToClipboardButton";
 import Header from "@/components/Header";
+import withAuth from "@/components/withAuth";
 
 interface TextContentTextareaProps {
   label: string;
@@ -33,7 +34,7 @@ function TextContentTextarea(props: TextContentTextareaProps) {
   );
 }
 
-export default function Image2Text() {
+const Image2Text = () => {
   const [file, setFile] = useState<File>();
   const [isLoading, setIsLoading] = useState(false);
   const [text, setText] = useState('');
@@ -86,3 +87,5 @@ export default function Image2Text() {
     </>
   )
 }
+
+export default withAuth(Image2Text);

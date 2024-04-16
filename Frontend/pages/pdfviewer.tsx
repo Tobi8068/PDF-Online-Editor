@@ -1,5 +1,6 @@
+import withAuth from '@/components/withAuth';
 import { useState, useEffect } from 'react';
-export default function PDFViewer() {
+const PDFViewer = () => {
 
   const [id, setId] = useState<string>(''); // Provide a default value of type string
 
@@ -68,8 +69,4 @@ export default function PDFViewer() {
   );
 }
 
-
-
-
-
-
+export default withAuth(PDFViewer);

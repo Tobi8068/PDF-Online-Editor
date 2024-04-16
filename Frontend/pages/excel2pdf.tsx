@@ -3,8 +3,9 @@ import axios, { AxiosResponse } from 'axios';
 import Button from "../components/button";
 import { BASE_URL } from "@/Config";
 import Header from "@/components/Header";
+import withAuth from "@/components/withAuth";
 
-export default function Excel2PDF() {
+const Excel2PDF = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -77,3 +78,5 @@ export default function Excel2PDF() {
     </>
   )
 }
+
+export default withAuth(Excel2PDF);

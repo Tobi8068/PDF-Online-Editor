@@ -1,9 +1,5 @@
 let comment_control = document.getElementById("comment_control_panel");
 
-let comment_storage = [];
-let text_storage = [];
-let font_storage = [];
-
 let comment_x = 0, comment_y = 0;
 
 let pdfBytes;
@@ -22,13 +18,6 @@ let current_text_num_id = 0;
 let isDragging = false;
 let DrawType = "nothing";
 let initialX, initialY;
-
-/*
-isEditing: true: Form Data Editing Mode
-isEditing: false: Form Data Inserting Mode
- */
-let isEditing = false;
-let isMove = false;
 
 let isBold = false;
 let isItalic = false;
@@ -181,6 +170,10 @@ const saveTextContent = function () {
       text_storage[i].text = resultArray;
       text_storage[i].isBold = isBold;
       text_storage[i].isItalic = isItalic;
+      text_storage[i].width = textContentSize.x * 0.75 * 0.75;
+      text_storage[i].height = textContentSize.y * 0.75 * 0.75;
+      text_storage[i].xPage = textContentSize.x;
+      text_storage[i].yPage = textContentSize.y;
       break;
     }
   }
@@ -191,6 +184,9 @@ const saveTextContent = function () {
   if (count == text_storage.length || text_storage == null) {
     text_storage.push({
       id: baseId,
+      containerId: "text-content" + baseId,
+      textContentId: "textcontent" + baseId,
+      form_type: TEXT_CONTENT,
       page_number: PDFViewerApplication.page,
       text: resultArray,
       x: pos_x_pdf,
@@ -204,10 +200,10 @@ const saveTextContent = function () {
       fontSize: fontSize * 0.75 * 0.8,
       baseFontSize: fontSize,
       textColor: textColor,
-      width: 180 * 0.75 * 0.75,
-      height: 20 * 0.75 * 0.75,
-      xPage: 180,
-      yPage: 20,
+      width: textContentSize.x * 0.75 * 0.75,
+      height: textContentSize.y * 0.75 * 0.75,
+      xPage: textContentSize.x,
+      yPage: textContentSize.y,
     });
     fontStyle = "";
     fontSize = 12;
@@ -259,10 +255,6 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
 
   let pageId = String(PDFViewerApplication.page);
   let pg = document.getElementById(pageId);
-  var rect = pg.getBoundingClientRect(),
-    bodyElt = document.body;
-  var top = rect.top;
-  var left = rect.left;
 
   let comment_icon = document.createElement("div");
   comment_icon.style.height = "30px";
@@ -316,8 +308,6 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
 
 const moveEventHandler = (event, offsetX, offsetY, currentId) => {
   if (DrawType === COMMENT) {
-    // document.getElementById("comment" + current_comment_id).style.left = (event.x - sleft - 30) + "px";
-    // document.getElementById("comment" + current_comment_id).style.top = (event.y - stop - 30) + "px";
 
     comment_storage.map(function (comment) {
       if (comment.id === parseInt(currentId)) {
@@ -378,8 +368,6 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     pos_x_pdf = x_y[0];
     pos_y_pdf = x_y[1];
 
-    const textcontentWidth = 180;
-    const textcontentHeight = 20;
     baseId++;
     let textContentId = baseId;
 
@@ -387,17 +375,27 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     newText.id = "textcontent" + textContentId;
     newText.contentEditable = "true";
     newText.spellcheck = "false";
-    newText.textContent = "Your text is here.";
+    newText.textContent = "Your text is here!";
     newText.style.position = "relative";
     newText.classList.add("textcontent");
+    newText.oninput = function () {
+      current_text_num_id = textContentId;
+      saveTextContent();
+    }
+    newText.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.execCommand('insertLineBreak');
+      }
+    });
 
     const container = document.createElement("div");
     container.id = "text-content" + textContentId;
     container.style.position = "absolute";
     container.style.top = mouse_y + "px";
     container.style.left = mouse_x + "px";
-    container.style.width = textcontentWidth + "px";
-    container.style.height = textcontentHeight + "px";
+    container.style.width = "fit-content";
+    container.style.height = "fit-content";
     container.style.zIndex = 101;
     container.tabIndex = 0;
     container.classList.add("textfield-content");
@@ -406,8 +404,11 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect;
-        container.style.width = width + "px";
+        container.style.width = "fit-content";
         container.style.height = height + "px";
+        textContentSize.x = width;
+        textContentSize.y = height;
+        saveTextContent();
       }
     });
 
@@ -420,8 +421,8 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     showOptionAndResizebar(
       TEXT_CONTENT_OPTION,
       container,
-      textcontentWidth,
-      textcontentHeight,
+      textContentSize.x,
+      15,
       "text-content"
     );
 
@@ -430,8 +431,7 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
     newText.style.fontFamily = document.getElementById(
       "text-content-font-style"
     ).value;
-    newText.style.fontSize =
-      document.getElementById("text-content-font-size").value + "px";
+    newText.style.fontSize = document.getElementById("text-content-font-size").value + "px";
     newText.style.color = document.getElementById("text-content-color").value;
 
     document
@@ -453,64 +453,55 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
           document.getElementById("text-content-color").value;
       });
 
-    // addResizebar(container.id);
-
-    container.addEventListener("dblclick", () => {
-      current_text_content_id = newText.id;
-      current_text_num_id = textContentId;
-
-      let istooltipshow = false;
-      if (
-        document.getElementById("text-content_tooltipbar" + current_text_num_id)
-      ) {
-        istooltipshow = true;
-      }
-      if (isDragging) {
-        isDragging = false;
-      } else {
-        if (!istooltipshow) {
-          let tooltipbar = document.createElement("div");
-          addDeleteButton(
-            current_text_num_id,
-            tooltipbar,
-            container,
-            "text-content"
-          );
-          text_storage.map((element) => {
-            if (element.id == textContentId) {
-              isOptionPane = true;
-              option = showOption(
-                TEXT_CONTENT_OPTION,
-                element.xPage / 2 - 180,
-                element.yPage + 15
-              );
-              (isBold = element.isBold), (isItalic = element.isItalic);
-              addBoldItalicEvent();
-              if (isBold)
-                document
-                  .getElementById("text-bold")
-                  .classList.add("text-weight-button-focused");
-              if (isItalic)
-                document
-                  .getElementById("text-italic")
-                  .classList.add("text-weight-button-focused");
-              document.getElementById("text-content-font-style").value =
-                element.regularFontStyle;
-              document.getElementById("text-content-font-size").value =
-                element.baseFontSize;
-              document.getElementById("text-content-color").value =
-                element.textColor;
-              container.append(option);
-            }
-          });
-          document
-            .getElementById("text-content-save-button")
-            .addEventListener("click", handleTextContent);
+    const textEventHandler = function () {
+      if (!isEditing) {
+        current_text_content_id = newText.id;
+        current_text_num_id = textContentId;
+  
+        let istooltipshow = false;
+        if (
+          document.getElementById("text-content_tooltipbar" + current_text_num_id)
+        ) {
+          istooltipshow = true;
+        }
+        if (isDragging) {
+          isDragging = false;
         } else {
-          // document.getElementById("text-content_tooltipbar" + current_text_num_id).remove();
+          if (!istooltipshow) {
+            let tooltipbar = document.createElement("div");
+  
+            addDeleteButton(current_text_num_id, tooltipbar, container, "text-content");
+            text_storage.map((element) => {
+              if (element.id == textContentId) {
+                isOptionPane = true;
+                if (element.xPage <= 360) {
+                  option = showOption(TEXT_CONTENT_OPTION, 0, 15);
+                } else {
+                  option = showOption(TEXT_CONTENT_OPTION, element.xPage / 2 - 180, 15);
+                }
+                (isBold = element.isBold), (isItalic = element.isItalic);
+                addBoldItalicEvent();
+                if (isBold)
+                  document.getElementById("text-bold").classList.add("text-weight-button-focused");
+                if (isItalic)
+                  document.getElementById("text-italic").classList.add("text-weight-button-focused");
+                document.getElementById("text-content-font-style").value = element.regularFontStyle;
+                document.getElementById("text-content-font-size").value = element.baseFontSize;
+                document.getElementById("text-content-color").value = element.textColor;
+                container.append(option);
+              }
+            });
+            document
+              .getElementById("text-content-save-button")
+              .addEventListener("click", handleTextContent);
+          } else {
+            document.getElementById("text-content_tooltipbar" + current_text_num_id).remove();
+          }
         }
       }
-    });
+    }
+
+    container.addEventListener("dblclick", textEventHandler);
     resizeCanvas(
       container.id,
       TEXT_CONTENT,
@@ -520,6 +511,7 @@ document.getElementById("viewer").addEventListener("click", (evt) => {
 
     isTextModeOn = false;
     handleChange();
+    handleTextContent();
 
     document
       .getElementById("text-content-save-button")

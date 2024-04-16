@@ -14,6 +14,9 @@ const topdf = require('libreoffice-to-pdf');
 const https = require('https');
 const nodemailer = require('nodemailer');
 const uuid = require('uuid');
+const mongoose = require("mongoose");
+const mongoURI = require('./config').mongoURI;
+const router = require('./routes/userRoute');
 
 const app = express();
 const { setCurrentFile, getCurrentFile } = require('./utils/currentFile');
@@ -205,9 +208,11 @@ app.post('/sendlink',upload.single('pdfFile'), (req, res) => {
   }
 
   const formData = req.body.pdfFormData;
+  const textData = req.body.pdfTextData;
   newDataSet.push({
     pdfData: dataUri,
     formData: formData,
+    textData: textData,
     name: req.body.name,
     email: req.body.email,
     description: req.body.description
@@ -248,6 +253,39 @@ app.get('/getpdfdata', (req, res) => {
     res.status(404).send('Form data not found');
   }
 });
+
+app.post('/savedocument', upload.single('pdfFile'), (req, res) => {
+  const pdfFilePath = getCurrentFile();
+  const mailOptions = {
+    from: 'Stephan Hapi <codevisiondeveloper@gmail.com>',
+    to: `${req.body.email}`,
+    subject: 'Thanks for your signing',
+    text: `Dear ${req.body.name}! You just signed this document.`,
+    attachments: [
+      {
+        filename: 'Agreement.pdf',
+        path: pdfFilePath
+      }
+    ]
+  };
+  // formDataMap.set(req.body.currentId, getCurrentFile());
+  transporter.sendMail(mailOptions, function(error, info) {
+    if (error) {
+      console.log(error);
+      res.status(500).send('Failed to send email');
+    } else {
+      console.log('Email sent: ' + info.response);
+      res.send('Email sent with the PDF Agreement');
+    }
+  });
+})
+
+app.use(router);
+mongoose.connect(mongoURI).then(() => {
+  console.log("Mongodb connected!");
+}).catch((error) => {
+  console.error(error);
+})
 
 // Start the server
 // app.listen(8081, () => {

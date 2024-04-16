@@ -6,7 +6,6 @@ const shareDocumentSenderDescription = document.getElementById("share-document-s
 const shareDocumentSenderEmailChecker = document.getElementById("share-document-sender-email-check");
 const shareDocumentSendButton = document.getElementById("share-document-send");
 const BASE_URL = "https://pdf-vision.com:8081";
-let requestId = '';
 
 shareDocumentClose.onclick = function () {
   shareDocumentContainer.style.display = "none";
@@ -40,6 +39,7 @@ shareDocumentSendButton.onclick = async function () {
   formData.append("name", shareDocumentSenderName.value);
   formData.append("email", shareDocumentSenderEmail.value);
   if (shareDocumentSenderDescription.value) descriptionData = shareDocumentSenderDescription.value;
+  formData.append('pdfTextData', JSON.stringify(text_storage));
   formData.append("description", descriptionData);
 
   fetch(`${BASE_URL}/sendlink`, {

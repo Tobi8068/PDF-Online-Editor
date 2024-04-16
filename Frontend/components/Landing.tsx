@@ -1,18 +1,55 @@
 import Head from "next/head";
 import Script from "next/script";
 import Image from "next/image";
+import { BASE_URL } from "@/Config";
+import { useRouter } from "next/router";
+import { useEffect } from 'react';
 export default function Landing() {
+
+  const router = useRouter();
+
+  useEffect(() => {
+    // Save the original destination in localStorage
+    localStorage.setItem('originalDestination', router.asPath);
+  }, [router.asPath]);
+
+
+  const handleNavigate = function (url: String) {
+    const loginToken = localStorage.getItem("login-token");
+    if (loginToken) {
+      fetch(`${BASE_URL}/signin`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `${loginToken}`
+        }
+      }).then(response => {
+        if (response.ok) {
+          console.log("Successfully logined");
+          window.location.href = `/${url}`;
+        } else {
+          console.log("Login failed");
+          localStorage.setItem("originDestination", router.asPath);
+          window.location.href = "/signin";
+        }
+      })
+    } else {
+      localStorage.setItem("originDestination", router.asPath);
+      window.location.href = "/signin";
+    }
+  }
+
   return (
     <div id="page-top">
       <Head>
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
-      <Script src="./jquery-3.2.1.min.js" />
-      <Script src="./all-plugins.js" />
-      <Script src="./plugins-activate.js" />
+        <Script src="./jquery-3.2.1.min.js" />
+        <Script src="./all-plugins.js" />
+        <Script src="./plugins-activate.js" />
       </Head>
       {/* <!-- Navigation --> */}
       <div className="logo">
-        <Image src="/images/logo.png" alt="logo" width={200} height={200}/>
+        <Image src="/images/logo.png" alt="logo" width={200} height={200} />
       </div>
       <a className="menu-toggle rounded" href="#">
         <i className="fa fa-bars"></i>
@@ -70,7 +107,7 @@ export default function Landing() {
           </div>
           <div className="row">
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => {window.location.href = '/pdfviewer'}}>
+              <div className="service-box" onClick={() => { handleNavigate('pdfviewer') }}>
                 <div className="service-icon yellow">
                   <div className="front-content">
                     <i className="fa fa-book" aria-hidden="true"></i>
@@ -84,7 +121,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => {window.location.href = '/reorder_pages'}}>
+              <div className="service-box" onClick={() => { window.location.href = '/reorder_pages' }}>
                 <div className="service-icon orange">
                   <div className="front-content">
                     <i className="fa fa-file-o"></i>
@@ -98,7 +135,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box " onClick={() => {window.location.href = '/extract_text'}}>
+              <div className="service-box " onClick={() => { window.location.href = '/extract_text' }}>
                 <div className="service-icon red">
                   <div className="front-content">
                     <i className="fa fa-font" aria-hidden="true"></i>
@@ -112,7 +149,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => {window.location.href = '/image2text'}}>
+              <div className="service-box" onClick={() => { window.location.href = '/image2text' }}>
                 <div className="service-icon grey">
                   <div className="front-content">
                     <i className="fa fa-openid"></i>
@@ -127,7 +164,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="row">
-            <div className="col-md-3 col-sm-6" onClick={() => {window.location.href = '/word2pdf'}}>
+            <div className="col-md-3 col-sm-6" onClick={() => { window.location.href = '/word2pdf' }}>
               <div className="service-box">
                 <div className="service-icon yellow">
                   <div className="front-content">
@@ -142,7 +179,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => {window.location.href = '/excel2pdf'}}>
+              <div className="service-box" onClick={() => { window.location.href = '/excel2pdf' }}>
                 <div className="service-icon orange">
                   <div className="front-content">
                     <i className="fa fa-file-excel-o"></i>
@@ -156,7 +193,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box " onClick={() => {window.location.href = '/image2pdf'}}>
+              <div className="service-box " onClick={() => { window.location.href = '/image2pdf' }}>
                 <div className="service-icon red">
                   <div className="front-content">
                     <i className="fa fa-picture-o" aria-hidden="true"></i>
@@ -220,35 +257,6 @@ export default function Landing() {
                     <span className="c-icon"><i className="fa fa-envelope" aria-hidden="true"></i></span><span className="c-info">email@yourdomain.com</span>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="col-sm-12 col-md-6 col-lg-6">
-              <div className="form-wrap">
-                <form action="#" method="post">
-                  <div className="fname floating-label">
-                    <input type="text" className="floating-input" name="full name" />
-                    <label htmlFor="title">First Name</label>
-                  </div>
-                  <div className="fname floating-label">
-                    <input type="text" className="floating-input" name="full name" />
-                    <label htmlFor="title">Last Name</label>
-                  </div>
-                  <div className="email floating-label">
-                    <input type="email" className="floating-input" name="email" />
-                    <label htmlFor="email">Email</label>
-                  </div>
-                  <div className="contact floating-label">
-                    <input type="tel" className="floating-input" name="contact" />
-                    <label htmlFor="email">Mobile</label>
-                  </div>
-                  <div className="company floating-label">
-                    <input type="text" className="floating-input" name="company" ></input>
-                    <label htmlFor="email">Message</label>
-                  </div>
-                  <div className="submit-btn">
-                    <button type="submit">Submit</button>
-                  </div>
-                </form>
               </div>
             </div>
           </div>

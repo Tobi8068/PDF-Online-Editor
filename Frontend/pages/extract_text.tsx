@@ -4,6 +4,7 @@ import { TextContent } from "pdfjs-dist/types/src/display/api";
 import CopyToClipboardButton from "../components/CopyToClipboardButton";
 import Button from "../components/button";
 import Header from "@/components/Header";
+import withAuth from "@/components/withAuth";
 
 interface TextContentTextareaProps {
   label: string;
@@ -31,7 +32,7 @@ function TextContentTextarea(props: TextContentTextareaProps) {
     </div>
   );
 }
-export default function ExtractText() {
+const ExtractText = () => {
   const [file, setFile] = useState<File>();
   const [pdfDoc, setPDFDoc] = useState<PDFDocumentProxy>();
   const [textContentPerPages, setTextContentPerPages] = useState<string[]>();
@@ -122,3 +123,5 @@ export default function ExtractText() {
     </>
   );
 }
+
+export default withAuth(ExtractText);

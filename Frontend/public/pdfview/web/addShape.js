@@ -35,6 +35,8 @@ const handleShape = function (w, h, canvasWidth, canvasHeight) {
   if (count == shapeStorage.length || shapeStorage == null) {
     form_storage.push({
       id: baseId,
+      containerId: "shape" + baseId,
+      imgId: "shapeImg" + baseId,
       form_type: SHAPE,
       page_number: PDFViewerApplication.page,
       x: pos_x_pdf,
@@ -114,13 +116,15 @@ $("#viewer").on("click", function (e) {
       shapeContainer.style.left = x + "px";
       shapeContainer.style.width = shapeWidth + "px";
       shapeContainer.style.height = shapeHeight + "px";
-      shapeContainer.style.zIndex = 100;
+      shapeContainer.style.zIndex = standardZIndex;
+      shapeContainer.tabIndex = 0;
+      shapeContainer.classList.add("form-fields");
 
       shapeContainer.append(shapeImg);
       pg.appendChild(shapeContainer);
       resizeCanvas(shapeContainer.id, SHAPE, shapeId);
 
-      shapeContainer.addEventListener("click", () => {
+      shapeContainer.addEventListener("dblclick", () => {
         current_shape_id = shapeId;
 
         let istooltipshow = false;
@@ -146,7 +150,6 @@ $("#viewer").on("click", function (e) {
               targetCtx.clearRect(0, 0, canvas.width, canvas.height);
               let image = new Image();
               image.src = targetShape[0].imgData;
-              console.log(image)
 
               image.onload = function () {
                 let centerX = canvas.width / 2 - image.width / 2;
