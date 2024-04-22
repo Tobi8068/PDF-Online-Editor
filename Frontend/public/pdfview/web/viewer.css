@@ -274,7 +274,7 @@ body {
   margin-top: 40px;
 }
 
-#outerContainer:is(.sidebarMoving, .sidebarOpen) #sidebarContainer {
+#outerContainer:is(.sidebarMoving, .sidebarOpen){
   visibility: visible;
 }
 
@@ -1695,6 +1695,7 @@ dialog :link {
   outline: none;
   margin: 2px 0px;
   color: #000000;
+  cursor: pointer;
 }
 
 .second_toolbar_button:hover {
@@ -2157,7 +2158,7 @@ dialog :link {
 .right-sidebar {
   position: fixed;
   inset-block: 0;
-  width: var(--sidebar-width);
+  width: 200px;
   z-index: 99999999;
   font: message-box;
   margin-top: 42px;
@@ -2175,6 +2176,26 @@ dialog :link {
 
 .right-sidebar.active {
   right: 0;
+  /* Slide the sidebar into view */
+}
+.show-history {
+  position: fixed;
+  inset-block: 0;
+  width: 200px;
+  font: message-box;
+  margin-top: 42px;
+  left: -250px;
+  z-index: 100;
+  background-color: #ffffff;
+  border-radius: 2px;
+  border-right: 1px solid #adb5bd;
+  box-shadow: 1px 3px 3px 0px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  opacity: 0.9;
+  transition: left 0.3s;
+}
+.show-history.active {
+  left: var(--sidebar-width);
   /* Slide the sidebar into view */
 }
 

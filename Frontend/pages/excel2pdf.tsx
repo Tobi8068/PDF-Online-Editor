@@ -52,7 +52,7 @@ const Excel2PDF = () => {
   };
 
   return (
-    <>
+    <div>
       <Header text="Convert Excel to PDF Document"/>
       <input
         aria-label="Add files"
@@ -75,7 +75,7 @@ const Excel2PDF = () => {
           Download
         </Button >
       </div>
-    </>
+    </div>
   )
 }
 

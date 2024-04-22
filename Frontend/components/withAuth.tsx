@@ -18,12 +18,17 @@ const withAuth = (WrappedComponent: any) => {
                 }).then(response => {
                     if (response.ok) {
                         console.log("Successfully logged in");
+                        const data = response.json();
+                        return data;
                     } else {
                         console.log("Login failed");
+                        localStorage.setItem("originDestination", router.asPath);
                         router.push('/signin');
                     }
+                }).then((data) => {
                 })
             } else {
+                localStorage.setItem("originDestination", router.asPath);
                 router.push('/signin');
             }
         }, []); // Empty dependency array ensures this effect runs only once

@@ -1,16 +1,63 @@
-import withAuth from '@/components/withAuth';
+'use client';
+import { BASE_URL } from '@/Config';
+import { useRouter } from 'next/router';
+import UserProfile from '@/components/UserProfile';
 import { useState, useEffect } from 'react';
+
 const PDFViewer = () => {
 
-  const [id, setId] = useState<string>(''); // Provide a default value of type string
+  const router = useRouter();
+
+  const [color, setColor] = useState('');
+  const [username, setUsername] = useState('');
+
+  const [showProfile, setShowProfile] = useState(false);
+
+  const [id, setId] = useState('');
 
   useEffect(() => {
+    setColor(localStorage.getItem('color') || '');
+    setUsername(localStorage.getItem('username') || '');
     const urlParams = new URLSearchParams(window.location.search);
     const initialId = urlParams.get('id');
     if (initialId) {
-      setId(initialId); // Update the state only if initialId is not null
+      fetch(`${BASE_URL}/getpdfdata?uniqueId=${initialId}`)
+        .then((response) => {
+          if (response.ok) {
+            setId(initialId);
+          }
+          else {
+            router.push("/signin");
+          }
+        })
+        .catch((error) => { console.error(error) })
+    } else {
+      let token = localStorage.getItem("login-token");
+      if (token) {
+        fetch(`${BASE_URL}/signin`, {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${token}`
+          }
+        }).then(response => {
+          if (response.ok) {
+            // Handle successful response
+          } else {
+            localStorage.setItem("originDestination", router.asPath);
+            // Assuming router is defined elsewhere in your code
+            router.push("/signin");
+          }
+        }).catch(error => {
+          console.error("Error fetching data:", error);
+        });
+      } else {
+        localStorage.setItem("originDestination", router.asPath);
+        // Assuming router is defined elsewhere in your code
+        router.push("/signin");
+      }
     }
-  }, []);
+  }, [setId]);
 
   useEffect(() => {
     if (id) {
@@ -23,18 +70,7 @@ const PDFViewer = () => {
 
   return (
     <>
-      <div style={{ width: "100%", maxHeight: "100vh", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "10px", width: "100%" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "left",
-              paddingLeft: "10px",
-              paddingTop: "4px",
-            }}
-          >
-          </div>
-        </div>
+      <div style={{ width: "100%", maxHeight: "100vh", overflow: "hidden" }} onClick={() => {}}>
         <div
           style={{
             overflow: "hidden",
@@ -43,11 +79,17 @@ const PDFViewer = () => {
             margin: "5px",
           }}
         >
+          <div className='flex justify-end items-center h-[40px] mr-4'>
+            <div className={`rounded-[50%] bg-white h-[25px] w-[25px] flex items-center justify-center cursor-pointer`} onClick={() => setShowProfile(!showProfile)}>
+              <div className={`select-none rounded-[50%] h-[23px] w-[23px] font-sans text-white flex items-center justify-center text-lg`} 
+                style={{backgroundColor: `${color}`}}>{username.charAt(0).toUpperCase()}</div>
+            </div>
+          </div>
+          {showProfile && <UserProfile username={username} top="45px" right="20px" />}
           <div
             style={{
               marginLeft: "5px",
               marginRight: "5px",
-              marginTop: "40px",
               marginBottom: "5px",
             }}
           >
@@ -69,4 +111,4 @@ const PDFViewer = () => {
   );
 }
 
-export default withAuth(PDFViewer);
+export default PDFViewer;

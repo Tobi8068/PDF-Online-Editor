@@ -2,14 +2,17 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const {jwtSign} = require('../utils/jwt');
 
+const colors = ['grey', 'blue', 'green', 'yellow', 'orange','red'];
+
 const userSignup = async function (req, res) {
     try {
-        const { email, password, role } = req.body;
-        const user = await User.findOne({ email: email });
+        const { username, email, password, role } = req.body;
+        const user = await User.findOne({ username: username, email: email });
         if (user) {
           res.status(409).send('User already exists');
         } else {
           const newUser = new User({
+            username: username,
             email: email,
             password: password,
             role: role
@@ -23,6 +26,7 @@ const userSignup = async function (req, res) {
 }
 
 const userSignin = async function (req, res) {
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
     try {
         const {email, password} = req.body;
         const user = await User.findOne({email: email});
@@ -31,10 +35,13 @@ const userSignin = async function (req, res) {
             if (hashPassword === user.password) {
                 const token = jwtSign({
                     id: user._id,
+                    username: user.username,
                     email: user.email,
                 });
                 res.status(201).json({
                     token: token,
+                    username: user.username,
+                    color: randomColor, 
                     message: "User logined successfully"
                 });
             } else {

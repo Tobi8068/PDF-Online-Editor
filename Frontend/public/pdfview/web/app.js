@@ -648,6 +648,7 @@ const PDFViewerApplication = {
             modifiedContent;
         }
         form_storage = [];
+        showHistoryBar.innerHTML = '';
 
         const { files } = evt.target;
         if (!files || files.length === 0) {

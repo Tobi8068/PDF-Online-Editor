@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export default function SignUp() {
 
     const [formData, setFormData] = useState({
+        'username': '',
         'email': '',
         'password': '',
         'confirmPassword': ''
@@ -45,7 +46,7 @@ export default function SignUp() {
 
     const handleSubmit = function (e: any) {
         e.preventDefault();
-        if (formData.email !== "" && formData.password !== "") {
+        if (formData.username !== "" && formData.email !== "" && formData.password !== "") {
             if (formData.password === formData.confirmPassword) {
                 fetch(`${BASE_URL}/signup`, {
                     method: "POST",
@@ -53,6 +54,7 @@ export default function SignUp() {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
+                        username: formData.username,
                         email: formData.email,
                         password: formData.password
                     }),
@@ -81,6 +83,11 @@ export default function SignUp() {
                 <div className="auth auth-form-content">
                     <header className="auth auth-header">Signup</header>
                     <form action="#">
+
+                        <div className="auth auth-field">
+                            <input type="text" name="username" placeholder="Username" onChange={handleChange} value={formData.username}></input>
+                        </div>
+
                         <div className="auth auth-field">
                             <input type="email" name="email" placeholder="Email" onChange={handleChange} value={formData.email}></input>
                         </div>

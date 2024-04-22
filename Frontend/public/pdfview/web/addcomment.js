@@ -149,17 +149,20 @@ const saveTextContent = function () {
   fontSize = parseInt(document.getElementById("text-content-font-size").value);
   textColor = document.getElementById("text-content-color").value;
   const regularFont = document.getElementById("text-content-font-style").value;
-  const text = document.getElementById(current_text_content_id).innerText;
-  const lines = text.split("\n").map((line) => line.trim().replace(/\n/g, ""));
+  let text, lines;
   const resultArray = [];
   let prevElement = null;
-
-  for (const element of lines) {
-    if (element !== "" || prevElement !== "") {
-      resultArray.push(element);
+  const currentTextContent = document.getElementById(current_text_content_id);
+  if(currentTextContent) {
+    text = currentTextContent.innerText;
+    lines = text.split("\n").map((line) => line.trim().replace(/\n/g, ""));
+    for (const element of lines) {
+      if (element !== "" || prevElement !== "") {
+        resultArray.push(element);
+      }
+      prevElement = element;
     }
-    prevElement = element;
-  }
+  } 
 
   for (let i = 0; i < text_storage.length; i++) {
     if (text_storage[i].id == current_text_num_id) {
@@ -181,7 +184,7 @@ const saveTextContent = function () {
   for (let j = 0; j < text_storage.length; j++) {
     if (text_storage[j].id != current_text_num_id) count++;
   }
-  if (count == text_storage.length || text_storage == null) {
+  if (baseId !== 0 && (count == text_storage.length || text_storage == null)) {
     text_storage.push({
       id: baseId,
       containerId: "text-content" + baseId,
@@ -209,6 +212,8 @@ const saveTextContent = function () {
     fontSize = 12;
     textColor = "";
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, TEXT_CONTENT, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
 }
 
 const handleTextContent = (e) => {
@@ -239,7 +244,10 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
   let comment_title = document.getElementById("comment_title").value;
   let comment_text = document.getElementById("comment_text").value;
 
-  let commentId = comment_storage.length + 1;
+  baseId++;
+  let commentId = baseId;
+
+
 
   comment_storage.push({
     id: commentId,
@@ -252,6 +260,9 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
     title: comment_title,
     text: comment_text,
   });
+
+  const date = new Date(Date.now());
+  addHistory(baseId, COMMENT, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
 
   let pageId = String(PDFViewerApplication.page);
   let pg = document.getElementById(pageId);

@@ -1320,6 +1320,12 @@ function handleRadioSelection(event) {
   }
 }
 
+const convertStandardDateType = function (date) {
+  const options = { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+  const formattedDate = date.toLocaleString('en-US', options);
+  return formattedDate;
+}
+
 // When click "Save" button, save the information of Checkbox element.
 
 const handleCheckbox = function (e) {
@@ -1331,7 +1337,7 @@ const handleCheckbox = function (e) {
   const label = document.getElementById("checkbox-label").value;
   const value = document.getElementById("checkbox-value").value;
 
-  if (count == form_storage.length || form_storage == null) {
+  if (baseId !== 0 && (count == form_storage.length || form_storage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "checkbox" + baseId,
@@ -1352,6 +1358,8 @@ const handleCheckbox = function (e) {
       value: value,
     });
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, CHECKBOX, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("checkbox-save-button")
     .removeEventListener("click", handleCheckbox);
@@ -1364,9 +1372,8 @@ const handleRadio = function (e) {
   const value = document.getElementById("radio-value").value;
   document.getElementById(RADIO_OPTION).style.display = "none";
   const formFieldName = document.getElementById("radio-field-input-name").value;
-  document
-    .getElementById(`radio${current_radio_id}`)
-    .querySelector('input[type="radio"]').name = formFieldName;
+  const currentRadio = document.getElementById(`radio${current_radio_id}`);
+  if (currentRadio) currentRadio.querySelector('input[type="radio"]').name = formFieldName;
   if (e) e.stopPropagation();
   let count = 0,
     isData = 0;
@@ -1387,7 +1394,7 @@ const handleRadio = function (e) {
       }
     }
   }
-  if (count == form_storage.length || form_storage == null) {
+  if (baseId !== 0 && (count == form_storage.length || form_storage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "radio" + baseId,
@@ -1410,6 +1417,8 @@ const handleRadio = function (e) {
       },
     });
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, RADIO, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("radio-save-button")
     .removeEventListener("click", handleRadio);
@@ -1464,7 +1473,7 @@ const handleText = function (e) {
       count++;
   }
 
-  if (count == form_storage.length || form_storage == null) {
+  if (baseId !== 0 && (count == form_storage.length || form_storage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "text" + baseId,
@@ -1494,6 +1503,8 @@ const handleText = function (e) {
     textColor = "";
     alignValue = 0;
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, TEXTFIELD, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("text-save-button")
     .removeEventListener("click", handleText);
@@ -1555,7 +1566,7 @@ const handleCombo = function (e) {
     )
       count++;
   }
-  if (count == form_storage.length || form_storage == null) {
+  if (baseId !== 0 && (count == form_storage.length || form_storage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "combo" + baseId,
@@ -1584,6 +1595,8 @@ const handleCombo = function (e) {
     alignValue = 0;
     comboboxOptionArray = [];
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, COMBOBOX, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("combo-save-button")
     .removeEventListener("click", handleCombo);
@@ -1641,7 +1654,7 @@ const handleList = function (e) {
     )
       count++;
   }
-  if (count == form_storage.length || form_storage == null) {
+  if (baseId !== 0 && (count == form_storage.length || form_storage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "list" + baseId,
@@ -1670,6 +1683,8 @@ const handleList = function (e) {
     alignValue = 0;
     listboxOptionArray = [];
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, LIST, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("list-save-button")
     .removeEventListener("click", handleCombo);
@@ -1838,7 +1853,7 @@ const handleButton = function (e) {
     )
       count++;
   }
-  if (count == form_storage.length || form_storage == null) {
+  if (baseId !== 0 && (count == form_storage.length || form_storage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "button" + baseId,
@@ -1867,15 +1882,17 @@ const handleButton = function (e) {
     alignValue = 0;
     form_action = 0;
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, BUTTON, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("button-save-button")
     .removeEventListener("click", handleButton);
 };
 
 const handleDate = function (e) {
-  console.log(current_form_id);
-  const text = document.getElementById(current_date_content_id).value;
-
+  let text;
+  const currentText = document.getElementById(current_date_content_id);
+  if (currentText) text = currentText.value;
   isOptionPane = false;
   if (e) e.stopPropagation();
   const formFieldName = document.getElementById("date-input-name").value;
@@ -1911,7 +1928,7 @@ const handleDate = function (e) {
     }
   } else {
     for (let i = 0; i < form_storage.length; i++) {
-      if (form_storage[i].id == current_form_id) form_storage[i].text = text;
+      if (form_storage[i].id == current_form_id && text) form_storage[i].text = text;
     }
   }
 
@@ -1919,7 +1936,7 @@ const handleDate = function (e) {
   for (let j = 0; j < form_storage.length; j++) {
     if (form_storage[j].id != current_form_id) count++;
   }
-  if (count == form_storage.length || form_storage == null) {
+  if (baseId !== 0 && (count == form_storage.length || form_storage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "datecontent" + baseId,
@@ -1945,6 +1962,8 @@ const handleDate = function (e) {
     fontSize = 12;
     textColor = "";
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, DATE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("date-save-button")
     .removeEventListener("click", handleDate);
@@ -1969,7 +1988,7 @@ const handleSignature = function () {
     )
       count++;
   }
-  if (count == signStorage.length || signStorage == null) {
+  if (baseId !== 0 && (count == signStorage.length || signStorage == null)) {
     form_storage.push({
       id: baseId,
       containerId: "signature" + baseId,
@@ -1986,6 +2005,8 @@ const handleSignature = function () {
       imgData: signatureImgData,
     });
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, SIGNATURE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
 };
 
 // Resize and move canvas using Interact.js library.
@@ -2191,10 +2212,11 @@ const saveFormElementByClick = function () {
   if (form_storage.length != 0) {
     form_storage.forEach((item) => {
       let currentItem = document.getElementById(item.containerId);
-      currentItem.style.zIndex = standardZIndex;
-      console.log(currentItem)
-      if (currentItem.classList.contains("textfield-content"))
-        currentItem.classList.remove("textfield-content");
+      if (currentItem) {
+        currentItem.style.zIndex = standardZIndex;
+        if (currentItem.classList.contains("textfield-content"))
+          currentItem.classList.remove("textfield-content");
+      } 
     })
   }
   if (text_storage.length != 0) {
@@ -2204,7 +2226,7 @@ const saveFormElementByClick = function () {
         currentItem.style.zIndex = standardZIndex;
         if (currentItem.classList.contains("textfield-content"))
           currentItem.classList.remove("textfield-content");
-      } 
+      }
     })
   }
 }

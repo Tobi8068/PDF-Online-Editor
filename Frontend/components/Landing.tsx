@@ -1,9 +1,8 @@
 import Head from "next/head";
 import Script from "next/script";
 import Image from "next/image";
-import { BASE_URL } from "@/Config";
 import { useRouter } from "next/router";
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 export default function Landing() {
 
   const router = useRouter();
@@ -13,30 +12,9 @@ export default function Landing() {
     localStorage.setItem('originalDestination', router.asPath);
   }, [router.asPath]);
 
+  const handleClick = function (url: any) {
 
-  const handleNavigate = function (url: String) {
-    const loginToken = localStorage.getItem("login-token");
-    if (loginToken) {
-      fetch(`${BASE_URL}/signin`, {
-        method: "GET",
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `${loginToken}`
-        }
-      }).then(response => {
-        if (response.ok) {
-          console.log("Successfully logined");
-          window.location.href = `/${url}`;
-        } else {
-          console.log("Login failed");
-          localStorage.setItem("originDestination", router.asPath);
-          window.location.href = "/signin";
-        }
-      })
-    } else {
-      localStorage.setItem("originDestination", router.asPath);
-      window.location.href = "/signin";
-    }
+    router.push(url);
   }
 
   return (
@@ -107,7 +85,7 @@ export default function Landing() {
           </div>
           <div className="row">
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => { handleNavigate('pdfviewer') }}>
+              <div className="service-box" onClick={() => { handleClick('/pdfviewer') }}>
                 <div className="service-icon yellow">
                   <div className="front-content">
                     <i className="fa fa-book" aria-hidden="true"></i>
@@ -121,7 +99,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => { window.location.href = '/reorder_pages' }}>
+              <div className="service-box" onClick={() => { handleClick('/reorder_pages') }}>
                 <div className="service-icon orange">
                   <div className="front-content">
                     <i className="fa fa-file-o"></i>
@@ -135,7 +113,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box " onClick={() => { window.location.href = '/extract_text' }}>
+              <div className="service-box " onClick={() => { handleClick('/extract_text') }}>
                 <div className="service-icon red">
                   <div className="front-content">
                     <i className="fa fa-font" aria-hidden="true"></i>
@@ -149,7 +127,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => { window.location.href = '/image2text' }}>
+              <div className="service-box" onClick={() => { handleClick('/image2text') }}>
                 <div className="service-icon grey">
                   <div className="front-content">
                     <i className="fa fa-openid"></i>
@@ -164,7 +142,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="row">
-            <div className="col-md-3 col-sm-6" onClick={() => { window.location.href = '/word2pdf' }}>
+            <div className="col-md-3 col-sm-6" onClick={() => { handleClick('/word2pdf') }}>
               <div className="service-box">
                 <div className="service-icon yellow">
                   <div className="front-content">
@@ -179,7 +157,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box" onClick={() => { window.location.href = '/excel2pdf' }}>
+              <div className="service-box" onClick={() => { handleClick('/excel2pdf') }}>
                 <div className="service-icon orange">
                   <div className="front-content">
                     <i className="fa fa-file-excel-o"></i>
@@ -193,7 +171,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="col-md-3 col-sm-6">
-              <div className="service-box " onClick={() => { window.location.href = '/image2pdf' }}>
+              <div className="service-box " onClick={() => { handleClick('/image2pdf') }}>
                 <div className="service-icon red">
                   <div className="front-content">
                     <i className="fa fa-picture-o" aria-hidden="true"></i>

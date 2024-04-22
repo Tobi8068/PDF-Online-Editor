@@ -52,6 +52,8 @@ const handleShape = function (w, h, canvasWidth, canvasHeight) {
       imgData: shapeImgData,
     });
   }
+  const date = new Date(Date.now());
+  addHistory(baseId, SHAPE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
 };
 
 $("#viewer").on("click", function (e) {

@@ -61,11 +61,14 @@ export default function SignIn() {
                         alert("Successfully logined!");
                         return response.json();
                     } else {
+                        alert("Login failed!");
                         window.location.href = '/signin';
                     }
                 })
                 .then((data) => {
-                    const token = data.token;
+                    const {token, color, username} = data;
+                    localStorage.setItem("color", color);
+                    localStorage.setItem("username", username);
                     localStorage.setItem("login-token", token);
                     const originPath = localStorage.getItem("originDestination");
                     console.log(originPath)

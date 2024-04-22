@@ -41,14 +41,21 @@ const textContentOption = document.getElementById(TEXT_CONTENT_OPTION);
 const rightSidebarButton = document.getElementById("penIcon");
 const shareDocumentButton = document.getElementById("shareDocument");
 const submitDocumentButton = document.getElementById("submitDocument");
+
+const sidebar = document.querySelector(".right-sidebar");
+const showHistoryBar = document.getElementById("show-history");
 const BASE_SERVER_URL = "https://pdf-vision.com:8081";
 
 const standardZIndex = 100;
 const selectedZIndex = 150;
 
+let isShowToolbar = false;
+
 let clientName = '';
 let clientEmail = '';
 let isSubmit = false;
+
+const USERNAME = localStorage.getItem('username');
 
 let requestId = '';
 
