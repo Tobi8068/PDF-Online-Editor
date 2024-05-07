@@ -53,7 +53,7 @@ const handleShape = function (w, h, canvasWidth, canvasHeight) {
     });
   }
   const date = new Date(Date.now());
-  addHistory(baseId, SHAPE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
+  addHistory(baseId, SHAPE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "shape");
 };
 
 $("#viewer").on("click", function (e) {

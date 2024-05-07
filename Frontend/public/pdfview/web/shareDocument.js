@@ -5,7 +5,6 @@ const shareDocumentSenderEmail = document.getElementById("share-document-sender-
 const shareDocumentSenderDescription = document.getElementById("share-document-sender-description");
 const shareDocumentSenderEmailChecker = document.getElementById("share-document-sender-email-check");
 const shareDocumentSendButton = document.getElementById("share-document-send");
-const BASE_URL = "http://localhost:8081";
 
 shareDocumentClose.onclick = function () {
   shareDocumentContainer.style.display = "none";

@@ -211,9 +211,9 @@ const saveTextContent = function () {
     fontStyle = "";
     fontSize = 12;
     textColor = "";
+    const date = new Date(Date.now());
+    addHistory(baseId, TEXT_CONTENT, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "text-content");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, TEXT_CONTENT, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
 }
 
 const handleTextContent = (e) => {
@@ -251,6 +251,7 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
 
   comment_storage.push({
     id: commentId,
+    containerId: "comment" + commentId,
     x: comment_x,
     y: comment_y,
     baseX: comment_x,
@@ -259,10 +260,11 @@ document.getElementById("add_comment").addEventListener("click", (e) => {
     height: 30 * 0.75 * 0.8,
     title: comment_title,
     text: comment_text,
+    page_number: PDFViewerApplication.page
   });
 
   const date = new Date(Date.now());
-  addHistory(baseId, COMMENT, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
+  addHistory(baseId, COMMENT, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "comment");
 
   let pageId = String(PDFViewerApplication.page);
   let pg = document.getElementById(pageId);

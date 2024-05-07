@@ -2196,7 +2196,9 @@ dialog :link {
 }
 .show-history.active {
   left: var(--sidebar-width);
-  /* Slide the sidebar into view */
+}
+.show-history.active0 {
+  left: 0;
 }
 
 #penIcon {

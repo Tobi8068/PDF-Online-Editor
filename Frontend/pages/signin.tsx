@@ -2,6 +2,8 @@ import { BASE_URL } from "@/Config";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState ,useEffect } from "react";
+import {ToastContainer, toast} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function SignIn() {
     const router = useRouter();
@@ -58,11 +60,33 @@ export default function SignIn() {
             })
                 .then((response) => {
                     if(response.ok) {
-                        alert("Successfully logined!");
+                        toast.success('🦄 Successfully Logined!', {
+                            position: "top-right",
+                            autoClose: 5000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "light",
+                            });;
                         return response.json();
                     } else {
-                        alert("Login failed!");
-                        window.location.href = '/signin';
+                        toast.error('Failed to login!', {
+                            position: "top-right",
+                            autoClose: 5000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "light",
+                            });
+                        document.getElementById("email")?.focus();
+                        setFormData({
+                            'email': '',
+                            'password': ''
+                        })
                     }
                 })
                 .then((data) => {
@@ -83,7 +107,7 @@ export default function SignIn() {
         <div className="auth auth-container auth-forms">
             <Head>
                 <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet' />
-            </Head>
+            </Head>            
             <div className="auth auth-form login">
                 <div className="auth auth-form-content">
                     <header className="auth auth-header">Login</header>
@@ -117,6 +141,7 @@ export default function SignIn() {
                 </div>
 
             </div>
+            <ToastContainer />
         </div>
     )
 }

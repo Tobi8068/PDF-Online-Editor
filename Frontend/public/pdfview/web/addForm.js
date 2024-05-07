@@ -10,14 +10,6 @@ let checkboxCount = 1,
   listCount = 1,
   buttonCount = 1,
   datefieldCount = 1;
-let isCheckbox = false,
-  isRadioButton = false,
-  isTextField = false,
-  isCombo = false,
-  isList = false,
-  isButton = false,
-  isDate = false,
-  isSignature = false;
 
 let comboboxOptionCount = 0;
 let listboxOptionCount = 0;
@@ -1357,9 +1349,10 @@ const handleCheckbox = function (e) {
       label: label,
       value: value,
     });
+    const date = new Date(Date.now());
+    addHistory(baseId, CHECKBOX, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, 'checkbox');
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, CHECKBOX, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
+  console.log(form_storage);
   document
     .getElementById("checkbox-save-button")
     .removeEventListener("click", handleCheckbox);
@@ -1416,9 +1409,9 @@ const handleRadio = function (e) {
         value: value,
       },
     });
+    const date = new Date(Date.now());
+    addHistory(baseId, RADIO, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "radio");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, RADIO, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("radio-save-button")
     .removeEventListener("click", handleRadio);
@@ -1502,9 +1495,9 @@ const handleText = function (e) {
     fontSize = 12;
     textColor = "";
     alignValue = 0;
+    const date = new Date(Date.now());
+    addHistory(baseId, TEXTFIELD, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "text");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, TEXTFIELD, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("text-save-button")
     .removeEventListener("click", handleText);
@@ -1594,9 +1587,9 @@ const handleCombo = function (e) {
     textColor = "";
     alignValue = 0;
     comboboxOptionArray = [];
+    const date = new Date(Date.now());
+    addHistory(baseId, COMBOBOX, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "combo");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, COMBOBOX, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("combo-save-button")
     .removeEventListener("click", handleCombo);
@@ -1682,9 +1675,9 @@ const handleList = function (e) {
     textColor = "";
     alignValue = 0;
     listboxOptionArray = [];
+    const date = new Date(Date.now());
+    addHistory(baseId, LIST, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "list");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, LIST, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("list-save-button")
     .removeEventListener("click", handleCombo);
@@ -1881,9 +1874,9 @@ const handleButton = function (e) {
     textColor = "";
     alignValue = 0;
     form_action = 0;
+    const date = new Date(Date.now());
+    addHistory(baseId, BUTTON, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "button");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, BUTTON, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("button-save-button")
     .removeEventListener("click", handleButton);
@@ -1961,9 +1954,9 @@ const handleDate = function (e) {
     fontStyle = "";
     fontSize = 12;
     textColor = "";
+    const date = new Date(Date.now());
+    addHistory(baseId, DATE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "date");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, DATE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
   document
     .getElementById("date-save-button")
     .removeEventListener("click", handleDate);
@@ -2004,9 +1997,9 @@ const handleSignature = function () {
       yPage: formHeight,
       imgData: signatureImgData,
     });
+    const date = new Date(Date.now());
+    addHistory(baseId, SIGNATURE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page, "signature");
   }
-  const date = new Date(Date.now());
-  addHistory(baseId, SIGNATURE, USERNAME, convertStandardDateType(date), PDFViewerApplication.page);
 };
 
 // Resize and move canvas using Interact.js library.
@@ -2216,7 +2209,7 @@ const saveFormElementByClick = function () {
         currentItem.style.zIndex = standardZIndex;
         if (currentItem.classList.contains("textfield-content"))
           currentItem.classList.remove("textfield-content");
-      } 
+      }
     })
   }
   if (text_storage.length != 0) {
@@ -2231,11 +2224,52 @@ const saveFormElementByClick = function () {
   }
 }
 
-document.addEventListener("mousedown", function (event) {
+const removeAllResizeBar = function () {
+  if (form_storage !== null) {
+    form_storage.forEach((item) => {
+      let currentItem;
+      if (item.form_type === DATE) currentItem = document.getElementById(item.containerId).parentElement;
+      else currentItem = document.getElementById(item.containerId);
+      if (currentItem && currentItem.querySelector("#topLeft")) {
+        removeResizebar(currentItem.id);
+      }
+    })
+  }
+  if (text_storage !== null) {
+    text_storage.forEach((item) => {
+      const currentItem = document.getElementById(item.containerId);
+      if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
+    })
+  }
+  if (comment_storage !== null) {
+    comment_storage.forEach((item) => {
+      const currentItem = document.getElementById(item.containerId);
+      if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
+    })
+  }
+}
+
+const handleComment = function (id, type) {
+  const baseId = extractNumbersAsString(id);
+  showHistoryBar.querySelectorAll(".add-reply").forEach(reply => {
+    reply.style.display = "none";
+  });
+  showHistoryBar.querySelectorAll(".historyComment").forEach(comment => {
+    comment.style.display = "none";
+  });
+  document.getElementById(`addReply${baseId}`).style.display = "flex";
+  if (document.getElementById(`historyMainPart${baseId}`).hasChildNodes()) document.getElementById(`historyComment${baseId}`).style.display = "flex";
+  if (type !== TEXTFIELD && type !== TEXT_CONTENT) {
+    document.getElementById(`replyInput${baseId}`).focus();
+  } 
+}
+
+document.getElementById("viewer").addEventListener("mousedown", function (event) {
   let isExisting = false;
   let optionCount = 0;
   let currentFormType, currentObject;
   currentObject = event.target;
+  let deleteButton = document.querySelector(".fa-trash-can");
   let currentObjectParentId = '';
   if (currentObject) {
     let parentElement = currentObject.parentNode;
@@ -2245,7 +2279,6 @@ document.addEventListener("mousedown", function (event) {
   }
   if (form_storage !== null) {
     form_storage.forEach((item) => {
-      handleTextContent
       if (item.containerId === currentObject.id || item.containerId === currentObjectParentId) {
         currentFormType = item.form_type;
         DrawType = item.form_type;
@@ -2264,14 +2297,8 @@ document.addEventListener("mousedown", function (event) {
   }
   if (isExisting) {
     if (!isEditing) {
-      if (form_storage !== null) {
-        form_storage.forEach((item) => {
-          let currentItem;
-          if (item.form_type === DATE) currentItem = document.getElementById(item.containerId).parentElement;
-          else currentItem = document.getElementById(item.containerId);
-          if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
-        })
-      }
+      event.preventDefault();
+      removeAllResizeBar();
       saveFormElementByClick();
       if (currentFormType === DATE) {
         if (!currentObject.parentElement.querySelector("#topLeft")) addResizebar(currentObject.parentElement.id);
@@ -2291,24 +2318,22 @@ document.addEventListener("mousedown", function (event) {
         if (!currentObject.querySelector("#topLeft")) addResizebar(currentObject.id);
         currentObject.style.zIndex = selectedZIndex;
       }
+      // handleComment(currentObject.id, currentFormType);
     } else {
       handleEditMode(current_form_id);
     }
   } else {
-    if (form_storage !== null) {
-      form_storage.forEach((item) => {
-        let currentItem;
-        if (item.form_type === DATE) currentItem = document.getElementById(item.containerId).parentElement;
-        else currentItem = document.getElementById(item.containerId);
-        if (currentItem && currentItem.querySelector("#topLeft")) removeResizebar(currentItem.id);
+    if (deleteButton && (currentObject == deleteButton || currentObject == deleteButton.parentElement)) {
+
+    } else {
+      removeAllResizeBar();
+      optionIdArray.forEach((item) => {
+        if (document.getElementById(item).contains(currentObject)) {
+          optionCount++;
+        }
       })
+      if (optionCount == 0) saveFormElementByClick();
     }
-    optionIdArray.forEach((item) => {
-      if (document.getElementById(item).contains(currentObject)) {
-        optionCount++;
-      }
-    })
-    if (optionCount == 0) saveFormElementByClick();
   }
 });
 
@@ -2417,24 +2442,38 @@ const addDeleteButton = function (currentId, container, object, type) {
 
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    e.preventDefault();
+
+    let currentObject; 
+
     currentId = container.id.replace(`${type}_tooltipbar`, "");
     const target = document.getElementById(`${type}` + currentId);
     if (target && document.getElementById("topLeft"))
       removeResizebar(target.id);
     target.style.display = "none";
     if (type == "text-content") {
+      currentObject = text_storage.find((item) => item.id = currentId);
       text_storage = text_storage.filter(function (item) {
         return item.id !== parseInt(currentId);
       });
     } else if (type == "comment") {
+      currentObject = comment_storage.find((item) => item.id = currentId);
       comment_storage = comment_storage.filter(function (comment) {
         return comment.id !== parseInt(currentId);
       });
     } else {
+      console.log('hrer')
+      currentObject = form_storage.find((item) => item.id = currentId);
       form_storage = form_storage.filter(function (item) {
         return item.id !== parseInt(currentId);
       });
     }
+    const commentPageDiv = document.getElementById(`page${currentObject.page_number}`);
+    const currentHistoryDiv = document.getElementById(`historyDiv${currentId}`);
+    if (commentPageDiv && commentPageDiv.contains(currentHistoryDiv)) {
+      commentPageDiv.removeChild(currentHistoryDiv);
+    }
+    console.log(form_storage);
   });
   document.addEventListener("keydown", (e) => {
     if (type != "text-content" && e.key === "Delete") {

@@ -1,6 +1,8 @@
 import { BASE_URL } from "@/Config";
 import Head from "next/head";
 import { useEffect, useState } from "react";
+import {ToastContainer, toast} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function SignUp() {
 
